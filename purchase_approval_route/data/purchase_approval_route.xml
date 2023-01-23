@@ -7,7 +7,7 @@
                 <t t-esc="object.sudo().current_approver.user_id.name"/>,
             </p>
             <p>
-                Se le solicita aprobar la orden de compra.
+                Se le solicita aprobar la orden de compra:
                 <t t-esc="object.name"/>.
             </p>
             <p>
