@@ -59,7 +59,7 @@ class PurchaseOrder(models.Model):
                     else:
                         # If there is not next approval, than assume that approval is finished and send notification
                         partner = order.user_id.partner_id if order.user_id else order.create_uid.partner_id
-                        servidor_correo_saliente = self.env['ir.mail_server'].search([''],limit=1)
+                        servidor_correo_saliente = self.env['ir.mail_server'].search(['id', '!=', 0],limit=1)
                         order.message_post_with_view(
                             'purchase_approval_route.order_approval',
                             subject=_('PO Approved: %s') % (order.name,),
@@ -196,7 +196,7 @@ class PurchaseOrder(models.Model):
             current_approver_partner = order.current_approver.user_id.partner_id
             if current_approver_partner not in order.message_partner_ids:
                 order.message_subscribe([current_approver_partner.id])
-            servidor_correo_saliente = self.env['ir.mail_server'].search([''],limit=1)
+            servidor_correo_saliente = self.env['ir.mail_server'].search(['id', '!=', 0],limit=1)
             order.with_user(order.user_id).message_post_with_view(
                 'purchase_approval_route.request_to_approve',
                 email_from=servidor_correo_saliente.smtp_user,
