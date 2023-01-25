@@ -15,6 +15,9 @@
                     Ver orden de compra
                 </a>
             </p>
+            <p>Saluda Cordialmente.</p>
+            </br>
+            <p>Addval.</p>
         </template>
 
         <template id="order_approval">
@@ -30,6 +33,9 @@
                     Ver orden de compra
                 </a>
             </p>
+            <p>Saluda Cordialmente.</p>
+            </br>
+            <p>Addval.</p>
         </template>
     </data>
 </odoo>
