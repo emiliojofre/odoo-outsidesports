@@ -36,7 +36,21 @@ class PurchaseOrder(models.Model):
 
     amount_total = fields.Monetary(tracking=True)
 
-    gerencia = fields.Selection(
+    gerencia = fields.Selection([
+        ('sale', 'Sales'),
+        ('purchase', 'Purchase'),
+        ('cash', 'Cash'),
+        ('bank', 'Bank'),
+        ('general', 'Miscellaneous'),
+    ], required=True,
+    inverse='_inverse_type',
+    help="Select 'Sale' for customer invoices journals.\n"\
+    "Select 'Purchase' for vendor bills journals.\n"\
+    "Select 'Cash' or 'Bank' for journals that are used in customer or vendor payments.\n"\
+    "Select 'General' for miscellaneous operations journals.")
+    
+    
+    fields.Selection(
         selection=[
             ('CONSTANZA_ABAID', 'Constanza Abaid'),
             ('LORENA_FERNANDEZ', 'Lorena Fernandez'),
