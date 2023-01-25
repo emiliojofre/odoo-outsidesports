@@ -36,13 +36,16 @@ class PurchaseOrder(models.Model):
 
     amount_total = fields.Monetary(tracking=True)
 
-    gerencia = fields.Selection([
-        ('CONSTANZA ABAID', 'Constanza Abaid'),
-        ('LORENA FERNANDEZ', 'Lorena Fernandez'),
-        ('ITALO HUERTA', 'Italo Huerta'),
-        ('HANS CHADE', 'Hans Chade'),
-        ('GIANNINA TAPIA', 'Giannina Tapia')
-    ])
+    gerencia = fields.Selection(
+        selection=[
+            ('CONSTANZA_ABAID', 'Constanza Abaid'),
+            ('LORENA_FERNANDEZ', 'Lorena Fernandez'),
+            ('ITALO_HUERTA', 'Italo Huerta'),
+            ('HANS_CHADE', 'Hans Chade'),
+            ('GIANNINA_TAPIA', 'Giannina Tapia')
+        ],
+        string = "Gerencia"
+    )
 
     def _track_subtype(self, init_values):
         self.ensure_one()
