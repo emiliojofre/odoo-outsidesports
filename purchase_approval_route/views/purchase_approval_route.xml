@@ -192,7 +192,7 @@
                     <field name="po_order_approval_route" invisible="True"/>
                     <field name="team_id"
                            attrs="{'invisible':[('po_order_approval_route', '=', 'no')], 'required':[('po_order_approval_route', '=', 'required')]}"/>
-                    <field name="gerencia" string="Gerencia"/>
+                    <field name="gerencia" widget="selection" string="Gerencia"/>
                 </field>
 
                 <notebook position="inside">
