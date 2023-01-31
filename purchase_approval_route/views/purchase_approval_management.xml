@@ -22,10 +22,10 @@
                     <sheet>
                         <div class="oe_title">
                             <h1>
-                                <field name="name"/>
+                                <field string="Nombre gerencia" name="name"/>
                             </h1>
                         </div>
-                        <field name="filter_for_approve"/>
+                        <field string="Nombre para filtrar" name="filter_for_approve"/>
                         <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
                     </sheet>
                 </form>
