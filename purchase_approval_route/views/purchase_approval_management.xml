@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="purchase_approval_management_tree" model="ir.ui.view">
+            <field name="name">purchase.approval.management.tree</field>
+            <field name="model">purchase.approval.management</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="name"/>
+                    <field name="filter_for_approve"/>
+                    <field name="company_id" groups="base.group_multi_company"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="purchase_approval_management_form" model="ir.ui.view">
+            <field name="name">purchase.approval.management.form</field>
+            <field name="model">purchase.approval.management</field>
+            <field name="arch" type="xml">
+                <form string="Gerencia para flujo aprobaciones">
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name"/>
+                            </h1>
+                        </div>
+                        <field name="filter_for_approve"/>
+                        <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <menuitem name="PO Teams" id="purchase_team_menu" action="purchase_team_act_window"
+            parent="purchase.menu_purchase_config" sequence="50"/>
+    </data>
+</odoo>
