@@ -47,6 +47,6 @@
         </record>
 
         <menuitem name="Gerencia aprobacion OC" id="purchase_approval_management_menu" action="purchase_approval_management_act_window"
-            parent="purchase.purchase_team_menu" sequence="50"/>
+            parent="purchase.menu_purchase_config" sequence="60"/>
     </data>
 </odoo>
