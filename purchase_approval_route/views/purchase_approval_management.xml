@@ -8,7 +8,7 @@
             <field name="arch" type="xml">
                 <tree>
                     <field name="name"/>
-                    <field name="filter_for_approve"/>
+                    <field name="approve_filter"/>
                     <field name="company_id" groups="base.group_multi_company"/>
                 </tree>
             </field>
@@ -22,10 +22,10 @@
                     <sheet>
                         <div class="oe_title">
                             <h1>
-                                <field string="Nombre gerencia" name="name"/>
+                                <field name="name" string="Nombre gerencia"/>
                             </h1>
                         </div>
-                        <field string="Nombre para filtrar" name="filter_for_approve"/>
+                        <field name="approve_filter" string="Nombre para filtrar"/>
                         <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
                     </sheet>
                 </form>

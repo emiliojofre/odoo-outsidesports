@@ -36,17 +36,6 @@ class PurchaseOrder(models.Model):
 
     amount_total = fields.Monetary(tracking=True)
 
-    gerencia = fields.Selection(
-        selection=[
-            ('CONSTANZA_ABAID', 'Constanza Abaid'),
-            ('LORENA_FERNANDEZ', 'Lorena Fernandez'),
-            ('ITALO_HUERTA', 'Italo Huerta'),
-            ('HANS_CHADE', 'Hans Chade'),
-            ('GIANNINA_TAPIA', 'Giannina Tapia')
-        ],
-        string = "Gerencia"
-    )
-
     approval_magnament = fields.Many2one(
         comodel_name="purchase.approval.management",
         domain="[('company_id', '=', company_id)]",

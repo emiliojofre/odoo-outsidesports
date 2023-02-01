@@ -9,7 +9,7 @@ class PurchaseApprovalManagement(models.Model):
 
     name = fields.Char('Nombre gerente')
 
-    filter_for_approve  = fields.Char(string='Filtro a usar en el flujo', 
+    approve_filter  = fields.Char(string='Filtro a usar en el flujo', 
         help="Se recomienda usar el siguiente formato: NOMBRE_APELLIDO, de esta manera se evitan los problemas en los filtros por espacios de más")
 
     company_id = fields.Many2one('res.company', string='Company', readonly=True, required=True,
