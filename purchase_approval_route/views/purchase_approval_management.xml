@@ -25,7 +25,7 @@
                                 <field name="name" string="Nombre gerencia"/>
                             </h1>
                         </div>
-                        <field name="approve_filter" string="Nombre para filtrar"/>
+                        <field name="approve_filter" string="Filtro en los flujos"/>
                         <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
                     </sheet>
                 </form>
