@@ -20,13 +20,11 @@
             <field name="arch" type="xml">
                 <form string="Gerencia para flujo aprobaciones">
                     <sheet>
-                        <div class="oe_title">
-                            <h1>
-                                <field name="name" string="Nombre gerencia"/>
-                            </h1>
-                        </div>
-                        <field name="approve_filter" string="Filtro en los flujos"/>
-                        <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
+                        <group>
+                            <field name="name" string="Nombre gerencia"/>
+                            <field name="approve_filter" string="Filtro en los flujos"/>
+                            <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
+                        </group>
                     </sheet>
                 </form>
             </field>
