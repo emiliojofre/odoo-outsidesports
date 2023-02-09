@@ -18,9 +18,9 @@ class PurchaseApprovalManagement(models.Model):
 
     @api.depends('name')
     def _compute_filter(self):
-        self.ensure_one()
-        upper_name = self.name.upper()
+        for am in self:
+            upper_name = am.name.upper()
 
-        replace_space = upper_name.replace(" ","_")
+            replace_space = upper_name.replace(" ","_")
 
-        self.approve_filter = replace_space
+            am.approve_filter = replace_space
