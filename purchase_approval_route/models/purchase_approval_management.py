@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
+import logging
+
+_logger = logging.getLogger(__name__)
 
 
 class PurchaseApprovalManagement(models.Model):
@@ -19,7 +22,12 @@ class PurchaseApprovalManagement(models.Model):
     @api.depends('name')
     def _compute_filter(self):
         for am in self:
-            upper_name = am.name.upper()
+            _logger.warning(am)
+            _logger.warning(am.name)
+
+            str_name = str(am.name)
+
+            upper_name = str_name.upper()
 
             replace_space = upper_name.replace(" ","_")
 
