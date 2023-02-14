@@ -43,7 +43,10 @@ class PurchaseOrder(models.Model):
             ('ITALO_HUERTA', 'Italo Huerta'),
             ('HANS_CHADE', 'Hans Chade'),
             ('GIANNINA_TAPIA', 'Giannina Tapia'),
-            ('PILAR_GARCIA', 'Pilar Garcia')
+            ('PILAR_GARCIA', 'Pilar Garcia'),
+            ('JOSE_TOMAS_GUZMAN', 'Jose Tomás Guzman'),
+            ('JESSICA_FERNANDEZ', 'Jessica Fernández'),
+            ('ERICK_KESSLER', 'Erick Kessler')
         ],
         string = "Gerencia"
     )
