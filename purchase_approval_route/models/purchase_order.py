@@ -86,6 +86,7 @@ class PurchaseOrder(models.Model):
                             parent_id=False,
                             subtype_id=self.env.ref('mail.mt_note').id)
                         # Do default behaviour to set state as "purchase" and update date_approve
+                        order.state='purchase'
                         return super(PurchaseOrder, order).button_approve(force)
 
     def button_confirm(self):
