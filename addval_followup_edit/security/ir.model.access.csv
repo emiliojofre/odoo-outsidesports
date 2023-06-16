@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_customer_tariff,access_customer_tariff,model_customer_tariff,,1,1,1,1
