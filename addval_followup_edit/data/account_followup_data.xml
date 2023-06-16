@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<odoo>
+    <data>
+        <record id="custom_email_template_followup_1" model="mail.template">
+            <field name="name">Payment Reminder</field>
+            <field name="inherit_id" ref="account_followup.email_template_followup_1"/>
+            <field name="email_from">erp@addval.cl</field>
+        </record>
+    </data>
+</odoo>
