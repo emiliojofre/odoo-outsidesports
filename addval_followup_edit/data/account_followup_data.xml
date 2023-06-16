@@ -43,19 +43,5 @@
             <field name="lang">{{ object.lang }}</field>
             <field name="auto_delete" eval="False"/>
         </record>
-
-        <record id="demo_followup_line1" model="account_followup.followup.line" forcecreate="False">
-            <field name="name">15 Days</field>
-            <field name="delay">15</field>
-            <field name="company_id" ref="base.main_company"/>
-            <field name="send_email">True</field>
-            <field name="mail_template_id" ref="email_template_followup_1"/>
-        </record>
-
-        <record id="action_account_followup" model="ir.actions.client">
-            <field name="name">Customers Statement</field>
-            <field name="tag">account_report_followup</field>
-            <field name="context" eval="{'model': 'account.followup.report'}" />
-        </record>
     </data>
 </odoo>
