@@ -163,9 +163,9 @@ class AccountFollowupReport(models.AbstractModel):
         """
         return [
             {'name': _('Documento'), 'style': 'text-align:center; white-space:nowrap;'},
-            {'name': _('Date'), 'class': 'date', 'style': 'text-align:center; white-space:nowrap;'},
-            {'name': _('Due Date'), 'class': 'date', 'style': 'text-align:center; white-space:nowrap;'},
+            {'name': _('Fecha'), 'class': 'date', 'style': 'text-align:center; white-space:nowrap;'},
+            {'name': _('Fecha Vencimiento'), 'class': 'date', 'style': 'text-align:center; white-space:nowrap;'},
             {'name': _('Días vencido'), 'class': 'date', 'style': 'text-align:center; white-space:nowrap;'},
-            {'name': _('Origin'), 'style': 'text-align:center; white-space:nowrap;'},
-            {'name': _('Total Due'), 'class': 'number o_price_total', 'style': 'text-align:right; white-space:nowrap;'},
+            {'name': _('Origen'), 'style': 'text-align:center; white-space:nowrap;'},
+            {'name': _('Deuda Total'), 'class': 'number o_price_total', 'style': 'text-align:right; white-space:nowrap;'},
         ]
