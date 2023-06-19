@@ -57,11 +57,13 @@ class AccountFollowupReport(models.AbstractModel):
                 if is_payment:
                     date_due = ''
                 
-                invoice_date_due = format_date(self.env, aml.date_maturity or aml.move_id.invoice_date or aml.date, lang_code=lang_code)
+                invoice_date_due = aml.date_maturity
                 today = fields.Date.today()
                 days_past_due = invoice_date_due - today
                 if days_past_due < 0:
                     days_past_due = 'Aún no vence'
+                else:
+                    days_past_due = days_past_due.days
 
                 amount = {
                     'name': formatLang(self.env, amount, currency_obj=currency),
