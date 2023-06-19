@@ -56,11 +56,12 @@ class AccountFollowupReport(models.AbstractModel):
                     date_due['style'] += 'color: red;'
                 if is_payment:
                     date_due = ''
-                move_line_name = {
-                    'name': self._followup_report_format_aml_name(aml.name, aml.move_id.ref),
-                    'style': 'text-align:right; white-space:normal;',
-                    'template': 'account_followup.cell_template_followup_report',
-                }
+
+                today = fields.Date.today()
+                days_past_due = date_due - today
+                if days_past_due < 0:
+                    days_past_due = 'Aún no vence'
+
                 amount = {
                     'name': formatLang(self.env, amount, currency_obj=currency),
                     'style': 'text-align:right; white-space:normal;',
@@ -78,6 +79,7 @@ class AccountFollowupReport(models.AbstractModel):
                 columns = [
                     invoice_date,
                     date_due,
+                    days_past_due,
                     invoice_origin,
                     amount,
                 ]
@@ -157,9 +159,10 @@ class AccountFollowupReport(models.AbstractModel):
         Return the name of the columns of the follow-ups report
         """
         return [
-            {'name': _('Document'), 'style': 'text-align:right; white-space:nowrap;'},
+            {'name': _('Documento'), 'style': 'text-align:center; white-space:nowrap;'},
             {'name': _('Date'), 'class': 'date', 'style': 'text-align:center; white-space:nowrap;'},
             {'name': _('Due Date'), 'class': 'date', 'style': 'text-align:center; white-space:nowrap;'},
+            {'name': _('Días vencido'), 'class': 'date', 'style': 'text-align:center; white-space:nowrap;'},
             {'name': _('Origin'), 'style': 'text-align:center; white-space:nowrap;'},
             {'name': _('Total Due'), 'class': 'number o_price_total', 'style': 'text-align:right; white-space:nowrap;'},
         ]
