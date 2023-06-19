@@ -1,0 +1,14 @@
+<odoo>
+  <data>
+    <record id="res_partner_expiration_rule" model="ir.ui.view">
+      <field name="name">res.partner.expiration.rule</field>
+      <field name="inherit_id" ref="base.view_partner_form"/>
+      <field name="model">res.partner</field>
+      <field name="arch" type="xml">
+        <field name="property_payment_term_id" position="after">
+            <field name="rule_payment_term" string="Vencimiento facturas"/>
+        </field>
+      </field>
+    </record>
+  </data>
+</odoo>
