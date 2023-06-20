@@ -107,7 +107,7 @@ class AccountFollowupReport(models.AbstractModel):
                     'name': v,
                     'style': 'text-align:right; white-space:normal;',
                     'template': 'account_followup.cell_template_followup_report',
-                } for v in [total >= 0 and _('Total Due') or '', total_due]]
+                } for v in [total >= 0 and _('Total Deuda') or '', total_due]]
 
             lines.append({
                 'id': line_num,
@@ -131,7 +131,7 @@ class AccountFollowupReport(models.AbstractModel):
                         'name': v,
                         'style': 'text-align:right; white-space:normal;',
                         'template': 'account_followup.cell_template_followup_report',
-                    } for v in [_('Total Overdue'), total_issued]]
+                    } for v in [_('Total Vencido'), total_issued]]
 
                 lines.append({
                     'id': line_num,
