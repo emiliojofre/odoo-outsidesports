@@ -46,8 +46,6 @@ class ResPartner(models.Model):
 
     @api.model
     def _get_first_followup_level(self):
-        self.ensure_one()
-
         most_overdue_invoice = self.unpaid_invoices_ids.sorted(key=lambda inv: inv.due_date - fields.Date.today(), reverse=True)
         if most_overdue_invoice:
             days_overdue = (fields.Date.today() - most_overdue_invoice.due_date).days
