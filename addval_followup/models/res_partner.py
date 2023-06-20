@@ -14,6 +14,46 @@ _logger = logging.getLogger(__name__)
 class ResPartner(models.Model):
     _inherit = 'res.partner'
 
+    @api.depends('unreconciled_aml_ids', 'followup_next_action_date')
+    @api.depends_context('company', 'allowed_company_ids')
+    def _compute_followup_status(self):
+        all_data = self._query_followup_data()
+        for partner in self:
+            partner_data = all_data.get(partner._origin.id, {'followup_status': 'no_action_needed', 'followup_line_id': False})
+            partner.followup_status = partner_data['followup_status']
+
+            most_overdue_invoice = self.unpaid_invoices_ids.sorted(key=lambda inv: inv.due_date - fields.Date.today(), reverse=True)
+            if most_overdue_invoice:
+                days_overdue = (fields.Date.today() - most_overdue_invoice.due_date).days
+
+                matching_followup_lines = self.env['account_followup.followup.line'].search([
+                    ('delay', '<=', days_overdue),
+                    ('company_id', '=', self.company_id.id)
+                ], order="delay desc", limit=1)
+
+                if matching_followup_lines:
+                    partner.followup_line_id = matching_followup_lines
+                else:
+                    partner.followup_line_id = partner_data['followup_line_id']
+
+    @api.model
+    def _get_first_followup_level(self):
+        self.ensure_one()
+
+        most_overdue_invoice = self.unpaid_invoices_ids.sorted(key=lambda inv: inv.due_date - fields.Date.today(), reverse=True)
+        if most_overdue_invoice:
+            days_overdue = (fields.Date.today() - most_overdue_invoice.due_date).days
+
+            matching_followup_lines = self.env['account_followup.followup.line'].search([
+                ('delay', '<=', days_overdue),
+                ('company_id', '=', self.company_id.id)
+            ], order="delay desc", limit=1)
+
+            if matching_followup_lines:
+                return matching_followup_lines
+            
+        return self.env['account_followup.followup.line'].search([('company_id', '=', self.env.company.id)], order='delay asc', limit=1)
+
     def _update_next_followup_action_date(self, followup_line):
         """Updates the followup_next_action_date of the right account move lines
         """
