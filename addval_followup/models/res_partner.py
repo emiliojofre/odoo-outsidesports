@@ -23,7 +23,7 @@ class ResPartner(models.Model):
             partner_data = all_data.get(partner._origin.id, {'followup_status': 'no_action_needed', 'followup_line_id': False})
             partner.followup_status = partner_data['followup_status']
 
-            most_overdue_invoice = self.unpaid_invoices_ids.sorted(key=lambda inv: inv.due_date - fields.Date.today(), reverse=True)
+            most_overdue_invoice = self.unpaid_invoice_ids.sorted(key=lambda inv: inv.due_date - fields.Date.today(), reverse=True)
             _logger.warning('ENTRO AL FOR Y  MUESTRA EL MOST_OVERDUE_INVOICE')
             _logger.warning(most_overdue_invoice)
 
@@ -46,7 +46,7 @@ class ResPartner(models.Model):
 
     @api.model
     def _get_first_followup_level(self):
-        most_overdue_invoice = self.unpaid_invoices_ids.sorted(key=lambda inv: inv.due_date - fields.Date.today(), reverse=True)
+        most_overdue_invoice = self.unpaid_invoice_ids.sorted(key=lambda inv: inv.due_date - fields.Date.today(), reverse=True)
         if most_overdue_invoice:
             days_overdue = (fields.Date.today() - most_overdue_invoice.due_date).days
 
