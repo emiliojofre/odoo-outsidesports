@@ -25,10 +25,13 @@ class ResPartner(models.Model):
             
             partner_data = all_data.get(partner._origin.id, {'followup_status': 'no_action_needed', 'followup_line_id': False})
             partner.followup_status = partner_data['followup_status']
-            
-            for unpaid_invoice in self.unpaid_invoice_ids:
 
-                unpaid_invoices_days = {}
+            _logger.warning('partner_data[followup_line_id]')
+            _logger.warning(partner_data['followup_line_id'])
+            
+            unpaid_invoices_days = {}
+
+            for unpaid_invoice in self.unpaid_invoice_ids:
 
                 days_after_due = fields.Date.today() - unpaid_invoice.invoice_date_due
                
@@ -40,27 +43,27 @@ class ResPartner(models.Model):
                 _logger.warning('DICCIONARIO CON LAS INVOICE Y SUS DIAS DESPUES DEL VENCIMIENTO')
                 _logger.warning(unpaid_invoices_days)
 
-                if len(unpaid_invoices_days) > 0:
+            if unpaid_invoices_days:
 
-                    _logger.warning('ENTRO AL IF SI EL DICCIONARIO ENTRO A LA FUNCION')
+                _logger.warning('ENTRO AL IF SI EL DICCIONARIO ENTRO A LA FUNCION')
 
-                    for days in unpaid_invoices_days:
-                    
-                        matching_followup_lines = self.env['account_followup.followup.line'].search([
-                            ('delay', '<=', days),
-                            ('company_id', '=', self.company_id.id)
-                        ], order="delay desc", limit=1)
+                matching_followup_lines = self.env['account_followup.followup.line'].search([
+                    ('delay', '<=', max(unpaid_invoices_days.values())),
+                    ('company_id', '=', self.company_id.id)
+                ], order="delay desc", limit=1)
 
-                        _logger.warning('MATCHING_FOLLOWUP_LINES')
-                        _logger.warning(matching_followup_lines)
+                _logger.warning('MATCHING_FOLLOWUP_LINES')
+                _logger.warning(matching_followup_lines)
 
-                        if matching_followup_lines:
+                if matching_followup_lines:
 
-                            _logger.warning('ENCONTRO UN MATCHING_FOLLOWUP_LINES')
+                    _logger.warning('ENCONTRO UN MATCHING_FOLLOWUP_LINES')
 
-                            partner.followup_line_id = matching_followup_lines
+                    partner.followup_line_id = matching_followup_lines
                 else:
                     partner.followup_line_id = partner_data['followup_line_id']
+            else:
+                partner.followup_line_id = partner_data['followup_line_id']
 
     @api.model
     def _get_first_followup_level(self):
