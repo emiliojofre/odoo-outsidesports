@@ -17,47 +17,50 @@ class ResPartner(models.Model):
     @api.depends('unreconciled_aml_ids', 'followup_next_action_date')
     @api.depends_context('company', 'allowed_company_ids')
     def _compute_followup_status(self):
+
         _logger.warning('ENTRO AL COMPUTE FOLLOWUP STATUS')
+
         all_data = self._query_followup_data()
         for partner in self:
+            
             partner_data = all_data.get(partner._origin.id, {'followup_status': 'no_action_needed', 'followup_line_id': False})
             partner.followup_status = partner_data['followup_status']
+            
+            for unpaid_invoice in self.unpaid_invoice_ids:
 
-            most_overdue_invoice = self.unpaid_invoice_ids.sorted(key=lambda inv: inv.invoice_date_due - fields.Date.today(), reverse=True)
-            _logger.warning('ENTRO AL FOR Y  MUESTRA EL MOST_OVERDUE_INVOICE')
-            _logger.warning(most_overdue_invoice)
+                unpaid_invoices_days = {}
 
-            if most_overdue_invoice:
-                _logger.warning('ENTRO AL IF MOST_OVERDUE_INVOICE')
+                days_after_due = unpaid_invoice.invoice_date_due - fields.Date.today()
 
-                days_overdue = (fields.Date.today() - most_overdue_invoice.invoice_date_due).days
+                unpaid_invoices_days[unpaid_invoice.id] = days_after_due
 
-                matching_followup_lines = self.env['account_followup.followup.line'].search([
-                    ('delay', '<=', days_overdue),
-                    ('company_id', '=', self.company_id.id)
-                ], order="delay desc", limit=1)
-                _logger.warning('MATCHING_FOLLOWUP_LINES')
-                _logger.warning(matching_followup_lines)
-                if matching_followup_lines:
-                    _logger.warning('ENCONTRO UN MATCHING_FOLLOWUP_LINES')
-                    partner.followup_line_id = matching_followup_lines
+                _logger.warning('DICCIONARIO CON LAS INVOICE Y SUS DIAS DESPUES DEL VENCIMIENTO')
+                _logger.warning(unpaid_invoices_days)
+
+                if len(unpaid_invoices_days) > 0:
+
+                    _logger.warning('ENTRO AL IF SI EL DICCIONARIO ENTRO A LA FUNCION')
+
+                    for days in unpaid_invoices_days:
+                    
+                        matching_followup_lines = self.env['account_followup.followup.line'].search([
+                            ('delay', '<=', days),
+                            ('company_id', '=', self.company_id.id)
+                        ], order="delay desc", limit=1)
+
+                        _logger.warning('MATCHING_FOLLOWUP_LINES')
+                        _logger.warning(matching_followup_lines)
+
+                        if matching_followup_lines:
+
+                            _logger.warning('ENCONTRO UN MATCHING_FOLLOWUP_LINES')
+
+                            partner.followup_line_id = matching_followup_lines
                 else:
                     partner.followup_line_id = partner_data['followup_line_id']
 
     @api.model
     def _get_first_followup_level(self):
-        most_overdue_invoice = self.unpaid_invoice_ids.sorted(key=lambda inv: inv.invoice_date_due - fields.Date.today(), reverse=True)
-        if most_overdue_invoice:
-            days_overdue = (fields.Date.today() - most_overdue_invoice.invoice_date_due).days
-
-            matching_followup_lines = self.env['account_followup.followup.line'].search([
-                ('delay', '<=', days_overdue),
-                ('company_id', '=', self.company_id.id)
-            ], order="delay desc", limit=1)
-
-            if matching_followup_lines:
-                return matching_followup_lines
-            
         return self.env['account_followup.followup.line'].search([('company_id', '=', self.env.company.id)], order='delay asc', limit=1)
 
     def _update_next_followup_action_date(self, followup_line):
