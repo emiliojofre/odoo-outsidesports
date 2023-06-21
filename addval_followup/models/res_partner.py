@@ -18,25 +18,17 @@ class ResPartner(models.Model):
     @api.depends_context('company', 'allowed_company_ids')
     def _compute_followup_status(self):
 
-        _logger.warning('ENTRO AL COMPUTE FOLLOWUP STATUS')
-
         all_data = self._query_followup_data()
         for partner in self:
             
             partner_data = all_data.get(partner._origin.id, {'followup_status': 'no_action_needed', 'followup_line_id': False})
             partner.followup_status = partner_data['followup_status']
-
-            _logger.warning('partner_data[followup_line_id]')
-            _logger.warning(partner_data['followup_line_id'])
             
             unpaid_invoices_days = {}
 
             for unpaid_invoice in self.unpaid_invoice_ids:
 
                 days_after_due = fields.Date.today() - unpaid_invoice.invoice_date_due
-               
-                _logger.warning('DÍAS CALCULADOS')
-                _logger.warning(days_after_due)
 
                 unpaid_invoices_days[unpaid_invoice.id] = days_after_due.days
 
@@ -45,7 +37,9 @@ class ResPartner(models.Model):
 
             if unpaid_invoices_days:
 
-                _logger.warning('ENTRO AL IF SI EL DICCIONARIO ENTRO A LA FUNCION')
+                _logger.warning('ENTRO AL IF')
+                _logger.warning('max(unpaid_invoices_days.values())')
+                _logger.warning(max(unpaid_invoices_days.values()))
 
                 matching_followup_lines = self.env['account_followup.followup.line'].search([
                     ('delay', '<=', max(unpaid_invoices_days.values())),
@@ -59,7 +53,7 @@ class ResPartner(models.Model):
 
                     _logger.warning('ENCONTRO UN MATCHING_FOLLOWUP_LINES')
 
-                    partner.followup_line_id = matching_followup_lines
+                    partner.followup_line_id = matching_followup_lines.id
                 else:
                     partner.followup_line_id = partner_data['followup_line_id']
             else:
