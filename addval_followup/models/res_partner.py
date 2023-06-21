@@ -30,9 +30,12 @@ class ResPartner(models.Model):
 
                 unpaid_invoices_days = {}
 
-                days_after_due = unpaid_invoice.invoice_date_due - fields.Date.today()
+                days_after_due = fields.Date.today() - unpaid_invoice.invoice_date_due
+               
+                _logger.warning('DÍAS CALCULADOS')
+                _logger.warning(days_after_due)
 
-                unpaid_invoices_days[unpaid_invoice.id] = days_after_due
+                unpaid_invoices_days[unpaid_invoice.id] = days_after_due.days
 
                 _logger.warning('DICCIONARIO CON LAS INVOICE Y SUS DIAS DESPUES DEL VENCIMIENTO')
                 _logger.warning(unpaid_invoices_days)
