@@ -43,7 +43,7 @@ class ResPartner(models.Model):
 
                 matching_followup_lines = self.env['account_followup.followup.line'].search([
                     ('delay', '<=', max(unpaid_invoices_days.values())),
-                    ('company_id', '=', self.company_id.id)
+                    ('company_id', '=', self.env.company.id)
                 ], order="delay desc", limit=1)
 
                 _logger.warning('MATCHING_FOLLOWUP_LINES')
