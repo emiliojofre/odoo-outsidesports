@@ -59,7 +59,7 @@ class ResPartner(models.Model):
 
         # Arbitrary 1 days delay (like the _get_next_date() method) if there is no followup_line
         # This will be changed/removed in an upcoming improvement
-        next_date = followup_line._get_next_date() if followup_line else fields.Date.today() + timedelta(days=1)
+        next_date =  fields.Date.today() + timedelta(days=1)
         self.followup_next_action_date = datetime.strftime(next_date, DEFAULT_SERVER_DATE_FORMAT)
         msg = _('Next Reminder Date set to %s', format_date(self.env, self.followup_next_action_date))
         self.message_post(body=msg)
