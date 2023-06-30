@@ -24,35 +24,29 @@ class ResPartner(models.Model):
             partner_data = all_data.get(partner._origin.id, {'followup_status': 'no_action_needed', 'followup_line_id': False})
             partner.followup_status = partner_data['followup_status']
             
-        unpaid_invoices_days = {}
+            unpaid_invoices_days = {}
 
-        for unpaid_invoice in self.unpaid_invoice_ids: 
+            for unpaid_invoice in partner.unpaid_invoice_ids: 
 
-            days_after_due = fields.Date.today() - unpaid_invoice.invoice_date_due
+                days_after_due = fields.Date.today() - unpaid_invoice.invoice_date_due
 
-            unpaid_invoices_days[unpaid_invoice.id] = days_after_due.days
+                unpaid_invoices_days[partner.id][unpaid_invoice.id] = days_after_due.days
 
-        if unpaid_invoices_days:
-            max_days_overdue = max(unpaid_invoices_days.values())
+            if unpaid_invoices_days:
+                max_days_overdue = max(unpaid_invoices_days[partner.id].values())
 
-            matching_followup_lines = self.env['account_followup.followup.line'].search([
-                ('delay', '<=', max_days_overdue),
-                ('company_id', '=', self.env.company.id)
-            ], order="delay desc", limit=1)
-
-            if matching_followup_lines:
-
-                partner.followup_line_id = matching_followup_lines.id
-            else:
                 matching_followup_lines = self.env['account_followup.followup.line'].search([
+                    ('delay', '<=', max_days_overdue),
                     ('company_id', '=', self.env.company.id)
                 ], order="delay desc", limit=1)
-                partner.followup_line_id = matching_followup_lines.id
-        else:
-            matching_followup_lines = self.env['account_followup.followup.line'].search([
-                ('company_id', '=', self.env.company.id)
-            ], order="delay desc", limit=1)
-            partner.followup_line_id = matching_followup_lines.id
+
+                if matching_followup_lines:
+
+                    partner.followup_line_id = matching_followup_lines.id
+                else:
+                    partner.followup_line_id = partner_data['followup_line_id']
+            else:
+                partner.followup_line_id = partner_data['followup_line_id']
 
     @api.model
     def _get_first_followup_level(self):
