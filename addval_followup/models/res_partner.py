@@ -30,7 +30,7 @@ class ResPartner(models.Model):
 
                 days_after_due = fields.Date.today() - unpaid_invoice.invoice_date_due
 
-                unpaid_invoices_days[partner.id][unpaid_invoice.id] = days_after_due.days
+                unpaid_invoices_days[partner.id] = days_after_due.days
 
             if unpaid_invoices_days:
                 max_days_overdue = max(unpaid_invoices_days[partner.id].values())
