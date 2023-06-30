@@ -33,7 +33,7 @@ class ResPartner(models.Model):
                 unpaid_invoices_days[partner.id] = days_after_due.days
 
             if unpaid_invoices_days:
-                max_days_overdue = max(unpaid_invoices_days[partner.id].values())
+                max_days_overdue = max(unpaid_invoices_days.values())
 
                 matching_followup_lines = self.env['account_followup.followup.line'].search([
                     ('delay', '<=', max_days_overdue),
