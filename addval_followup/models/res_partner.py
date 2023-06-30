@@ -26,7 +26,7 @@ class ResPartner(models.Model):
             
             unpaid_invoices_days = {}
 
-            for unpaid_invoice in self.unpaid_invoice_ids:
+            for unpaid_invoice in self.unpaid_invoice_ids: 
 
                 days_after_due = fields.Date.today() - unpaid_invoice.invoice_date_due
 
@@ -36,13 +36,13 @@ class ResPartner(models.Model):
                 _logger.warning(unpaid_invoices_days)
 
             if unpaid_invoices_days:
-
+                max_days_overdue = max(unpaid_invoices_days.values())
                 _logger.warning('ENTRO AL IF')
                 _logger.warning('max(unpaid_invoices_days.values())')
                 _logger.warning(max(unpaid_invoices_days.values()))
 
                 matching_followup_lines = self.env['account_followup.followup.line'].search([
-                    ('delay', '<=', max(unpaid_invoices_days.values())),
+                    ('delay', '<=', max_days_overdue),
                     ('company_id', '=', self.env.company.id)
                 ], order="delay desc", limit=1)
 
