@@ -78,38 +78,33 @@ class ResPartner(models.Model):
            - 'next_delay': the delay in days of the next followup line
         """
         followup_lines = self.env['account_followup.followup.line'].search([('company_id', '=', self.env.company.id)], order="delay asc")
-        _logger.warning('ENTRO A LA FUNCION GET_FOLLOWUP_LINES_INFO Y MUESTRA FOLLOWUP_LINES')
-        _logger.warning(followup_lines)
         previous_line_id = None
         followup_lines_info = {}
         for line in followup_lines:
             delay_in_days = line.delay
-
-            _logger.warning('VARIABLE DELAY_IN_DAYS')
-            _logger.warning(delay_in_days)
 
             followup_lines_info[previous_line_id] = {
                 'next_followup_line_id': line.id,
                 'next_delay': delay_in_days,
             }
 
-            _logger.warning('DICCIONARIO FOLLOWUP_LINES_INFO[PREVIOUS_LINE_ID]')
-            _logger.warning(followup_lines_info[previous_line_id])
-
             previous_line_id = line.id
-
-            _logger.warning('VARIABLE PREVIOUS_LINE_ID')
-            _logger.warning(previous_line_id)
 
         if previous_line_id:
             followup_lines_info[previous_line_id] = {
                 'next_followup_line_id': previous_line_id,
                 'next_delay': delay_in_days,
             }
-            _logger.warning('DICCIONARIO FOLLOWUP_LINES_INFO[PREVIOUS_LINE_ID] DENTRO IF')
-            _logger.warning(followup_lines_info[previous_line_id])
-        
-        _logger.warning('DICCIONARIO FOLLOWUP_LINES_INFO QUE RETORNA LA FUNCION')
-        _logger.warning(followup_lines_info)
-
         return followup_lines_info
+
+    def _cron_execute_followup_company(self):
+        followup_data = self._query_followup_data(all_partners=True)
+        in_need_of_action = self.env['res.partner'].browse([d['partner_id'] for d in followup_data.values() if d['followup_status'] in ('in_need_of_action', 'with_overdue_invoices')])
+        in_need_of_action_auto = in_need_of_action.filtered(lambda p: p.followup_line_id.auto_execute and p.followup_reminder_type == 'automatic')
+        for partner in in_need_of_action_auto:
+            try:
+                partner._execute_followup_partner()
+            except UserError as e:
+                # followup may raise exception due to configuration issues
+                # i.e. partner missing email
+                _logger.warning(e, exc_info=True)
