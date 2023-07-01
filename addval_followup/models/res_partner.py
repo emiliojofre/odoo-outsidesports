@@ -96,10 +96,40 @@ class ResPartner(models.Model):
                 'next_delay': delay_in_days,
             }
         return followup_lines_info
+    
+    def _execute_followup_partner(self, options=None):
+        """ Execute the actions to do with follow-ups for this partner (apart from printing).
+        This is either called when processing the follow-ups manually (wizard), or automatically (cron).
+        Automatic follow-ups can also be triggered manually with *action_manually_process_automatic_followups*.
+        When processing automatically, options is None.
+
+        Returns True if any action was processed, False otherwise
+        """
+        self.ensure_one()
+        if options is None:
+            options = {}
+        if options.get('manual_followup', self.followup_status in ('in_need_of_action', 'with_overdue_invoices')):
+            followup_line = self.followup_line_id or self._get_first_followup_level()
+
+            if followup_line.create_activity:
+                # log a next activity for today
+                self.activity_schedule(
+                    activity_type_id=followup_line.activity_type_id and followup_line.activity_type_id.id or self._default_activity_type().id,
+                    note=followup_line.activity_note,
+                    summary=followup_line.activity_summary,
+                    user_id=(self._get_followup_responsible()).id
+                )
+
+            self._update_next_followup_action_date(followup_line)
+
+            self._send_followup(options={'followup_line': followup_line, **options})
+
+            return True
+        return False
 
     def _cron_execute_followup_company(self):
         followup_data = self._query_followup_data(all_partners=True)
-        in_need_of_action = self.env['res.partner'].browse([d['partner_id'] for d in followup_data.values() if d['followup_status'] in ('in_need_of_action', 'with_overdue_invoices')])
+        in_need_of_action = self.env['res.partner'].browse([d['partner_id'] for d in followup_data.values() if d['followup_status'] == 'in_need_of_action' or d['followup_status'] == 'with_overdue_invoices'])
         in_need_of_action_auto = in_need_of_action.filtered(lambda p: p.followup_line_id.auto_execute and p.followup_reminder_type == 'automatic')
         for partner in in_need_of_action_auto:
             try:
