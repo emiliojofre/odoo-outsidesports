@@ -26,32 +26,21 @@ class ResPartner(models.Model):
             
             unpaid_invoices_days = {}
 
-            for unpaid_invoice in self.unpaid_invoice_ids:
+            for unpaid_invoice in partner.unpaid_invoice_ids: 
 
                 days_after_due = fields.Date.today() - unpaid_invoice.invoice_date_due
 
-                unpaid_invoices_days[unpaid_invoice.id] = days_after_due.days
-
-                _logger.warning('DICCIONARIO CON LAS INVOICE Y SUS DIAS DESPUES DEL VENCIMIENTO')
-                _logger.warning(unpaid_invoices_days)
+                unpaid_invoices_days[partner.id] = days_after_due.days
 
             if unpaid_invoices_days:
-
-                _logger.warning('ENTRO AL IF')
-                _logger.warning('max(unpaid_invoices_days.values())')
-                _logger.warning(max(unpaid_invoices_days.values()))
+                max_days_overdue = max(unpaid_invoices_days.values())
 
                 matching_followup_lines = self.env['account_followup.followup.line'].search([
-                    ('delay', '<=', max(unpaid_invoices_days.values())),
+                    ('delay', '<=', max_days_overdue),
                     ('company_id', '=', self.env.company.id)
                 ], order="delay desc", limit=1)
 
-                _logger.warning('MATCHING_FOLLOWUP_LINES')
-                _logger.warning(matching_followup_lines)
-
                 if matching_followup_lines:
-
-                    _logger.warning('ENCONTRO UN MATCHING_FOLLOWUP_LINES')
 
                     partner.followup_line_id = matching_followup_lines.id
                 else:
@@ -70,7 +59,7 @@ class ResPartner(models.Model):
 
         # Arbitrary 1 days delay (like the _get_next_date() method) if there is no followup_line
         # This will be changed/removed in an upcoming improvement
-        next_date = followup_line._get_next_date() if followup_line else fields.Date.today() + timedelta(days=1)
+        next_date =  fields.Date.today() + timedelta(days=1)
         self.followup_next_action_date = datetime.strftime(next_date, DEFAULT_SERVER_DATE_FORMAT)
         msg = _('Next Reminder Date set to %s', format_date(self.env, self.followup_next_action_date))
         self.message_post(body=msg)
@@ -89,38 +78,63 @@ class ResPartner(models.Model):
            - 'next_delay': the delay in days of the next followup line
         """
         followup_lines = self.env['account_followup.followup.line'].search([('company_id', '=', self.env.company.id)], order="delay asc")
-        _logger.warning('ENTRO A LA FUNCION GET_FOLLOWUP_LINES_INFO Y MUESTRA FOLLOWUP_LINES')
-        _logger.warning(followup_lines)
         previous_line_id = None
         followup_lines_info = {}
         for line in followup_lines:
             delay_in_days = line.delay
-
-            _logger.warning('VARIABLE DELAY_IN_DAYS')
-            _logger.warning(delay_in_days)
 
             followup_lines_info[previous_line_id] = {
                 'next_followup_line_id': line.id,
                 'next_delay': delay_in_days,
             }
 
-            _logger.warning('DICCIONARIO FOLLOWUP_LINES_INFO[PREVIOUS_LINE_ID]')
-            _logger.warning(followup_lines_info[previous_line_id])
-
             previous_line_id = line.id
-
-            _logger.warning('VARIABLE PREVIOUS_LINE_ID')
-            _logger.warning(previous_line_id)
 
         if previous_line_id:
             followup_lines_info[previous_line_id] = {
                 'next_followup_line_id': previous_line_id,
                 'next_delay': delay_in_days,
             }
-            _logger.warning('DICCIONARIO FOLLOWUP_LINES_INFO[PREVIOUS_LINE_ID] DENTRO IF')
-            _logger.warning(followup_lines_info[previous_line_id])
-        
-        _logger.warning('DICCIONARIO FOLLOWUP_LINES_INFO QUE RETORNA LA FUNCION')
-        _logger.warning(followup_lines_info)
-
         return followup_lines_info
+    
+    def _execute_followup_partner(self, options=None):
+        """ Execute the actions to do with follow-ups for this partner (apart from printing).
+        This is either called when processing the follow-ups manually (wizard), or automatically (cron).
+        Automatic follow-ups can also be triggered manually with *action_manually_process_automatic_followups*.
+        When processing automatically, options is None.
+
+        Returns True if any action was processed, False otherwise
+        """
+        self.ensure_one()
+        if options is None:
+            options = {}
+        if options.get('manual_followup', self.followup_status in ('in_need_of_action', 'with_overdue_invoices')):
+            followup_line = self.followup_line_id or self._get_first_followup_level()
+
+            if followup_line.create_activity:
+                # log a next activity for today
+                self.activity_schedule(
+                    activity_type_id=followup_line.activity_type_id and followup_line.activity_type_id.id or self._default_activity_type().id,
+                    note=followup_line.activity_note,
+                    summary=followup_line.activity_summary,
+                    user_id=(self._get_followup_responsible()).id
+                )
+
+            self._update_next_followup_action_date(followup_line)
+
+            self._send_followup(options={'followup_line': followup_line, **options})
+
+            return True
+        return False
+
+    def _cron_execute_followup_company(self):
+        followup_data = self._query_followup_data(all_partners=True)
+        in_need_of_action = self.env['res.partner'].browse([d['partner_id'] for d in followup_data.values() if d['followup_status'] == 'in_need_of_action' or d['followup_status'] == 'with_overdue_invoices'])
+        in_need_of_action_auto = in_need_of_action.filtered(lambda p: p.followup_line_id.auto_execute and p.followup_reminder_type == 'automatic')
+        for partner in in_need_of_action_auto:
+            try:
+                partner._execute_followup_partner()
+            except UserError as e:
+                # followup may raise exception due to configuration issues
+                # i.e. partner missing email
+                _logger.warning(e, exc_info=True)

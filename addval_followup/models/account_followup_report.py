@@ -129,7 +129,7 @@ class AccountFollowupReport(models.AbstractModel):
                     } for v in [''] * 3] + \
                     [{
                         'name': v,
-                        'style': 'text-align:right; white-space:normal;',
+                        'style': 'text-align:right; white-space:normal;color: red;',
                         'template': 'account_followup.cell_template_followup_report',
                     } for v in [_('Total Vencido'), total_issued]]
 
