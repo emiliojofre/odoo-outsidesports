@@ -46,7 +46,9 @@ class PurchaseOrder(models.Model):
             ('PILAR_GARCIA', 'Pilar Garcia'),
             ('JOSE_TOMAS_GUZMAN', 'Jose Tomás Guzman'),
             ('JESSICA_FERNANDEZ', 'Jessica Fernández'),
-            ('ERICK_KESSLER', 'Erick Kessler')
+            ('ERICK_KESSLER', 'Erick Kessler'),
+            ('JUAN_GUARDA', 'Juan Guarda'),
+            ('FRANCISCO_LARRAIN', 'Francisco Larrain')
         ],
         string = "Gerencia"
     )
@@ -212,7 +214,7 @@ class PurchaseOrder(models.Model):
             current_approver_partner = order.current_approver.user_id.partner_id
             if current_approver_partner not in order.message_partner_ids:
                 order.message_subscribe([current_approver_partner.id])
-            servidor_correo_saliente = self.env['ir.mail_server'].search([])
+            servidor_correo_saliente = self.env['ir.mail_server'].search([], limit=1)
             order.with_user(order.user_id).message_post_with_view(
                 'purchase_approval_route.request_to_approve',
                 email_from=servidor_correo_saliente.smtp_user,
