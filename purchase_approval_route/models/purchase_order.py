@@ -48,7 +48,8 @@ class PurchaseOrder(models.Model):
             ('JESSICA_FERNANDEZ', 'Jessica Fernández'),
             ('ERICK_KESSLER', 'Erick Kessler'),
             ('JUAN_GUARDA', 'Juan Guarda'),
-            ('FRANCISCO_LARRAIN', 'Francisco Larrain')
+            ('FRANCISCO_LARRAIN', 'Francisco Larrain'),
+            ('ROSSANA_VALLEJO', 'Rossana Vallejo')
         ],
         string = "Gerencia"
     )
