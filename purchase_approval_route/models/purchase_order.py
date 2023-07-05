@@ -77,7 +77,7 @@ class PurchaseOrder(models.Model):
                     else:
                         # If there is not next approval, than assume that approval is finished and send notification
                         partner = order.user_id.partner_id if order.user_id else order.create_uid.partner_id
-                        servidor_correo_saliente = self.env['ir.mail_server'].search([])
+                        servidor_correo_saliente = self.env['ir.mail_server'].search([], limit=1)
                         order.message_post_with_view(
                             'purchase_approval_route.order_approval',
                             subject=_('PO Approved: %s') % (order.name,),
