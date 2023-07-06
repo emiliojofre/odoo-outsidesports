@@ -153,6 +153,7 @@ class ResPartner(models.Model):
 
                     r['followup_line_id'] = matching_followup_lines.id
             _logger.warning("cada result iterado despues: %s", r)
+        _logger.warning("result: %s", result)
         return result
     
     def _execute_followup_partner(self, options=None):
