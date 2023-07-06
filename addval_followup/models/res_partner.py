@@ -108,6 +108,7 @@ class ResPartner(models.Model):
         self.ensure_one()
         if options is None:
             options = {}
+            followup_line = self.followup_line_id or self._get_first_followup_level()
         if options.get('manual_followup', self.followup_status in ('in_need_of_action', 'with_overdue_invoices')):
             followup_line = self.followup_line_id or self._get_first_followup_level()
 
