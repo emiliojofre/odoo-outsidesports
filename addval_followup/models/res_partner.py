@@ -124,8 +124,32 @@ class ResPartner(models.Model):
                 query, params = self._get_followup_data_query(self.ids)
             self.env.cr.execute(query, params)
         result = {r['partner_id']: r for r in self.env.cr.dictfetchall()}
+
         for r  in result.values():
-            _logger.warning("cada result iterado: %s", r)
+            unpaid_invoices_days = {}
+
+            partner = self.env['res.partner'].search([
+                ('id', '=', r['partner_id'])
+            ], limit=1)
+
+            for unpaid_invoice in partner.unpaid_invoice_ids: 
+
+                days_after_due = fields.Date.today() - unpaid_invoice.invoice_date_due
+
+                unpaid_invoices_days[partner.id] = days_after_due.days
+
+            if unpaid_invoices_days:
+                max_days_overdue = max(unpaid_invoices_days.values())
+
+                matching_followup_lines = self.env['account_followup.followup.line'].search([
+                    ('delay', '<=', max_days_overdue),
+                    ('company_id', '=', self.env.company.id)
+                ], order="delay desc", limit=1)
+
+                if matching_followup_lines:
+
+                    r['followup_line_id'] = matching_followup_lines.id
+
         return result
     
     def _execute_followup_partner(self, options=None):
