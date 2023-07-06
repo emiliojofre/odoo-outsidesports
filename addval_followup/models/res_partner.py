@@ -129,14 +129,14 @@ class ResPartner(models.Model):
 
     def _cron_execute_followup_company(self):
         followup_data = self._query_followup_data(all_partners=True)
-        _logger.warning("followup_data")
-        _logger.warning(followup_data)
         in_need_of_action = self.env['res.partner'].browse([d['partner_id'] for d in followup_data.values() if d['followup_status'] == 'in_need_of_action' or d['followup_status'] == 'with_overdue_invoices'])
         in_need_of_action_auto = in_need_of_action.filtered(lambda p: p.followup_line_id.auto_execute and p.followup_reminder_type == 'automatic')
         for partner in in_need_of_action_auto:
             try:
                 _logger.warning("partner (in_need_of_action_auto)")
                 _logger.warning(partner)
+                _logger.warning("partner followup_line_id")
+                _logger.warning(partner.followup_line_id)
                 partner._execute_followup_partner()
             except UserError as e:
                 # followup may raise exception due to configuration issues
