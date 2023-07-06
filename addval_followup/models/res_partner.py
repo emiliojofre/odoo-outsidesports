@@ -134,16 +134,16 @@ class ResPartner(models.Model):
         for partner in in_need_of_action_auto:
             try:
                 _logger.warning("partner que se obtiene del for")
-                _logger.warning(partner)
+                _logger.warning(partner.id)
                 _logger.warning("partner followup_line_id que se trae del query")
-                _logger.warning(partner.followup_line_id)
+                _logger.warning(partner.followup_line_id.id)
                 
-                partner_with_correct_fl =  self.env['res.partner'].search(['id', '=', partner.id], limit=1)
+                partner_with_correct_fl =  self.env['res.partner'].search([('id', '=', partner.id)], limit=1)
 
                 _logger.warning("partner que se obtiene del search")
                 _logger.warning(partner_with_correct_fl.id)
                 _logger.warning("partner followup_line_id que se trae del search")
-                _logger.warning(partner_with_correct_fl.followup_line_id)
+                _logger.warning(partner_with_correct_fl.followup_line_id.id)
 
                 partner._execute_followup_partner()
             except UserError as e:
