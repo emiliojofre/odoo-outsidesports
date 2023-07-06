@@ -96,6 +96,36 @@ class ResPartner(models.Model):
                 'next_delay': delay_in_days,
             }
         return followup_lines_info
+
+    def _query_followup_data(self, all_partners=False):
+        self.env['account.move.line'].check_access_rights('read')
+        self.env['account.move.line'].flush_model()
+        self.env['res.partner'].flush_model()
+        self.env['account_followup.followup.line'].flush_model()
+
+        # Put the data in a cache in the database to avoid running costly query multiple times in same transaction.
+        # Only do it if the table doesn't exist yet.
+        self.env.cr.execute("SELECT 1 FROM information_schema.tables WHERE table_name='followup_data_cache'")
+        is_cached = self.env.cr.fetchone()
+        if all_partners:
+            if not is_cached:
+                query, params = self._get_followup_data_query()
+                self.env.cr.execute(f"""
+                    CREATE TEMP TABLE followup_data_cache (partner_id int4, followup_line_id int4, followup_status varchar) ON COMMIT DROP;
+                    INSERT INTO followup_data_cache {query}
+                """, params)
+            self.env.cr.execute('SELECT * FROM followup_data_cache')
+        else:
+            if not self.ids:
+                return {}
+            elif is_cached:
+                query, params = "SELECT * FROM followup_data_cache WHERE partner_id IN %s", [tuple(self.ids)]
+            else:
+                query, params = self._get_followup_data_query(self.ids)
+            self.env.cr.execute(query, params)
+        result = {r['partner_id']: r for r in self.env.cr.dictfetchall()}
+        _logger.warning("result: %s", result)
+        return result
     
     def _execute_followup_partner(self, options=None):
         """ Execute the actions to do with follow-ups for this partner (apart from printing).
@@ -133,18 +163,6 @@ class ResPartner(models.Model):
         in_need_of_action_auto = in_need_of_action.filtered(lambda p: p.followup_line_id.auto_execute and p.followup_reminder_type == 'automatic')
         for partner in in_need_of_action_auto:
             try:
-                _logger.warning("partner que se obtiene del for")
-                _logger.warning(partner.id)
-                _logger.warning("partner followup_line_id que se trae del query")
-                _logger.warning(partner.followup_line_id.id)
-                
-                partner_with_correct_fl =  self.env['res.partner'].search([('id', '=', partner.id)], limit=1)
-
-                _logger.warning("partner que se obtiene del search")
-                _logger.warning(partner_with_correct_fl.id)
-                _logger.warning("partner followup_line_id que se trae del search")
-                _logger.warning(partner_with_correct_fl.followup_line_id.id)
-
                 partner._execute_followup_partner()
             except UserError as e:
                 # followup may raise exception due to configuration issues
