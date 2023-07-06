@@ -135,6 +135,8 @@ class ResPartner(models.Model):
         in_need_of_action_auto = in_need_of_action.filtered(lambda p: p.followup_line_id.auto_execute and p.followup_reminder_type == 'automatic')
         for partner in in_need_of_action_auto:
             try:
+                _logger.warning("partner (in_need_of_action_auto)")
+                _logger.warning(partner)
                 partner._execute_followup_partner()
             except UserError as e:
                 # followup may raise exception due to configuration issues
