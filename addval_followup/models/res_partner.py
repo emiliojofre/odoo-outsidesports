@@ -108,7 +108,6 @@ class ResPartner(models.Model):
         self.ensure_one()
         if options is None:
             options = {}
-            followup_line = self.followup_line_id or self._get_first_followup_level()
         if options.get('manual_followup', self.followup_status in ('in_need_of_action', 'with_overdue_invoices')):
             followup_line = self.followup_line_id or self._get_first_followup_level()
 
@@ -130,6 +129,8 @@ class ResPartner(models.Model):
 
     def _cron_execute_followup_company(self):
         followup_data = self._query_followup_data(all_partners=True)
+        _logger.warning("followup_data")
+        _logger.warning(followup_data)
         in_need_of_action = self.env['res.partner'].browse([d['partner_id'] for d in followup_data.values() if d['followup_status'] == 'in_need_of_action' or d['followup_status'] == 'with_overdue_invoices'])
         in_need_of_action_auto = in_need_of_action.filtered(lambda p: p.followup_line_id.auto_execute and p.followup_reminder_type == 'automatic')
         for partner in in_need_of_action_auto:
