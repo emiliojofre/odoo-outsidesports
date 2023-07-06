@@ -133,10 +133,16 @@ class ResPartner(models.Model):
         in_need_of_action_auto = in_need_of_action.filtered(lambda p: p.followup_line_id.auto_execute and p.followup_reminder_type == 'automatic')
         for partner in in_need_of_action_auto:
             try:
-                _logger.warning("partner (in_need_of_action_auto)")
+                _logger.warning("partner que se obtiene del for")
                 _logger.warning(partner)
-                _logger.warning("partner followup_line_id")
+                _logger.warning("partner followup_line_id que se trae del query")
                 _logger.warning(partner.followup_line_id)
+                #Tengo dos opciones, una hacer el search y buscar el followup line id, o ver si el self calza con el partner.
+                _logger.warning("partner que se obtiene del self")
+                _logger.warning(self.id)
+                _logger.warning("partner followup_line_id que se trae del self")
+                _logger.warning(self.followup_line_id)
+
                 partner._execute_followup_partner()
             except UserError as e:
                 # followup may raise exception due to configuration issues
