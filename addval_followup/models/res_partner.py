@@ -124,7 +124,7 @@ class ResPartner(models.Model):
                 query, params = self._get_followup_data_query(self.ids)
             self.env.cr.execute(query, params)
         result = {r['partner_id']: r for r in self.env.cr.dictfetchall()}
-        for r  in result:
+        for r  in result.values():
             _logger.warning("cada result iterado: %s", r)
         return result
     
