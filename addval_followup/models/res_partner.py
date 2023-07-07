@@ -135,6 +135,7 @@ class ResPartner(models.Model):
                 'followup_line_id': partner.followup_line_id.id,
                 'followup_status': partner.followup_status,
             }
+        return new_data
 
     def _cron_execute_followup_company(self):
         followup_data = self._new_followup_data()
