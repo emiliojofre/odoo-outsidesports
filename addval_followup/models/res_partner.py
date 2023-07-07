@@ -95,67 +95,7 @@ class ResPartner(models.Model):
                 'next_followup_line_id': previous_line_id,
                 'next_delay': delay_in_days,
             }
-        return followup_lines_info
-
-    def _query_followup_data(self, all_partners=False):
-        self.env['account.move.line'].check_access_rights('read')
-        self.env['account.move.line'].flush_model()
-        self.env['res.partner'].flush_model()
-        self.env['account_followup.followup.line'].flush_model()
-
-        # Put the data in a cache in the database to avoid running costly query multiple times in same transaction.
-        # Only do it if the table doesn't exist yet.
-        self.env.cr.execute("SELECT 1 FROM information_schema.tables WHERE table_name='followup_data_cache'")
-        is_cached = self.env.cr.fetchone()
-        if all_partners:
-            if not is_cached:
-                query, params = self._get_followup_data_query()
-                self.env.cr.execute(f"""
-                    CREATE TEMP TABLE followup_data_cache (partner_id int4, followup_line_id int4, followup_status varchar) ON COMMIT DROP;
-                    INSERT INTO followup_data_cache {query}
-                """, params)
-            self.env.cr.execute('SELECT * FROM followup_data_cache')
-        else:
-            if not self.ids:
-                return {}
-            elif is_cached:
-                query, params = "SELECT * FROM followup_data_cache WHERE partner_id IN %s", [tuple(self.ids)]
-            else:
-                query, params = self._get_followup_data_query(self.ids)
-            self.env.cr.execute(query, params)
-        result = {r['partner_id']: r for r in self.env.cr.dictfetchall()}
-
-        for r  in result.values():
-            _logger.warning("cada result iterado antes: %s", r)
-
-            unpaid_invoices_days = {}
-
-            partner = self.env['res.partner'].search([
-                ('id', '=', r['partner_id'])
-            ], limit=1)
-            _logger.warning("partner encontrado: %s", partner)
-
-            for unpaid_invoice in partner.unpaid_invoice_ids: 
-
-                days_after_due = fields.Date.today() - unpaid_invoice.invoice_date_due
-
-                unpaid_invoices_days[partner.id] = days_after_due.days
-            _logger.warning("unpaid_invoices_days: %s", unpaid_invoices_days)
-            if unpaid_invoices_days:
-                max_days_overdue = max(unpaid_invoices_days.values())
-
-                matching_followup_lines = self.env['account_followup.followup.line'].search([
-                    ('delay', '<=', max_days_overdue),
-                    ('company_id', '=', self.env.company.id)
-                ], order="delay desc", limit=1)
-
-                if matching_followup_lines:
-
-                    r['followup_line_id'] = matching_followup_lines.id
-            _logger.warning("cada result iterado despues: %s", r)
-        _logger.warning("result: %s", result)
-        return result
-    
+        return followup_lines_info    
     
     def _execute_followup_partner(self, options=None):
         """ Execute the actions to do with follow-ups for this partner (apart from printing).
@@ -167,7 +107,8 @@ class ResPartner(models.Model):
         """
         self.ensure_one()
         if options is None:
-            options = {}
+            followup_line = self.followup_line_id or self._get_first_followup_level()
+            options = {'followup_line': followup_line}
         if options.get('manual_followup', self.followup_status in ('in_need_of_action', 'with_overdue_invoices')):
             followup_line = self.followup_line_id or self._get_first_followup_level()
 
