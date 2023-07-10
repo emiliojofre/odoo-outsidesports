@@ -121,7 +121,6 @@ class ResPartner(models.Model):
                 JOIN account_account account ON account.id = aml.account_id 
                 LEFT JOIN account_followup_followup_line ful ON ful.id = aml.followup_line_id 
                 LEFT JOIN account_followup_followup_line next_ful ON next_ful.id = (
-                    --Devuelve el id del account_followup_followup_line
                     SELECT 
                     next_ful.id 
                     FROM 
@@ -129,7 +128,7 @@ class ResPartner(models.Model):
                     WHERE 
                     next_ful.delay <= (
                         SELECT
-                        date_part('day', %(current_date)s - inv.invoice_date_due) AS days_overdue
+                        date(%(current_date)s) - inv.invoice_date_due AS days_overdue
                         FROM account_move AS inv
                         WHERE inv.payment_state = 'not_paid'
                         AND inv.partner_id = %(partner_id)s
@@ -161,7 +160,7 @@ class ResPartner(models.Model):
                     WHERE 
                     next_ful.delay <= (
                         SELECT
-                        date_part('day', %(current_date)s - inv.invoice_date_due) AS days_overdue
+                        date(%(current_date)s) - inv.invoice_date_due AS days_overdue
                         FROM account_move AS inv
                         WHERE inv.payment_state = 'not_paid'
                         AND inv.partner_id = %(partner_id)s
@@ -175,7 +174,6 @@ class ResPartner(models.Model):
                     LIMIT 1
                 ) 
             AND ful.company_id = %(company_id)s 
-            -- Get the followup status data
             LEFT OUTER JOIN LATERAL (
                 SELECT 
                 line.id 
