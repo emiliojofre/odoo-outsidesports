@@ -132,7 +132,7 @@ class ResPartner(models.Model):
                         date_part('day', %(current_date) s - inv.invoice_date_due) AS days_overdue
                         FROM account_move AS inv
                         WHERE inv.payment_state = 'not_paid'
-                        AND inv.partner_id = %(partner_id)s"
+                        AND inv.partner_id = %(partner_id)s
                         AND inv.company_id = %(company_id) s 
                         ORDER BY days_overdue DESC
                         LIMIT 1
@@ -174,7 +174,7 @@ class ResPartner(models.Model):
                     next_ful.delay DESC 
                     LIMIT 1
                 ) 
-            AND ful.company_id = 1 -- Get the followup status data
+            AND ful.company_id =  %(company_id) s -- Get the followup status data
             LEFT OUTER JOIN LATERAL (
                 SELECT 
                 line.id 
