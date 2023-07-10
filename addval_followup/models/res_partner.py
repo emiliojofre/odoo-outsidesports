@@ -112,7 +112,7 @@ class ResPartner(models.Model):
                 SELECT 
                 partner.id, 
                 MAX(
-                    COALESCE(ful.delay)
+                    COALESCE(next_ful.delay, ful.delay)
                 ) as followup_delay, 
                 SUM(aml.balance) as balance 
                 FROM 
@@ -131,7 +131,7 @@ class ResPartner(models.Model):
                         date(%(current_date)s) - inv.invoice_date_due AS days_overdue
                         FROM account_move AS inv
                         WHERE inv.payment_state = 'not_paid'
-                        AND inv.partner_id = %(partner_id)s
+                        { "" if partner_ids is None else "AND inv.partner_id IN %(partner_ids)s" }
                         AND inv.company_id = %(company_id)s 
                         ORDER BY days_overdue DESC
                         LIMIT 1
@@ -163,7 +163,7 @@ class ResPartner(models.Model):
                         date(%(current_date)s) - inv.invoice_date_due AS days_overdue
                         FROM account_move AS inv
                         WHERE inv.payment_state = 'not_paid'
-                        AND inv.partner_id = %(partner_id)s
+                        { "" if partner_ids is None else "AND inv.partner_id IN %(partner_ids)s" }
                         AND inv.company_id = %(company_id)s
                         ORDER BY days_overdue DESC
                         LIMIT 1
@@ -196,8 +196,8 @@ class ResPartner(models.Model):
                 ) <= partner.followup_delay 
                 AND COALESCE(line.date_maturity, line.date) + COALESCE(
                     ful.delay, 
-                    %(min_delay) s - 1
-                ) < %(current_date) s 
+                    %(min_delay)s - 1
+                ) < %(current_date)s 
                 LIMIT 
                 1
             ) in_need_of_action_aml ON true 
