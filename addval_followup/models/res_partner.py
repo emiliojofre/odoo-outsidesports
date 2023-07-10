@@ -161,7 +161,7 @@ class ResPartner(models.Model):
                     WHERE 
                     next_ful.delay <= (
                         SELECT
-                        date_part('day', NOW() - inv.invoice_date_due) AS days_overdue
+                        date_part('day', %(current_date) s - inv.invoice_date_due) AS days_overdue
                         FROM account_move AS inv
                         WHERE inv.payment_state = 'not_paid'
                         { "" if partner_ids is None else "AND inv.partner_id IN %(partner_ids)s" }
