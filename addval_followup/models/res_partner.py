@@ -105,7 +105,7 @@ class ResPartner(models.Model):
             CASE WHEN partner.balance <= 0 THEN 'no_action_needed' WHEN in_need_of_action_aml.id IS NOT NULL 
             AND (
                 prop_date.value_datetime IS NULL 
-                OR prop_date.value_datetime :: date <= %(current_date) s
+                OR prop_date.value_datetime :: date <= %(current_date)s
             ) THEN 'in_need_of_action' WHEN exceeded_unreconciled_aml.id IS NOT NULL THEN 'with_overdue_invoices' ELSE 'no_action_needed' END as followup_status 
             FROM 
             (
@@ -129,15 +129,15 @@ class ResPartner(models.Model):
                     WHERE 
                     next_ful.delay <= (
                         SELECT
-                        date_part('day', %(current_date) s - inv.invoice_date_due) AS days_overdue
+                        date_part('day', %(current_date)s - inv.invoice_date_due) AS days_overdue
                         FROM account_move AS inv
                         WHERE inv.payment_state = 'not_paid'
                         AND inv.partner_id = %(partner_id)s
-                        AND inv.company_id = %(company_id) s 
+                        AND inv.company_id = %(company_id)s 
                         ORDER BY days_overdue DESC
                         LIMIT 1
                     ) 
-                    AND next_ful.company_id = %(company_id) s 
+                    AND next_ful.company_id = %(company_id)s 
                     ORDER BY 
                     next_ful.delay DESC 
                     LIMIT 1
@@ -149,7 +149,7 @@ class ResPartner(models.Model):
                 AND aml.reconciled IS NOT TRUE 
                 AND aml.blocked IS FALSE 
                 AND aml.balance > 0 
-                AND aml.company_id =%(company_id) s { "" if partner_ids is None else "AND aml.partner_id IN %(partner_ids)s" }
+                AND aml.company_id = %(company_id)s { "" if partner_ids is None else "AND aml.partner_id IN %(partner_ids)s" }
                 GROUP BY 
                 partner.id
                 ) partner 
@@ -161,20 +161,21 @@ class ResPartner(models.Model):
                     WHERE 
                     next_ful.delay <= (
                         SELECT
-                        date_part('day', %(current_date) s - inv.invoice_date_due) AS days_overdue
+                        date_part('day', %(current_date)s - inv.invoice_date_due) AS days_overdue
                         FROM account_move AS inv
                         WHERE inv.payment_state = 'not_paid'
                         AND inv.partner_id = %(partner_id)s
-                        AND inv.company_id = %(company_id) s
+                        AND inv.company_id = %(company_id)s
                         ORDER BY days_overdue DESC
                         LIMIT 1
                     ) 
-                    AND next_ful.company_id = %(company_id) s
+                    AND next_ful.company_id = %(company_id)s
                     ORDER BY 
                     next_ful.delay DESC 
                     LIMIT 1
                 ) 
-            AND ful.company_id =  %(company_id) s -- Get the followup status data
+            AND ful.company_id = %(company_id)s 
+            -- Get the followup status data
             LEFT OUTER JOIN LATERAL (
                 SELECT 
                 line.id 
@@ -190,7 +191,7 @@ class ResPartner(models.Model):
                 AND line.reconciled IS NOT TRUE 
                 AND line.balance > 0 
                 AND line.blocked IS FALSE 
-                AND line.company_id = %(company_id) s 
+                AND line.company_id = %(company_id)s 
                 AND COALESCE(
                     ful.delay, 
                     %(min_delay) s - 1
@@ -204,26 +205,26 @@ class ResPartner(models.Model):
             ) in_need_of_action_aml ON true 
             LEFT OUTER JOIN LATERAL (
                 SELECT 
-                line.id 
+                    line.id 
                 FROM 
-                account_move_line line 
+                    account_move_line line 
                 JOIN account_account account ON line.account_id = account.id 
                 WHERE 
-                line.partner_id = partner.id 
+                    line.partner_id = partner.id 
                 AND account.account_type = 'asset_receivable' 
                 AND account.deprecated IS NOT TRUE 
                 AND line.parent_state = 'posted' 
                 AND line.reconciled IS NOT TRUE 
                 AND line.balance > 0 
                 AND line.blocked IS FALSE 
-                AND line.company_id = %(company_id) s 
-                AND COALESCE(line.date_maturity, line.date) < %(current_date) s 
+                AND line.company_id = %(company_id)s 
+                AND COALESCE(line.date_maturity, line.date) < %(current_date)s 
                 LIMIT 
                 1
             ) exceeded_unreconciled_aml ON true 
             LEFT OUTER JOIN ir_property prop_date ON prop_date.res_id = CONCAT('res.partner,', partner.id) 
             AND prop_date.name = 'followup_next_action_date' 
-            AND prop_date.company_id = %(company_id) s
+            AND prop_date.company_id = %(company_id)s
             
         """, {
             'company_id': self.env.company.id,
