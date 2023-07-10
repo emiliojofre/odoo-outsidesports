@@ -131,7 +131,7 @@ class ResPartner(models.Model):
                         date(%(current_date)s) - inv.invoice_date_due AS days_overdue
                         FROM account_move AS inv
                         WHERE inv.payment_state = 'not_paid'
-                        { "AND inv.partner_id = %(partner_id)s" if partner_ids is None else "AND inv.partner_id IN %(partner_ids)s" }
+                        AND inv.partner_id = %(customer_id)s
                         AND inv.company_id = %(company_id)s 
                         ORDER BY days_overdue DESC
                         LIMIT 1
@@ -163,7 +163,7 @@ class ResPartner(models.Model):
                         date(%(current_date)s) - inv.invoice_date_due AS days_overdue
                         FROM account_move AS inv
                         WHERE inv.payment_state = 'not_paid'
-                        { "AND inv.partner_id = %(partner_id)s" if partner_ids is None else "AND inv.partner_id IN %(partner_ids)s" }
+                        AND inv.partner_id = %(customer_id)s
                         AND inv.company_id = %(company_id)s
                         ORDER BY days_overdue DESC
                         LIMIT 1
@@ -229,7 +229,7 @@ class ResPartner(models.Model):
             'partner_ids': tuple(partner_ids or []),
             'current_date': fields.Date.context_today(self),  # Allow mocking the current day for testing purpose.
             'min_delay': self._get_first_followup_level().delay or 0,
-            'partner_id': self.id
+            'customer_id': self.id
         }
     
     def _execute_followup_partner(self, options=None):
