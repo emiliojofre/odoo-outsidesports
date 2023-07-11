@@ -126,7 +126,7 @@ class ResPartner(models.Model):
 
                 if matching_followup_lines:
 
-                    followup_line = matching_followup_lines.id
+                    followup_line = matching_followup_lines
                 else:
                     followup_line = self.followup_line_id or self._get_first_followup_level()
             else:
@@ -140,7 +140,7 @@ class ResPartner(models.Model):
                     summary=followup_line.activity_summary,
                     user_id=(self._get_followup_responsible()).id
                 )
-                
+
             self._update_next_followup_action_date(followup_line)
             self._send_followup(options={'followup_line': followup_line})
 
