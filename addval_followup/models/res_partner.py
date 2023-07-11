@@ -98,6 +98,7 @@ class ResPartner(models.Model):
         return followup_lines_info    
     
     def _get_followup_data_query(self, partner_ids=None):
+        _logger.warning("self.id:%s",self.id)
         return f"""
             SELECT 
             partner.id as partner_id, 
