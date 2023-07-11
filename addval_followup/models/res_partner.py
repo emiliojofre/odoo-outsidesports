@@ -106,9 +106,9 @@ class ResPartner(models.Model):
         Returns True if any action was processed, False otherwise
         """
         self.ensure_one()
-        if options is None:
-            options = {}
-        if options.get('manual_followup', self.followup_status in ('in_need_of_action', 'with_overdue_invoices')):
+        #if options is None:
+        #    options = {}
+        if options.get('manual_followup', self.followup_status in ('in_need_of_action', 'with_overdue_invoices')) or options is None:
             followup_line = self.followup_line_id or self._get_first_followup_level()
 
             if followup_line.create_activity:
@@ -132,6 +132,7 @@ class ResPartner(models.Model):
         in_need_of_action = self.env['res.partner'].browse([d['partner_id'] for d in followup_data.values() if d['followup_status'] == 'in_need_of_action' or d['followup_status'] == 'with_overdue_invoices'])
         in_need_of_action_auto = in_need_of_action.filtered(lambda p: p.followup_line_id.auto_execute and p.followup_reminder_type == 'automatic')
         partner_need_of_action_auto = self.filtered(lambda p: p.followup_line_id.auto_execute and p.followup_reminder_type == 'automatic')
+        _logger.warning('partner_need_of_action_auto: %s', partner_need_of_action_auto)
         for partner in partner_need_of_action_auto:
             _logger.warning('partner en for antes if: %s', partner)
             try:
