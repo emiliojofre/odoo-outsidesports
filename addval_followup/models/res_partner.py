@@ -107,7 +107,8 @@ class ResPartner(models.Model):
         """
         self.ensure_one()
         if options is None:
-            options = {}
+            followup_line = self.followup_line_id or self._get_first_followup_level()
+            options = {'followup_line': followup_line}
         if options.get('manual_followup', self.followup_status in ('in_need_of_action', 'with_overdue_invoices')):
             followup_line = self.followup_line_id or self._get_first_followup_level()
 
@@ -128,18 +129,17 @@ class ResPartner(models.Model):
         return False
 
     def _cron_execute_followup_company(self):
-        followup_data = self._query_followup_data(all_partners=True)
-        in_need_of_action = self.env['res.partner'].browse([d['partner_id'] for d in followup_data.values() if d['followup_status'] == 'in_need_of_action' or d['followup_status'] == 'with_overdue_invoices'])
-        in_need_of_action_auto = in_need_of_action.filtered(lambda p: p.followup_line_id.auto_execute and p.followup_reminder_type == 'automatic')
+        #followup_data = self._query_followup_data(all_partners=True)
+        #in_need_of_action = self.env['res.partner'].browse([d['partner_id'] for d in followup_data.values() if d['followup_status'] == 'in_need_of_action' or d['followup_status'] == 'with_overdue_invoices'])
+        #in_need_of_action_auto = in_need_of_action.filtered(lambda p: p.followup_line_id.auto_execute and p.followup_reminder_type == 'automatic')
 
         partner_need_of_action = self.env['res.partner'].search([('followup_status', 'in', ('in_need_of_action', 'with_overdue_invoices'))])
-        _logger.warning('partner_need_of_action_auto: %s', partner_need_of_action)
+        _logger.warning('partner_need_of_action: %s', partner_need_of_action)
         partner_need_of_action_auto = partner_need_of_action.filtered(lambda p: p.followup_line_id.auto_execute and p.followup_reminder_type == 'automatic')
         _logger.warning('partner_need_of_action_auto: %s', partner_need_of_action_auto)
         for partner in partner_need_of_action_auto:
-            _logger.warning('partner en for antes if: %s', partner)
             try:
-                _logger.warning('partner despues del if: %s', partner)
+                _logger.warning('partner : %s', partner)
                 partner._execute_followup_partner()
             except UserError as e:
                 # followup may raise exception due to configuration issues
