@@ -107,19 +107,6 @@ class ResPartner(models.Model):
         """
         self.ensure_one()
         if options is None:
-            {
-                'partner_id': self.partner_id,
-                'email': self.email,
-                'email_subject': self.subject,
-                'email_recipient_ids': self.email_recipient_ids,
-                'body': self.body_html,
-                'attachment_ids': self.attachment_ids.ids,
-                'sms': self.sms,
-                'sms_body': self.sms_body,
-                'print': self.print,
-                'join_invoices': self.join_invoices,
-                'manual_followup': False,
-            }
 
             followup_line = self.followup_line_id or self._get_first_followup_level()
             if followup_line.create_activity:
@@ -131,7 +118,7 @@ class ResPartner(models.Model):
                     user_id=(self._get_followup_responsible()).id
                 )
             self._update_next_followup_action_date(followup_line)
-            self._send_followup(options={'followup_line': followup_line, **options})
+            self._send_followup(options={'followup_line': followup_line})
 
             return True
         
