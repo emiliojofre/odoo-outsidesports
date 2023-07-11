@@ -131,14 +131,15 @@ class ResPartner(models.Model):
         followup_data = self._query_followup_data(all_partners=True)
         in_need_of_action = self.env['res.partner'].browse([d['partner_id'] for d in followup_data.values() if d['followup_status'] == 'in_need_of_action' or d['followup_status'] == 'with_overdue_invoices'])
         in_need_of_action_auto = in_need_of_action.filtered(lambda p: p.followup_line_id.auto_execute and p.followup_reminder_type == 'automatic')
-        partner_need_of_action_auto = self.filtered(lambda p: p.followup_line_id.auto_execute and p.followup_reminder_type == 'automatic')
+
+        partner_need_of_action = self.env['res.partner'].search([('followup_status', 'in', ('in_need_of_action', 'with_overdue_invoices'))])
+        partner_need_of_action_auto = partner_need_of_action.filtered(lambda p: p.followup_line_id.auto_execute and p.followup_reminder_type == 'automatic')
         _logger.warning('partner_need_of_action_auto: %s', partner_need_of_action_auto)
         for partner in partner_need_of_action_auto:
             _logger.warning('partner en for antes if: %s', partner)
             try:
-                if partner.followup_status == 'in_need_of_action' or partner.followup_status == 'with_overdue_invoices':
-                    _logger.warning('partner despues del if: %s', partner)
-                    partner._execute_followup_partner()
+                _logger.warning('partner despues del if: %s', partner)
+                partner._execute_followup_partner()
             except UserError as e:
                 # followup may raise exception due to configuration issues
                 # i.e. partner missing email
