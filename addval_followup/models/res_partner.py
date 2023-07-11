@@ -14,16 +14,6 @@ _logger = logging.getLogger(__name__)
 class ResPartner(models.Model):
     _inherit = 'res.partner'
 
-    followup_line_id = fields.Many2one(
-        comodel_name='account_followup.followup.line',
-        string="Follow-up Level",
-        compute='_compute_followup_status',
-        inverse='_set_followup_line_on_unreconciled_amls',
-        search='_search_followup_line',
-        groups='account.group_account_readonly,account.group_account_invoice',
-        store=True
-    )
-
     @api.depends('unreconciled_aml_ids', 'followup_next_action_date')
     @api.depends_context('company', 'allowed_company_ids')
     def _compute_followup_status(self):
@@ -117,8 +107,7 @@ class ResPartner(models.Model):
         """
         self.ensure_one()
         if options is None:
-            followup_line = self.followup_line_id or self._get_first_followup_level()
-            options = {'followup_line': followup_line}
+            options = {}
         if options.get('manual_followup', self.followup_status in ('in_need_of_action', 'with_overdue_invoices')):
             followup_line = self.followup_line_id or self._get_first_followup_level()
 
@@ -150,7 +139,27 @@ class ResPartner(models.Model):
         for partner in partner_need_of_action_auto:
             try:
                 _logger.warning('partner : %s', partner)
-                partner._execute_followup_partner()
+                unpaid_invoices_days = {}
+
+                for unpaid_invoice in partner.unpaid_invoice_ids: 
+
+                    days_after_due = fields.Date.today() - unpaid_invoice.invoice_date_due
+
+                    unpaid_invoices_days[partner.id] = days_after_due.days
+
+                if unpaid_invoices_days:
+                    max_days_overdue = max(unpaid_invoices_days.values())
+
+                    matching_followup_lines = self.env['account_followup.followup.line'].search([
+                        ('delay', '<=', max_days_overdue),
+                        ('company_id', '=', self.env.company.id)
+                    ], order="delay desc", limit=1)
+
+                    if matching_followup_lines:
+                
+                        partner.followup_line_id = matching_followup_lines.id
+                        
+                    partner._execute_followup_partner()
             except UserError as e:
                 # followup may raise exception due to configuration issues
                 # i.e. partner missing email
