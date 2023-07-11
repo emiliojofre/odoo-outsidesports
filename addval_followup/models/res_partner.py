@@ -96,143 +96,7 @@ class ResPartner(models.Model):
                 'next_delay': delay_in_days,
             }
         return followup_lines_info    
-    
-    def _get_followup_data_query(self, partner_ids=None):
-        _logger.warning("self.id:%s",self.id)
-        return f"""
-            SELECT 
-            partner.id as partner_id, 
-            ful.id as followup_line_id, 
-            CASE WHEN partner.balance <= 0 THEN 'no_action_needed' WHEN in_need_of_action_aml.id IS NOT NULL 
-            AND (
-                prop_date.value_datetime IS NULL 
-                OR prop_date.value_datetime :: date <= %(current_date)s
-            ) THEN 'in_need_of_action' WHEN exceeded_unreconciled_aml.id IS NOT NULL THEN 'with_overdue_invoices' ELSE 'no_action_needed' END as followup_status 
-            FROM 
-            (
-                SELECT 
-                partner.id, 
-                MAX(
-                    COALESCE(next_ful.delay, ful.delay)
-                ) as followup_delay, 
-                SUM(aml.balance) as balance 
-                FROM 
-                res_partner partner 
-                JOIN account_move_line aml ON aml.partner_id = partner.id 
-                JOIN account_account account ON account.id = aml.account_id 
-                LEFT JOIN account_followup_followup_line ful ON ful.id = aml.followup_line_id 
-                LEFT JOIN account_followup_followup_line next_ful ON next_ful.id = (
-                    SELECT 
-                    next_ful.id 
-                    FROM 
-                    account_followup_followup_line next_ful 
-                    WHERE 
-                    next_ful.delay <= (
-                        SELECT
-                        date(%(current_date)s) - inv.invoice_date_due AS days_overdue
-                        FROM account_move AS inv
-                        WHERE inv.payment_state = 'not_paid'
-                        AND inv.partner_id = %(customer_id)s
-                        AND inv.company_id = %(company_id)s 
-                        ORDER BY days_overdue DESC
-                        LIMIT 1
-                    ) 
-                    AND next_ful.company_id = %(company_id)s 
-                    ORDER BY 
-                    next_ful.delay DESC 
-                    LIMIT 1
-                ) 
-                WHERE 
-                account.deprecated IS NOT TRUE 
-                AND account.account_type = 'asset_receivable' 
-                AND aml.parent_state = 'posted' 
-                AND aml.reconciled IS NOT TRUE 
-                AND aml.blocked IS FALSE 
-                AND aml.balance > 0 
-                AND aml.company_id = %(company_id)s { "" if partner_ids is None else "AND aml.partner_id IN %(partner_ids)s" }
-                GROUP BY 
-                partner.id
-                ) partner 
-                LEFT JOIN account_followup_followup_line ful ON ful.id = (
-                    SELECT 
-                    next_ful.id 
-                    FROM 
-                    account_followup_followup_line next_ful 
-                    WHERE 
-                    next_ful.delay <= (
-                        SELECT
-                        date(%(current_date)s) - inv.invoice_date_due AS days_overdue
-                        FROM account_move AS inv
-                        WHERE inv.payment_state = 'not_paid'
-                        AND inv.partner_id = %(customer_id)s
-                        AND inv.company_id = %(company_id)s
-                        ORDER BY days_overdue DESC
-                        LIMIT 1
-                    ) 
-                    AND next_ful.company_id = %(company_id)s
-                    ORDER BY 
-                    next_ful.delay DESC 
-                    LIMIT 1
-                ) 
-            AND ful.company_id = %(company_id)s 
-            LEFT OUTER JOIN LATERAL (
-                SELECT 
-                line.id 
-                FROM 
-                account_move_line line 
-                JOIN account_account account ON line.account_id = account.id 
-                LEFT JOIN account_followup_followup_line ful ON ful.id = line.followup_line_id 
-                WHERE 
-                line.partner_id = partner.id 
-                AND account.account_type = 'asset_receivable' 
-                AND account.deprecated IS NOT TRUE 
-                AND line.parent_state = 'posted' 
-                AND line.reconciled IS NOT TRUE 
-                AND line.balance > 0 
-                AND line.blocked IS FALSE 
-                AND line.company_id = %(company_id)s 
-                AND COALESCE(
-                    ful.delay, 
-                    %(min_delay) s - 1
-                ) <= partner.followup_delay 
-                AND COALESCE(line.date_maturity, line.date) + COALESCE(
-                    ful.delay, 
-                    %(min_delay)s - 1
-                ) < %(current_date)s 
-                LIMIT 
-                1
-            ) in_need_of_action_aml ON true 
-            LEFT OUTER JOIN LATERAL (
-                SELECT 
-                    line.id 
-                FROM 
-                    account_move_line line 
-                JOIN account_account account ON line.account_id = account.id 
-                WHERE 
-                    line.partner_id = partner.id 
-                AND account.account_type = 'asset_receivable' 
-                AND account.deprecated IS NOT TRUE 
-                AND line.parent_state = 'posted' 
-                AND line.reconciled IS NOT TRUE 
-                AND line.balance > 0 
-                AND line.blocked IS FALSE 
-                AND line.company_id = %(company_id)s 
-                AND COALESCE(line.date_maturity, line.date) < %(current_date)s 
-                LIMIT 
-                1
-            ) exceeded_unreconciled_aml ON true 
-            LEFT OUTER JOIN ir_property prop_date ON prop_date.res_id = CONCAT('res.partner,', partner.id) 
-            AND prop_date.name = 'followup_next_action_date' 
-            AND prop_date.company_id = %(company_id)s
-            
-        """, {
-            'company_id': self.env.company.id,
-            'partner_ids': tuple(partner_ids or []),
-            'current_date': fields.Date.context_today(self),  # Allow mocking the current day for testing purpose.
-            'min_delay': self._get_first_followup_level().delay or 0,
-            'customer_id': self.id
-        }
-    
+        
     def _execute_followup_partner(self, options=None):
         """ Execute the actions to do with follow-ups for this partner (apart from printing).
         This is either called when processing the follow-ups manually (wizard), or automatically (cron).
@@ -269,6 +133,7 @@ class ResPartner(models.Model):
         in_need_of_action_auto = in_need_of_action.filtered(lambda p: p.followup_line_id.auto_execute and p.followup_reminder_type == 'automatic')
         for partner in in_need_of_action_auto:
             try:
+                _logger.warning('partner: %s', partner)
                 partner._execute_followup_partner()
             except UserError as e:
                 # followup may raise exception due to configuration issues
