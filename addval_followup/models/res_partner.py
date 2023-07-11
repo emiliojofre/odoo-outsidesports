@@ -14,6 +14,16 @@ _logger = logging.getLogger(__name__)
 class ResPartner(models.Model):
     _inherit = 'res.partner'
 
+    followup_line_id = fields.Many2one(
+        comodel_name='account_followup.followup.line',
+        string="Follow-up Level",
+        compute='_compute_followup_status',
+        inverse='_set_followup_line_on_unreconciled_amls',
+        search='_search_followup_line',
+        groups='account.group_account_readonly,account.group_account_invoice',
+        store=True
+    )
+
     @api.depends('unreconciled_aml_ids', 'followup_next_action_date')
     @api.depends_context('company', 'allowed_company_ids')
     def _compute_followup_status(self):
