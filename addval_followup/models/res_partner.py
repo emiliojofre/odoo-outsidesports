@@ -26,7 +26,16 @@ class ResPartner(models.Model):
             
             unpaid_invoices_days = {}
 
-            for unpaid_invoice in partner.unpaid_invoice_ids: 
+            unpaid_invoices = self.env['account.move'].search([
+                ('company_id', '=', self.env.company.id),
+                ('partner_id', '=', partner.id),
+                ('state', '=', 'posted'),
+                ('payment_state', 'in', ('not_paid', 'partial')),
+                ('move_type', 'in', self.env['account.move'].get_sale_types()),
+                ('l10n_latam_document_type_id.code', 'in', ('33', '34', '110', '39', '71', '41')),
+            ])
+
+            for unpaid_invoice in unpaid_invoices: 
                 _logger.warning("Factura impaga: %s", unpaid_invoice)
                                 
                 days_after_due = fields.Date.today() - unpaid_invoice.invoice_date_due
