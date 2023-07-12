@@ -17,10 +17,10 @@ class ResPartner(models.Model):
     @api.depends('unreconciled_aml_ids', 'followup_next_action_date')
     @api.depends_context('company', 'allowed_company_ids')
     def _compute_followup_status(self):
-
+        
         all_data = self._query_followup_data()
         for partner in self:
-            
+            _logger.warning("Esta computando el status de: %s", partner.name)
             partner_data = all_data.get(partner._origin.id, {'followup_status': 'no_action_needed', 'followup_line_id': False})
             partner.followup_status = partner_data['followup_status']
             
