@@ -42,13 +42,13 @@ class ResPartner(models.Model):
                 ], order="delay desc", limit=1)
 
                 if matching_followup_lines:
-                    _logger("Entro a matching_followup_lines con id: %s", matching_followup_lines.id)
+                    _logger.warning("Entro a matching_followup_lines con id: %s", matching_followup_lines.id)
                     partner.followup_line_id = matching_followup_lines.id
                 else:
-                    _logger("No Entro a matching_followup_lines con id: %s", partner_data['followup_line_id'])
+                    _logger.warning("No Entro a matching_followup_lines con id: %s", partner_data['followup_line_id'])
                     partner.followup_line_id = partner_data['followup_line_id']
             else:
-                _logger("No Entro a unpaid_invoices_days con id: %s", partner_data['followup_line_id'])
+                _logger.warning("No Entro a unpaid_invoices_days con id: %s", partner_data['followup_line_id'])
 
                 partner.followup_line_id = partner_data['followup_line_id']
             
