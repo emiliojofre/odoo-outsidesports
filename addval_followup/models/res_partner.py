@@ -107,45 +107,7 @@ class ResPartner(models.Model):
         """
         self.ensure_one()
         if options is None:
-
-            unpaid_invoices_days = {}
-
-            for unpaid_invoice in self.unpaid_invoice_ids: 
-
-                days_after_due = fields.Date.today() - unpaid_invoice.invoice_date_due
-
-                unpaid_invoices_days[self.id] = days_after_due.days
-
-            if unpaid_invoices_days:
-                max_days_overdue = max(unpaid_invoices_days.values())
-
-                matching_followup_lines = self.env['account_followup.followup.line'].search([
-                    ('delay', '<=', max_days_overdue),
-                    ('company_id', '=', self.env.company.id)
-                ], order="delay desc", limit=1)
-
-                if matching_followup_lines:
-
-                    followup_line = matching_followup_lines
-                else:
-                    followup_line = self.followup_line_id or self._get_first_followup_level()
-            else:
-                followup_line = self.followup_line_id or self._get_first_followup_level()
-            
-            if followup_line.create_activity:
-                # log a next activity for today
-                self.activity_schedule(
-                    activity_type_id=followup_line.activity_type_id and followup_line.activity_type_id.id or self._default_activity_type().id,
-                    note=followup_line.activity_note,
-                    summary=followup_line.activity_summary,
-                    user_id=(self._get_followup_responsible()).id
-                )
-
-            self._update_next_followup_action_date(followup_line)
-            self._send_followup(options={'followup_line': followup_line})
-
-            return True
-        
+            options = {}
         if options.get('manual_followup', self.followup_status in ('in_need_of_action', 'with_overdue_invoices')):
             followup_line = self.followup_line_id or self._get_first_followup_level()
 
