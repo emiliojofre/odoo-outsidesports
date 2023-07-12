@@ -33,9 +33,9 @@ class ResPartner(models.Model):
                 
                 _logger.warning("Factura days_after_due: %s", days_after_due)
 
-                unpaid_invoices_days[partner.id] = days_after_due.days
+                unpaid_invoices_days[unpaid_invoice.name] = days_after_due.days
 
-                _logger.warning("Diccionario: %s", unpaid_invoices_days[partner.id])
+                _logger.warning("Diccionario: %s", unpaid_invoices_days[unpaid_invoice.name])
             if unpaid_invoices_days:
                 _logger.warning("Entro a if unpaid_invoices_days: %s", unpaid_invoices_days)
                 max_days_overdue = max(unpaid_invoices_days.values())
