@@ -27,13 +27,17 @@ class ResPartner(models.Model):
             unpaid_invoices_days = {}
 
             for unpaid_invoice in partner.unpaid_invoice_ids: 
-
+                _logger.warning("Factura impaga: %s", unpaid_invoice)
+                                
                 days_after_due = fields.Date.today() - unpaid_invoice.invoice_date_due
+                
+                _logger.warning("Factura days_after_due: %s", days_after_due)
 
                 unpaid_invoices_days[partner.id] = days_after_due.days
 
+                _logger.warning("Diccionario: %s", unpaid_invoices_days[partner.id])
             if unpaid_invoices_days:
-                _logger.warning("Entro a if unpaid_invoices_days: %s", str(unpaid_invoices_days))
+                _logger.warning("Entro a if unpaid_invoices_days: %s", unpaid_invoices_days)
                 max_days_overdue = max(unpaid_invoices_days.values())
                 _logger.warning("Factura con más dias de vencido: %s", max_days_overdue)
                 matching_followup_lines = self.env['account_followup.followup.line'].search([
