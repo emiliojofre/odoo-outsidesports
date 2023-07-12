@@ -33,6 +33,7 @@ class ResPartner(models.Model):
                 unpaid_invoices_days[partner.id] = days_after_due.days
 
             if unpaid_invoices_days:
+                _logger.warning("Entro a if unpaid_invoices_days")
                 max_days_overdue = max(unpaid_invoices_days.values())
 
                 matching_followup_lines = self.env['account_followup.followup.line'].search([
@@ -41,12 +42,17 @@ class ResPartner(models.Model):
                 ], order="delay desc", limit=1)
 
                 if matching_followup_lines:
-
+                    _logger("Entro a matching_followup_lines con id: %s", matching_followup_lines.id)
                     partner.followup_line_id = matching_followup_lines.id
                 else:
+                    _logger("No Entro a matching_followup_lines con id: %s", partner_data['followup_line_id'])
                     partner.followup_line_id = partner_data['followup_line_id']
             else:
+                _logger("No Entro a unpaid_invoices_days con id: %s", partner_data['followup_line_id'])
+
                 partner.followup_line_id = partner_data['followup_line_id']
+            
+
 
     @api.model
     def _get_first_followup_level(self):
