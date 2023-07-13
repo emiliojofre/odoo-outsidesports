@@ -59,7 +59,7 @@ class AccountFollowupReport(models.AbstractModel):
                 
                 invoice_date_due = aml.date_maturity
                 today = fields.Date.today()
-
+                days_past_due = False
                 if invoice_date_due:
                     days_past_due = today - invoice_date_due
 
