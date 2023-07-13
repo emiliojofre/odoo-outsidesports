@@ -30,7 +30,7 @@ class ResPartner(models.Model):
                 ('company_id', '=', self.env.company.id),
                 ('partner_id', '=', partner.id),
                 ('state', '=', 'posted'),
-                ('payment_state', 'in', ('not_paid', 'partial')),
+                ('payment_state', '=', 'not_paid'),
                 ('move_type', 'in', self.env['account.move'].get_sale_types()),
                 ('l10n_latam_document_type_id.code', 'in', ('33', '34', '110', '39', '71', '41'))
             ])
