@@ -32,20 +32,20 @@ class ResPartner(models.Model):
                 ('state', '=', 'posted'),
                 ('payment_state', 'in', ('not_paid', 'partial')),
                 ('move_type', 'in', self.env['account.move'].get_sale_types()),
-                ('l10n_latam_document_type_id.code', 'in', ('33', '34', '110', '39', '71', '41')),
-                ('invoice_date_due', '!=', False)
+                ('l10n_latam_document_type_id.code', 'in', ('33', '34', '110', '39', '71', '41'))
             ])
 
             for unpaid_invoice in unpaid_invoices:
-                _logger.warning("Factura impaga: %s", unpaid_invoice)
-                                
-                days_after_due = fields.Date.today() - unpaid_invoice.invoice_date_due
-                
-                _logger.warning("Factura days_after_due: %s", days_after_due)
+                if unpaid_invoice.invoice_date_due:
+                    _logger.warning("Factura impaga: %s", unpaid_invoice)
+                                    
+                    days_after_due = fields.Date.today() - unpaid_invoice.invoice_date_due
+                    
+                    _logger.warning("Factura days_after_due: %s", days_after_due)
 
-                unpaid_invoices_days[unpaid_invoice.name] = days_after_due.days
+                    unpaid_invoices_days[unpaid_invoice.name] = days_after_due.days
 
-                _logger.warning("Diccionario: %s", unpaid_invoices_days[unpaid_invoice.name])
+                    _logger.warning("Diccionario: %s", unpaid_invoices_days[unpaid_invoice.name])
             if unpaid_invoices_days:
                 _logger.warning("Entro a if unpaid_invoices_days: %s", unpaid_invoices_days)
                 max_days_overdue = max(unpaid_invoices_days.values())
