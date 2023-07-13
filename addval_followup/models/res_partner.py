@@ -33,9 +33,10 @@ class ResPartner(models.Model):
                 ('payment_state', 'in', ('not_paid', 'partial')),
                 ('move_type', 'in', self.env['account.move'].get_sale_types()),
                 ('l10n_latam_document_type_id.code', 'in', ('33', '34', '110', '39', '71', '41')),
+                ('invoice_date_due', '!=', False)
             ])
 
-            for unpaid_invoice in unpaid_invoices: 
+            for unpaid_invoice in unpaid_invoices:
                 _logger.warning("Factura impaga: %s", unpaid_invoice)
                                 
                 days_after_due = fields.Date.today() - unpaid_invoice.invoice_date_due
