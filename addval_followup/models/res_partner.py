@@ -36,8 +36,9 @@ class ResPartner(models.Model):
             ])
 
             for unpaid_invoice in unpaid_invoices:
-                if unpaid_invoice.invoice_date_due:
-                    _logger.warning("Factura impaga: %s", unpaid_invoice)
+                _logger.warning("Factura impaga: %s", unpaid_invoice.name)
+                _logger.warning("Tipo dato fecha vencimiento: %s", (unpaid_invoice.invoice_date_due))
+                if type(unpaid_invoice.invoice_date_due) != bool:
                                     
                     days_after_due = fields.Date.today() - unpaid_invoice.invoice_date_due
                     
