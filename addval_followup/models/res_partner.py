@@ -38,15 +38,14 @@ class ResPartner(models.Model):
             for unpaid_invoice in unpaid_invoices:
                 _logger.warning("Factura impaga: %s", unpaid_invoice.name)
                 _logger.warning("Tipo dato fecha vencimiento: %s", (unpaid_invoice.invoice_date_due))
-                if type(unpaid_invoice.invoice_date_due) != bool:
-                                    
-                    days_after_due = fields.Date.today() - unpaid_invoice.invoice_date_due
-                    
-                    _logger.warning("Factura days_after_due: %s", days_after_due)
+                                
+                days_after_due = fields.Date.today() - unpaid_invoice.invoice_date_due
+                
+                _logger.warning("Factura days_after_due: %s", days_after_due)
 
-                    unpaid_invoices_days[unpaid_invoice.name] = days_after_due.days
+                unpaid_invoices_days[unpaid_invoice.name] = days_after_due.days
 
-                    _logger.warning("Diccionario: %s", unpaid_invoices_days[unpaid_invoice.name])
+                _logger.warning("Diccionario: %s", unpaid_invoices_days[unpaid_invoice.name])
             if unpaid_invoices_days:
                 _logger.warning("Entro a if unpaid_invoices_days: %s", unpaid_invoices_days)
                 max_days_overdue = max(unpaid_invoices_days.values())

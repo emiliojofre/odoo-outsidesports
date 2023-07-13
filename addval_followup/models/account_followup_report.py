@@ -59,9 +59,17 @@ class AccountFollowupReport(models.AbstractModel):
                 
                 invoice_date_due = aml.date_maturity
                 today = fields.Date.today()
-                days_past_due = today - invoice_date_due
+                if invoice_date_due:
+                    days_past_due = today - invoice_date_due
+                else:
+                    invoice_date_due = ''
+
                 if days_past_due.days < 0:
                     days_past_due = 'Aún no vence'
+                elif days_past_due.days == 0:
+                    days_past_due = 'Venció hoy'
+                elif days_past_due == '':
+                    days_past_due = 'No tiene fecha vencimiento'
                 else:
                     days_past_due = days_past_due.days
 
