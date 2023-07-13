@@ -17,36 +17,56 @@ class ResPartner(models.Model):
     @api.depends('unreconciled_aml_ids', 'followup_next_action_date')
     @api.depends_context('company', 'allowed_company_ids')
     def _compute_followup_status(self):
-
+        
         all_data = self._query_followup_data()
         for partner in self:
-            
+            _logger.warning("Esta computando el status de: %s", partner.name)
             partner_data = all_data.get(partner._origin.id, {'followup_status': 'no_action_needed', 'followup_line_id': False})
             partner.followup_status = partner_data['followup_status']
             
             unpaid_invoices_days = {}
 
-            for unpaid_invoice in partner.unpaid_invoice_ids: 
+            unpaid_invoices = self.env['account.move'].search([
+                ('company_id', '=', self.env.company.id),
+                ('partner_id', '=', partner.id),
+                ('state', '=', 'posted'),
+                ('payment_state', 'in', ('not_paid', 'partial')),
+                ('move_type', 'in', self.env['account.move'].get_sale_types()),
+                ('l10n_latam_document_type_id.code', 'in', ('33', '34', '110', '39', '71', '41'))
+            ])
 
+            for unpaid_invoice in unpaid_invoices:
+                _logger.warning("Factura impaga: %s", unpaid_invoice.name)
+                _logger.warning("Tipo dato fecha vencimiento: %s", (unpaid_invoice.invoice_date_due))
+                                
                 days_after_due = fields.Date.today() - unpaid_invoice.invoice_date_due
+                
+                _logger.warning("Factura days_after_due: %s", days_after_due)
 
-                unpaid_invoices_days[partner.id] = days_after_due.days
+                unpaid_invoices_days[unpaid_invoice.name] = days_after_due.days
 
+                _logger.warning("Diccionario: %s", unpaid_invoices_days[unpaid_invoice.name])
             if unpaid_invoices_days:
+                _logger.warning("Entro a if unpaid_invoices_days: %s", unpaid_invoices_days)
                 max_days_overdue = max(unpaid_invoices_days.values())
-
+                _logger.warning("Factura con más dias de vencido: %s", max_days_overdue)
                 matching_followup_lines = self.env['account_followup.followup.line'].search([
                     ('delay', '<=', max_days_overdue),
                     ('company_id', '=', self.env.company.id)
                 ], order="delay desc", limit=1)
 
                 if matching_followup_lines:
-
+                    _logger.warning("Entro a matching_followup_lines con id: %s", matching_followup_lines.id)
                     partner.followup_line_id = matching_followup_lines.id
                 else:
+                    _logger.warning("No Entro a matching_followup_lines con id: %s", partner_data['followup_line_id'])
                     partner.followup_line_id = partner_data['followup_line_id']
             else:
+                _logger.warning("No Entro a unpaid_invoices_days con id: %s", partner_data['followup_line_id'])
+
                 partner.followup_line_id = partner_data['followup_line_id']
+            
+
 
     @api.model
     def _get_first_followup_level(self):
@@ -95,8 +115,8 @@ class ResPartner(models.Model):
                 'next_followup_line_id': previous_line_id,
                 'next_delay': delay_in_days,
             }
-        return followup_lines_info
-    
+        return followup_lines_info    
+        
     def _execute_followup_partner(self, options=None):
         """ Execute the actions to do with follow-ups for this partner (apart from printing).
         This is either called when processing the follow-ups manually (wizard), or automatically (cron).
@@ -108,7 +128,6 @@ class ResPartner(models.Model):
         self.ensure_one()
         if options is None:
             options = {}
-            
         if options.get('manual_followup', self.followup_status in ('in_need_of_action', 'with_overdue_invoices')):
             followup_line = self.followup_line_id or self._get_first_followup_level()
 
@@ -129,11 +148,18 @@ class ResPartner(models.Model):
         return False
 
     def _cron_execute_followup_company(self):
-        followup_data = self._query_followup_data(all_partners=True)
-        in_need_of_action = self.env['res.partner'].browse([d['partner_id'] for d in followup_data.values() if d['followup_status'] == 'in_need_of_action' or d['followup_status'] == 'with_overdue_invoices'])
-        in_need_of_action_auto = in_need_of_action.filtered(lambda p: p.followup_line_id.auto_execute and p.followup_reminder_type == 'automatic')
-        for partner in in_need_of_action_auto:
+        #followup_data = self._query_followup_data(all_partners=True)
+        #in_need_of_action = self.env['res.partner'].browse([d['partner_id'] for d in followup_data.values() if d['followup_status'] == 'in_need_of_action' or d['followup_status'] == 'with_overdue_invoices'])
+        #in_need_of_action_auto = in_need_of_action.filtered(lambda p: p.followup_line_id.auto_execute and p.followup_reminder_type == 'automatic')
+
+        partner_need_of_action = self.env['res.partner'].search([('followup_status', 'in', ('in_need_of_action', 'with_overdue_invoices'))])
+        _logger.warning('partner_need_of_action: %s', partner_need_of_action)
+        partner_need_of_action_auto = partner_need_of_action.filtered(lambda p: p.followup_line_id.auto_execute and p.followup_reminder_type == 'automatic')
+        _logger.warning('partner_need_of_action_auto: %s', partner_need_of_action_auto)
+        for partner in partner_need_of_action_auto:
             try:
+                _logger.warning('partner : %s', partner)
+                _logger.warning('partner.followup_line_id : %s', partner.followup_line_id)
                 partner._execute_followup_partner()
             except UserError as e:
                 # followup may raise exception due to configuration issues
