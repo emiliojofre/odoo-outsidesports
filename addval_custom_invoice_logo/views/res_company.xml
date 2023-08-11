@@ -6,6 +6,7 @@
         <field name="model">res.company</field>
         <field name="arch" type="xml">
           <field name="favicon" position="after">
+            <field name="is_user_two" invisible="True"/>
             <field name="n2growth_logo" string="N2Growth Logo"  attrs="{'invisible': [('is_user_two', '=', False)]}"/>
           </field>
         </field>
