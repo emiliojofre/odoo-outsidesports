@@ -3,10 +3,10 @@
    'name': "Logo opcional para facturas ",
 
     'summary': """
-        Se establece un logo distinto para productos de una marca específica""",
+        Se establece un logo distinto para ventas de una cuenta analítica específica""",
 
     'description': """
-        Para las facturas que tengan una orden de venta con la cuenta analítica N2Growth cambiará el logo
+        Para las facturas que tengan una orden de venta con la cuenta analítica N2Growth cambiará el logo de dicha marca
     """,
 
     "author": "Addval Connect",
