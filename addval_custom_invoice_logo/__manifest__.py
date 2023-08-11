@@ -1,23 +1,23 @@
 # -*- coding: utf-8 -*-
 {
-   'name': "Customización cartas cobranza",
+   'name': "Logo opcional para facturas ",
 
     'summary': """
-        Customización de módulo cobranza (account_followup)""",
+        Se establece un logo distinto para productos de una marca específica""",
 
     'description': """
-        Customización de módulo cobranza (account_followup)
+        Para las facturas que tengan una orden de venta con la cuenta analítica N2Growth cambiará el logo
     """,
 
     "author": "Addval Connect",
     "website": "http://www.addval.cl",
-    "category": "Product",
+    "category": "Account",
     "license": "Other proprietary",
     'version': '0.1',
 
     'depends': [
         'base',
-        'account_followup'
+        'addval_accounting'
     ],
 
     'data': [
