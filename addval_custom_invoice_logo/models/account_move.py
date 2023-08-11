@@ -25,8 +25,12 @@ class AccountMove(models.Model):
 
         _logger.warning('Nombre cuenta analitica upper %s', order.analytic_account_id.name.upper())
 
-        if order and n2growth.upper() in order.analytic_account_id.name.upper():
+        addval_personas = self.env['res.company'].search([
+            ('PERSONAS', 'in', 'name')
+        ], limit =1)
+
+        if order and n2growth.upper() in order.analytic_account_id.name.upper() and self.company_id == addval_personas.id:
             _logger.warning('entro al if')
-            header_data['company_logo'] = '/addval_custom_invoice_logo/static/logo/Logo_Dark.png'
+            header_data['company_logo'] = self.company_id.n2growth_logo
 
         return header_data
