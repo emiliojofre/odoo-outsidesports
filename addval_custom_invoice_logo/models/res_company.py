@@ -17,5 +17,4 @@ class ResCompany(models.Model):
     def _compute_user_two(self):
         if self.env.user.id == 2:
             return True
-        else:
-            return False
+        return False
