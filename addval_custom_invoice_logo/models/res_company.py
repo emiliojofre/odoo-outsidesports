@@ -8,3 +8,14 @@ class ResCompany(models.Model):
     _inherit = 'res.company'
 
     n2growth_logo = fields.Binary(string="N2Growth Logo")
+    is_user_two = fields.Boolean(
+        string="Is user two",
+        readonly=True,
+        compute="_compute_user_two")
+    
+
+    def _compute_user_two(self):
+        if self.env.user.id == 2:
+            return True
+        else:
+            return False
