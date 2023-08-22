@@ -1,0 +1,36 @@
+<odoo>
+    <data>
+        <record id="delivery_voucher_view" model="ir.ui.view">
+            <field name="inherit_id" ref="stock.report_delivery_document"/>
+            <field name="arch" type="xml">
+                <xpath expr="//table[@class='table table-condensed']/thead/tr/th[2]"
+                       position="after">
+                    <th>Cantidad a mano</th>
+                </xpath>
+                <xpath expr="//table[@class='table table-condensed']/tbody/tr/td[2]"
+                       position="after">
+                    <t t-foreach="docs" t-as="o">
+                        <td>
+                            <!--                            <t t-foreach="o.product_id" t-as="p">-->
+                            <!--                                <t t-foreach="p.product_tmpl_id" t-as="y">-->
+                            <!--                                    <span t-esc="int(y.id)"/>-->
+                            <!--                                </t>-->
+                            <!--                            </t>-->
+                            <t t-esc="o.id"></t>
+                        </td>
+                        <br/>
+                    </t>
+                </xpath>
+
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="delivery_voucher_window">
+            <field name="name">Vale de entrega</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">stock.picking</field>
+            <field name="view_mode">tree,form,qweb</field>
+        </record>
+
+    </data>
+</odoo>

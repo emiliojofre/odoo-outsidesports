@@ -1,0 +1,20 @@
+<odoo>
+    <data noupdate="0">
+        <record id="type_state1" model="state.tp">
+            <field name="name">Para retiro</field>
+            <field name="shortcut">PR</field>
+        </record>
+        <record id="type_state2" model="state.tp">
+            <field name="name">Enviado por starken</field>
+            <field name="shortcut">EVS</field>
+        </record>
+        <record id="type_state3" model="state.tp">
+            <field name="name">Retirado</field>
+            <field name="shortcut">R</field>
+        </record>
+        <record id="type_state4" model="state.tp">
+            <field name="name">Entregado por starken</field>
+            <field name="shortcut">ENS</field>
+        </record>
+    </data>
+</odoo>

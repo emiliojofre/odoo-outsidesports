@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_pick" model="ir.ui.view">
+        <field name="name">Estado de envio</field>
+        <field name="model">select.state</field>
+        <field name="arch" type="xml">
+            <form string="Estado de envio">
+                <group>
+                    <field name="state_id"/>
+                </group>
+                <footer>
+                    <button name="update_state" string="Cambiar estado" type="object"
+                            class="btn-primary"/>
+                    <button string="Cancel" class="btn-default" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <act_window id="action_view_pick"
+                multi="True"
+                key2="pick_action_multi" name="Estado de envio"
+                res_model="select.state" src_model="stock.picking"
+                view_mode="form" target="new" view_type="form"/>
+</odoo>

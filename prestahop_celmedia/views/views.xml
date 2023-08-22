@@ -1,0 +1,60 @@
+<odoo>
+  <data>
+    <!-- explicit list view definition -->
+    <!--
+    <record model="ir.ui.view" id="prestahop_celmedia.list">
+      <field name="name">prestahop_celmedia list</field>
+      <field name="model">prestahop_celmedia.prestahop_celmedia</field>
+      <field name="arch" type="xml">
+        <tree>
+          <field name="name"/>
+          <field name="value"/>
+          <field name="value2"/>
+        </tree>
+      </field>
+    </record>
+    -->
+
+    <!-- actions opening views on models -->
+    <!--
+    <record model="ir.actions.act_window" id="prestahop_celmedia.action_window">
+      <field name="name">prestahop_celmedia window</field>
+      <field name="res_model">prestahop_celmedia.prestahop_celmedia</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+    -->
+
+    <!-- server action to the one above -->
+    <!--
+    <record model="ir.actions.server" id="prestahop_celmedia.action_server">
+      <field name="name">prestahop_celmedia server</field>
+      <field name="model_id" ref="model_prestahop_celmedia_prestahop_celmedia"/>
+      <field name="state">code</field>
+      <field name="code">
+        action = {
+          "type": "ir.actions.act_window",
+          "view_mode": "tree,form",
+          "res_model": self._name,
+        }
+      </field>
+    </record>
+    -->
+
+    <!-- Top menu item -->
+    <!--
+    <menuitem name="prestahop_celmedia" id="prestahop_celmedia.menu_root"/>
+    -->
+    <!-- menu categories -->
+    <!--
+    <menuitem name="Menu 1" id="prestahop_celmedia.menu_1" parent="prestahop_celmedia.menu_root"/>
+    <menuitem name="Menu 2" id="prestahop_celmedia.menu_2" parent="prestahop_celmedia.menu_root"/>
+    -->
+    <!-- actions -->
+    <!--
+    <menuitem name="List" id="prestahop_celmedia.menu_1_list" parent="prestahop_celmedia.menu_1"
+              action="prestahop_celmedia.action_window"/>
+    <menuitem name="Server to list" id="prestahop_celmedia" parent="prestahop_celmedia.menu_2"
+              action="prestahop_celmedia.action_server"/>
+    -->
+  </data>
+</odoo>

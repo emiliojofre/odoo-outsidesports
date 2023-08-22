@@ -1,0 +1,142 @@
+.as-product {
+	box-shadow: 0px 0px 6px 0px rgba(0, 0, 0, 0.15);
+	padding: 10px;
+	border-radius: 3px;
+	.asp-inner{
+		 
+		.pro-img{
+			border: none;
+		}
+
+		.pro-action{
+				.button.btn-cart {
+					width: auto;
+					padding: 0 15px;
+					span {
+						display: inline-block;
+					}
+					.fa {
+						display: none;
+					}
+				}
+				.btn-cart,
+				.btn {
+				    width: 32px;
+				    height: 32px;
+				    border-radius: 0;
+				    top: auto;
+				    right: auto;
+				    text-align: center;
+				    line-height: 32px;
+				    display: inline-block;
+				    background: #ffffff;
+				    border: 1px solid #323232;
+				    vertical-align: middle;
+				    padding: 0;
+				    position: relative;
+				    font-size: 13px;
+				    .fa {
+				    	display: inline-block;
+				    	margin: 0;
+				    	font-size: 13px;
+				    }
+				}
+			}
+		.oe_subdescription{
+			padding-top: 15px;
+		}
+		.pro-info{
+			text-align: left;
+		}
+		&:hover{
+			.pro-action{
+				bottom: 0;
+			}
+		}
+	}
+	&:hover{
+		box-shadow: 0px 0px 46px 12px rgba(0, 0, 0, 0.09);
+		.asp-inner{
+			.pro-info{
+				h3{
+					a{
+						color:@as-theme;
+					}
+				}
+			}
+			.pro-action {
+			 
+			}
+			.pro-img {
+				&:after{
+						z-index: 9 !important;	
+						opacity: 1;
+					}
+			}
+			.preview-image{
+				.product-hover-img{
+					top: 0;
+				}
+			}	
+		}
+	}
+}
+
+
+/* as-product
+------------------*/
+
+#products_grid{
+	&.list-view-box,
+	.oe_list{
+		border:none;
+		padding-left: 0;
+		.as-product{
+			.pro-img{
+				background: darken(@as-light, 4%);
+			}
+			.pro-action{
+				position: relative;
+				left: auto;
+				right: auto;
+				text-align: left;
+				bottom: auto;
+			}
+			
+			.pro-info{
+				text-align: left;
+				.product_price{
+					width: 100%;
+				}
+				.o_rating_card {
+					width: 100%;
+					.rating {
+						.o_rating_star_card{
+							text-align: left;
+						}
+					}
+				}
+			}
+		}
+		.as-product-list{
+			.col-md-4{
+				width: 100%;
+				
+			}
+		}
+	}
+}
+
+
+.owl-item{
+	.as-product{
+		box-shadow: none !important;
+		box-shadow: none !important;
+		padding: 0 !important;
+		border-radius: 0 !important;
+	}	
+}
+
+
+.multi_tab_product_snippet .as-product .asp-inner .pro-info .pro-action .button { background: none; color: @as-theme; border: none !important;  }
+.multi_tab_product_snippet .as-product .asp-inner .pro-info .pro-action .button .fa { display: none; }

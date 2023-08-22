@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	    <template id="website_sale_wishlist.header" inherit_id="website.layout" name="Header Shop Wishlist Link">
+		<xpath expr="//ul[@id='top_menu']" position="inside">
+		</xpath>
+    	</template>
+</odoo>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Inherit Form View to Modify it -->
+        <record id="view_account_invoice_form_inherit" model="ir.ui.view">
+            <field name="name">view.account.invoice.form.inherit</field>
+            <field name="model">account.invoice</field>
+            <field name="inherit_id" ref="account.invoice_form"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//field[@name='invoice_line_ids']//tree" position="attributes">
+                    <attribute name="limit">25</attribute>
+                </xpath>
+
+            </field>
+        </record>
+
+        <!-- Inherit Form View to Modify it -->
+        <record id="view_account_invoice_tree_inherit" model="ir.ui.view">
+            <field name="name">view.account.invoice.tree.inherit</field>
+            <field name="model">account.invoice</field>
+            <field name="inherit_id" ref="account.invoice_tree"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//field[@name='date_invoice']" position="after">
+                    <!-- Add your fields or attributes here -->
+                    <field name="res_bank_account" invisible="1"/>
+                    <field name="res_account_name" invisible="1"/>
+                </xpath>
+
+            </field>
+        </record>
+
+    </data>
+</odoo>

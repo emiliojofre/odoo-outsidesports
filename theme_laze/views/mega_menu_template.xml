@@ -1,0 +1,490 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="website.submenu" name="Submenu">
+        <li t-if="not submenu.child_id" t-att-class="
+        'active' if submenu.url and submenu.url != '/' and request.httprequest.path == submenu.url.replace('/page/website.', '/page/') else None
+        ">
+            <a t-att-href="(website.menu_id.child_id[0] == submenu) and '/' or submenu.url" t-ignore="true"
+               t-att-target="'_blank' if submenu.new_window else None">
+                <span t-field="submenu.name"/>
+            </a>
+        </li>
+        <li t-if="submenu.child_id" t-attf-class="dropdown #{
+        (submenu.url and submenu.url != '/' and any([request.httprequest.path == child.url.replace('/page/website.', '/page/') for child in submenu.child_id if child.url]) or
+         (submenu.url and request.httprequest.path == submenu.url.replace('/page/website.', '/page/'))) and 'active'
+        }">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                <span t-field="submenu.name"/> <span class="caret" t-ignore="true"></span>
+            </a>
+            <ul class="dropdown-menu" role="menu">
+                <t t-foreach="submenu.child_id" t-as="submenu">
+                    <t t-call="website.submenu"/>
+                </t>
+            </ul>
+        </li>
+    </template>
+
+    <!--    <template id="submenu" name="Submenu">-->
+    <!--        <li t-if="not submenu.child_id and submenu.is_mega_menu"-->
+    <!--            t-att-class="'mm-mega-menu active' if submenu.url and submenu.url != '/' and request.httprequest.path == submenu.url.replace('/page/website.', '/page/') else 'mm-mega-menu'">-->
+    <!--            <a t-att-href="(website.menu_id.child_id[0] == submenu or submenu.is_mega_menu) and '#' or submenu.url"-->
+    <!--               t-ignore="true" t-att-target="'_blank' if submenu.new_window else None">-->
+    <!--                <span t-field="submenu.name"/><b class="caret"/></a>-->
+    <!--            <t t-if="submenu.content_id">-->
+    <!--                <div t-attf-class="mm-maga-main mm-mega-list #{ submenu.content_id.no_of_columns and 'mm-mega-'+str(submenu.content_id.no_of_columns) or ''}">-->
+    <!--                    <t t-if="submenu.content_id.is_header">-->
+    <!--                        <t t-if="submenu.content_id.header_content">-->
+    <!--                            <div t-field="submenu.content_id.header_content" class="mm-menu-head"/>-->
+    <!--                        </t>-->
+    <!--                        <t t-if="not(submenu.content_id.header_content)">-->
+    <!--                            <div t-field="submenu.content_id.name" class="mm-menu-head"/>-->
+    <!--                        </t>-->
+    <!--                    </t>-->
+
+    <!--                    &lt;!&ndash; Mega menu content start &ndash;&gt;-->
+    <!--                    <t t-if="submenu.content_id.main_content_type">-->
+    <!--                        &lt;!&ndash; "Html menu" &ndash;&gt;-->
+    <!--                        <t t-if="submenu.content_id.main_content_type=='content'">-->
+    <!--                            <div t-field="submenu.content_id.menu_content" class="mmc-inner"/>-->
+    <!--                        </t>-->
+    <!--                        &lt;!&ndash; "Html menu end" &ndash;&gt;-->
+    <!--                        &lt;!&ndash; Product Grid Code complete &ndash;&gt;-->
+    <!--                        <t t-if="submenu.content_id.main_content_type=='product_grid'">-->
+    <!--                            <t t-if="submenu.content_id.product_ids">-->
+    <!--                                <div class="mmc-inner">-->
+    <!--                                    <t t-foreach="submenu.content_id.product_ids" t-as="product">-->
+    <!--                                        <div class="mmc-item">-->
+    <!--                                            <div class="img">-->
+    <!--                                                <a t-att-href="'/shop/product/%s' % slug(product)">-->
+    <!--                                                    <img t-att-src="website.image_url(product,'image')"/>-->
+    <!--                                                </a>-->
+    <!--                                            </div>-->
+    <!--                                            <h2><a t-att-href="'/shop/product/%s' % slug(product)">-->
+    <!--                                                <strong><span t-field="product.name"/></strong></a></h2>-->
+
+    <!--                                        </div>-->
+    <!--                                    </t>-->
+    <!--                                </div>-->
+    <!--                            </t>-->
+
+    <!--                        </t>-->
+    <!--                    </t>-->
+    <!--                    &lt;!&ndash; Product grid Code complete &ndash;&gt;-->
+    <!--                    &lt;!&ndash; Product List Code start &ndash;&gt;-->
+
+    <!--                    <t t-if="submenu.content_id.main_content_type=='product_list'">-->
+    <!--                        <t t-if="submenu.content_id.product_ids">-->
+    <!--                            <div class="mmc-inner">-->
+    <!--                                <t t-set="no_of_columns_m"-->
+    <!--                                   t-value="submenu.content_id.no_of_columns and submenu.content_id.no_of_columns or 1"/>-->
+    <!--                                <ul class="mm-alone-item">-->
+    <!--                                    <t t-foreach="submenu.content_id.product_ids" t-as="product">-->
+    <!--                                        <li class="item"><a t-att-href="'/shop/product/%s' % slug(product)">-->
+    <!--                                            <span t-field="product.name"/></a></li>-->
+    <!--                                    </t>-->
+    <!--                                </ul>-->
+    <!--                            </div>-->
+    <!--                        </t>-->
+    <!--                    </t>-->
+
+    <!--                    &lt;!&ndash; Product list code end &ndash;&gt;-->
+
+
+    <!--                    &lt;!&ndash; Category List Code start &ndash;&gt;-->
+
+    <!--                    <t t-if="submenu.content_id.main_content_type=='category_list'">-->
+    <!--                        <t t-if="submenu.content_id.category_ids">-->
+    <!--                            <div class="mmc-inner FirstMenuCategory">-->
+    <!--                                <ul class="item">-->
+    <!--                                    <t t-foreach="submenu.content_id.category_ids" t-as="category">-->
+    <!--                                        <t t-if="not category.parent_id">-->
+    <!--                                            <li t-attf-id="{{category.id}}" class="mm-label"><a-->
+    <!--                                                    t-att-href="'/shop/category/%s' % slug(category)">-->
+    <!--                                                <span t-field="category.name"/></a></li>-->
+    <!--                                        </t>-->
+    <!--                                    </t>-->
+    <!--                                </ul>-->
+    <!--                            </div>-->
+
+    <!--                            <div class="mmc-inner SecondMenuCategory">-->
+
+    <!--                                <t t-foreach="submenu.content_id.category_ids" t-as="category">-->
+    <!--                                    <ul t-attf-id="parent_{{category.id}}" class="item"-->
+    <!--                                        style="display:none; display;block;width:100%">-->
+    <!--                                        <t t-set="counter" t-value="0"/>-->
+    <!--                                        <div t-attf-class="megamenunav megamenunav-#{counter}"-->
+    <!--                                             t-if="counter / 10 &lt;= 1">-->
+    <!--                                            <t t-foreach="submenu.content_id.category_ids[0:10]" t-as="category1">-->
+    <!--                                                <t t-if="category1.parent_id and category1.parent_id.id==category.id">-->
+    <!--                                                    <li><a t-att-href="'/shop/category/%s' % slug(category1)">-->
+    <!--                                                        <span t-field="category1.name"/></a></li>-->
+    <!--                                                </t>-->
+    <!--                                                <t t-set="counter" t-value="counter + 1"/>-->
+    <!--                                            </t>-->
+    <!--                                        </div>-->
+    <!--                                        <div t-attf-class="megamenunav megamenunav-#{counter}"-->
+    <!--                                             t-if="counter / 10 &lt;= 2">-->
+    <!--                                            <t t-foreach="submenu.content_id.category_ids[11:20]" t-as="category1">-->
+    <!--                                                <t t-if="category1.parent_id and category1.parent_id.id==category.id">-->
+    <!--                                                    <li><a t-att-href="'/shop/category/%s' % slug(category1)">-->
+    <!--                                                        <span t-field="category1.name"/></a></li>-->
+    <!--                                                </t>-->
+    <!--                                                <t t-set="counter" t-value="counter + 1"/>-->
+    <!--                                            </t>-->
+    <!--                                        </div>-->
+    <!--                                        <div t-attf-class="megamenunav megamenunav-#{counter}"-->
+    <!--                                             t-if="counter / 10 &lt;= 3">-->
+    <!--                                            <t t-foreach="submenu.content_id.category_ids[21:30]" t-as="category1">-->
+    <!--                                                <t t-if="category1.parent_id and category1.parent_id.id==category.id">-->
+    <!--                                                    <li><a t-att-href="'/shop/category/%s' % slug(category1)">-->
+    <!--                                                        <span t-field="category1.name"/></a></li>-->
+    <!--                                                </t>-->
+    <!--                                                <t t-set="counter" t-value="counter + 1"/>-->
+    <!--                                            </t>-->
+    <!--                                        </div>-->
+    <!--                                        <div t-attf-class="megamenunav megamenunav-#{counter}"-->
+    <!--                                             t-if="counter / 10 &lt;= 4">-->
+    <!--                                            <t t-foreach="submenu.content_id.category_ids[31:40]" t-as="category1">-->
+    <!--                                                <t t-if="category1.parent_id and category1.parent_id.id==category.id">-->
+    <!--                                                    <li><a t-att-href="'/shop/category/%s' % slug(category1)">-->
+    <!--                                                        <span t-field="category1.name"/></a></li>-->
+    <!--                                                </t>-->
+    <!--                                                <t t-set="counter" t-value="counter + 1"/>-->
+    <!--                                            </t>-->
+    <!--                                        </div>-->
+    <!--                                        <div t-attf-class="megamenunav megamenunav-#{counter}"-->
+    <!--                                             t-if="counter / 10 &lt;= 5">-->
+    <!--                                            <t t-foreach="submenu.content_id.category_ids[41:50]" t-as="category1">-->
+    <!--                                                <t t-if="category1.parent_id and category1.parent_id.id==category.id">-->
+    <!--                                                    <li><a t-att-href="'/shop/category/%s' % slug(category1)">-->
+    <!--                                                        <span t-field="category1.name"/></a></li>-->
+    <!--                                                </t>-->
+    <!--                                                <t t-set="counter" t-value="counter + 1"/>-->
+    <!--                                            </t>-->
+    <!--                                        </div>-->
+    <!--                                        <div t-attf-class="megamenunav megamenunav-#{counter}"-->
+    <!--                                             t-if="counter / 10 &lt;= 6">-->
+    <!--                                            <t t-foreach="submenu.content_id.category_ids[51:60]" t-as="category1">-->
+    <!--                                                <t t-if="category1.parent_id and category1.parent_id.id==category.id">-->
+    <!--                                                    <li><a t-att-href="'/shop/category/%s' % slug(category1)">-->
+    <!--                                                        <span t-field="category1.name"/></a></li>-->
+    <!--                                                </t>-->
+    <!--                                                <t t-set="counter" t-value="counter + 1"/>-->
+    <!--                                            </t>-->
+    <!--                                        </div>-->
+
+    <!--                                    </ul>-->
+    <!--                                </t>-->
+    <!--                            </div>-->
+    <!--                        </t>-->
+    <!--                    </t>-->
+    <!--                    &lt;!&ndash; Category list code end &ndash;&gt;-->
+    <!--                    &lt;!&ndash; Category List Code start &ndash;&gt;-->
+
+    <!--                    <t t-if="submenu.content_id.main_content_type=='category_grid'">-->
+    <!--                        <t t-if="submenu.content_id.category_ids">-->
+    <!--                            <div class="mmc-inner">-->
+    <!--                                <t t-foreach="submenu.content_id.category_ids" t-as="category">-->
+    <!--                                    <div class="mmc-item">-->
+    <!--                                        <div class="img"><a t-att-href="'/shop/category/%s' % slug(category)">-->
+    <!--                                            <img t-att-src="website.image_url(category,'image')"/></a></div>-->
+    <!--                                        <h2><a t-att-href="'/shop/category/%s' % slug(category)"><span-->
+    <!--                                                t-field="category.name"/></a></h2>-->
+    <!--                                    </div>-->
+    <!--                                </t>-->
+    <!--                            </div>-->
+    <!--                        </t>-->
+    <!--                    </t>-->
+    <!--                    &lt;!&ndash; Category list code end &ndash;&gt;-->
+
+
+    <!--                    &lt;!&ndash; Mega menu content end &ndash;&gt;-->
+    <!--                    <t t-if="submenu.content_id.is_footer">-->
+    <!--                        <div class="mm-menu-fot" t-field="submenu.content_id.footer_content">-->
+    <!--                        </div>-->
+    <!--                    </t>-->
+    <!--                </div>-->
+    <!--            </t>-->
+
+
+    <!--        </li>-->
+    <!--        <li t-if="(not submenu.child_id) and not(submenu.is_mega_menu)" t-att-class="-->
+    <!--        'active' if submenu.url and submenu.url != '/' and request.httprequest.path == submenu.url.replace('/page/website.', '/page/') else None-->
+    <!--        ">-->
+    <!--            <a t-att-href="(website.menu_id.child_id[0] == submenu) and '/' or submenu.url" t-ignore="true"-->
+    <!--               t-att-target="'_blank' if submenu.new_window else None">-->
+    <!--                <span t-field="submenu.name"/>-->
+    <!--            </a>-->
+    <!--        </li>-->
+    <!--        <li t-if="submenu.child_id" t-attf-class="dropdown #{-->
+    <!--        (submenu.url and submenu.url != '/' and any([request.httprequest.path == child.url.replace('/page/website.', '/page/') for child in submenu.child_id if child.url]) or-->
+    <!--         (submenu.url and request.httprequest.path == submenu.url.replace('/page/website.', '/page/'))) and 'active'-->
+    <!--        }">-->
+    <!--            <a class="dropdown-toggle" data-toggle="dropdown" href="#">-->
+    <!--                <span t-field="submenu.name"/> <span class="caret" t-ignore="true"></span>-->
+    <!--            </a>-->
+    <!--            <ul class="dropdown-menu" role="menu">-->
+    <!--                <t t-foreach="submenu.child_id" t-as="submenu">-->
+    <!--                    <t t-call="website.submenu"/>-->
+    <!--                </t>-->
+    <!--            </ul>-->
+    <!--        </li>-->
+    <!--    </template>-->
+
+    <template id="submenu" name="Submenu">
+        <li t-if="not submenu.child_id and submenu.is_mega_menu"
+            t-att-class="'mm-mega-menu active' if submenu.url and submenu.url != '/' and request.httprequest.path == submenu.url.replace('/page/website.', '/page/') else 'mm-mega-menu'">
+            <a t-att-href="(website.menu_id.child_id[0] == submenu or submenu.is_mega_menu) and '#' or submenu.url"
+               t-ignore="true" t-att-target="'_blank' if submenu.new_window else None">
+                <span t-field="submenu.name"/><b class="caret"/></a>
+            <t t-if="submenu.content_id">
+                <div t-attf-class="mm-maga-main mm-mega-list #{ submenu.content_id.no_of_columns and 'mm-mega-'+str(submenu.content_id.no_of_columns) or ''}">
+                    <t t-if="submenu.content_id.is_header">
+                        <t t-if="submenu.content_id.header_content">
+                            <div t-field="submenu.content_id.header_content" class="mm-menu-head"/>
+                        </t>
+                        <t t-if="not(submenu.content_id.header_content)">
+                            <div t-field="submenu.content_id.name" class="mm-menu-head"/>
+                        </t>
+                    </t>
+
+                    <!-- Mega menu content start -->
+                    <t t-if="submenu.content_id.main_content_type">
+                        <!-- "Html menu" -->
+                        <t t-if="submenu.content_id.main_content_type=='content'">
+                            <div t-field="submenu.content_id.menu_content" class="mmc-inner"/>
+                        </t>
+                        <!-- "Html menu end" -->
+                        <!-- Product Grid Code complete -->
+                        <t t-if="submenu.content_id.main_content_type=='product_grid'">
+                            <t t-if="submenu.content_id.product_ids">
+                                <div class="mmc-inner">
+                                    <t t-foreach="submenu.content_id.product_ids" t-as="product">
+                                        <div class="mmc-item">
+                                            <div class="img">
+                                                <a t-att-href="'/shop/product/%s' % slug(product)">
+                                                    <img t-att-src="website.image_url(product,'image')"/>
+                                                </a>
+                                            </div>
+                                            <h2><a t-att-href="'/shop/product/%s' % slug(product)">
+                                                <strong><span t-field="product.name"/></strong></a></h2>
+
+                                        </div>
+                                    </t>
+                                </div>
+                            </t>
+
+                        </t>
+                    </t>
+                    <!-- Product grid Code complete -->
+                    <!-- Product List Code start -->
+
+                    <t t-if="submenu.content_id.main_content_type=='product_list'">
+                        <t t-if="submenu.content_id.product_ids">
+                            <div class="mmc-inner">
+                                <t t-set="no_of_columns_m"
+                                   t-value="submenu.content_id.no_of_columns and submenu.content_id.no_of_columns or 1"/>
+                                <ul class="mm-alone-item">
+                                    <t t-foreach="submenu.content_id.product_ids" t-as="product">
+                                        <li class="item"><a t-att-href="'/shop/product/%s' % slug(product)">
+                                            <span t-field="product.name"/></a></li>
+                                    </t>
+                                </ul>
+                            </div>
+                        </t>
+                    </t>
+
+                    <!-- Product list code end -->
+
+
+                    <!-- Category List Code start -->
+
+                    <t t-if="submenu.content_id.main_content_type=='category_list'">
+                        <t t-if="submenu.content_id.category_ids">
+                            <div class="mmc-inner" style="display: contents !important;">
+
+                                <t t-foreach="submenu.content_id.category_ids" t-as="category">
+                                    <t t-if="not category.parent_id">
+                                        <ul class="item">
+                                            <li class="mm-label"><a t-att-href="'/shop/category/%s' % slug(category)">
+                                                <span t-field="category.name"/></a></li>
+                                            <!--    														<t t-foreach="submenu.content_id.category_ids" t-as="category">-->
+                                            <!--    														   <t t-if="category.parent_id and category.parent_id.id==category.id">-->
+                                            <!--    														   <li><a t-att-href="'/shop/category/%s' % slug(category)">-->
+                                            <!--    																	<span t-field="category1.name"/></a></li>-->
+                                            <!--    															</t>-->
+                                            <!--    														</t>-->
+
+                                            <div class="mmc-inner-second" style="justify-content: flex-start;">
+
+                                                <t t-set="counter" t-value="0"/>
+
+                                                <div t-attf-class="megamenunav megamenunav-#{counter}"
+                                                     t-if="counter / 10 &lt; 1 and len(submenu.content_id.category_ids[0:10]) &gt; 0">
+                                                    <t t-set="flag" t-value="0"/>
+                                                    <t t-foreach="submenu.content_id.category_ids[0:10]"
+                                                       t-as="category1">
+                                                        <t t-if="category1.parent_id and category1.parent_id.id==category.id">
+                                                            <li><a t-att-href="'/shop/category/%s' % slug(category1)">
+                                                                <span t-field="category1.name"/></a></li>
+                                                            <t t-set="flag" t-value="1"/>
+                                                        </t>
+                                                        <t t-set="counter" t-value="counter + 1"/>
+                                                    </t>
+                                                    <span t-if="flag == 0" class="hidediv"></span>
+                                                </div>
+                                                <div t-attf-class="megamenunav megamenunav-#{counter}"
+                                                     t-if="counter / 10 &lt; 1.9 and len(submenu.content_id.category_ids[10:20]) &gt; 0">
+                                                    <t t-set="flag" t-value="0"/>
+                                                    <t t-foreach="submenu.content_id.category_ids[10:20]"
+                                                       t-as="category1">
+                                                        <t t-if="category1.parent_id and category1.parent_id.id==category.id">
+                                                            <li><a t-att-href="'/shop/category/%s' % slug(category1)">
+                                                                <span t-field="category1.name"/></a></li>
+                                                            <t t-set="flag" t-value="1"/>
+                                                        </t>
+                                                        <t t-set="counter" t-value="counter + 1"/>
+                                                    </t>
+                                                    <span t-if="flag == 0" class="hidediv"></span>
+                                                </div>
+                                                <div t-attf-class="megamenunav megamenunav-#{counter}"
+                                                     t-if="counter / 10 &lt; 2.8 and len(submenu.content_id.category_ids[20:30]) &gt; 0">
+                                                    <t t-set="flag" t-value="0"/>
+                                                    <t t-foreach="submenu.content_id.category_ids[20:30]"
+                                                       t-as="category1">
+                                                        <t t-if="category1.parent_id and category1.parent_id.id==category.id">
+                                                            <li><a t-att-href="'/shop/category/%s' % slug(category1)">
+                                                                <span t-field="category1.name"/></a></li>
+                                                            <t t-set="flag" t-value="1"/>
+                                                        </t>
+                                                        <t t-set="counter" t-value="counter + 1"/>
+                                                    </t>
+                                                    <span t-if="flag == 0" class="hidediv"></span>
+                                                </div>
+                                                <div t-attf-class="megamenunav megamenunav-#{counter}"
+                                                     t-if="counter / 10 &lt; 3.7 and len(submenu.content_id.category_ids[30:40]) &gt; 0">
+                                                    <t t-set="flag" t-value="0"/>
+                                                    <t t-foreach="submenu.content_id.category_ids[30:40]"
+                                                       t-as="category1">
+                                                        <t t-if="category1.parent_id and category1.parent_id.id==category.id">
+                                                            <li><a t-att-href="'/shop/category/%s' % slug(category1)">
+                                                                <span t-field="category1.name"/></a></li>
+                                                            <t t-set="flag" t-value="1"/>
+                                                        </t>
+                                                        <t t-set="counter" t-value="counter + 1"/>
+                                                    </t>
+                                                    <span t-if="flag == 0" class="hidediv"></span>
+                                                </div>
+                                                <div t-attf-class="megamenunav megamenunav-#{counter}"
+                                                     t-if="counter / 10 &lt;= 4.6 and len(submenu.content_id.category_ids[40:50]) &gt; 0">
+                                                    <t t-set="flag" t-value="0"/>
+                                                    <t t-foreach="submenu.content_id.category_ids[40:50]"
+                                                       t-as="category1">
+                                                        <t t-if="category1.parent_id and category1.parent_id.id==category.id">
+                                                            <li><a t-att-href="'/shop/category/%s' % slug(category1)">
+                                                                <span t-field="category1.name"/></a></li>
+                                                            <t t-set="flag" t-value="1"/>
+                                                        </t>
+                                                        <t t-set="counter" t-value="counter + 1"/>
+                                                    </t>
+                                                    <span t-if="flag == 0" class="hidediv"></span>
+                                                </div>
+                                                <div t-attf-class="megamenunav megamenunav-#{counter}"
+                                                     t-if="counter / 10 &lt;= 5.5 and len(submenu.content_id.category_ids[50:60]) &gt; 0">
+                                                    <t t-set="flag" t-value="0"/>
+                                                    <t t-foreach="submenu.content_id.category_ids[50:60]"
+                                                       t-as="category1">
+                                                        <t t-if="category1.parent_id and category1.parent_id.id==category.id">
+                                                            <li><a t-att-href="'/shop/category/%s' % slug(category1)">
+                                                                <span t-field="category1.name"/></a></li>
+                                                            <t t-set="flag" t-value="1"/>
+                                                        </t>
+                                                        <t t-set="counter" t-value="counter + 1"/>
+                                                    </t>
+                                                    <span t-if="flag == 0" class="hidediv"></span>
+                                                </div>
+
+
+                                            </div>
+
+                                        </ul>
+                                    </t>
+                                    <!--<t t-if="category.parent_id and  not(category.parent_id.parent_id)">
+                                    <ul class="item">
+                                     <li class="mm-label"><a t-att-href="'/shop/category/%s' % slug(category)">
+                                                <span t-field="category.name"/></a></li>
+                                            <t t-foreach="submenu.content_id.category_ids" t-as="category1">
+                                               <t t-if="category1.parent_id and category1.parent_id.id==category.id">
+                                               <li><a t-att-href="'/shop/category/%s' % slug(category1)">
+                                                        <span t-field="category1.name"/></a></li>
+                                                </t>
+                                            </t>
+                                    </ul>
+                                    </t>-->
+                                </t>
+                            </div>
+                        </t>
+                    </t>
+                    <!-- Category list code end -->
+                    <!-- Category List Code start -->
+
+                    <t t-if="submenu.content_id.main_content_type=='category_grid'">
+                        <t t-if="submenu.content_id.category_ids">
+                            <div class="mmc-inner">
+                                <t t-foreach="submenu.content_id.category_ids" t-as="category">
+                                    <div class="mmc-item">
+                                        <div class="img"><a t-att-href="'/shop/category/%s' % slug(category)">
+                                            <img t-att-src="website.image_url(category,'image')"/></a></div>
+                                        <h2><a t-att-href="'/shop/category/%s' % slug(category)"><span
+                                                t-field="category.name"/></a></h2>
+                                    </div>
+                                </t>
+                            </div>
+                        </t>
+                    </t>
+                    <!-- Category list code end -->
+
+
+                    <!-- Mega menu content end -->
+                    <t t-if="submenu.content_id.is_footer">
+                        <div class="mm-menu-fot" t-field="submenu.content_id.footer_content">
+                        </div>
+                    </t>
+                </div>
+            </t>
+
+
+        </li>
+        <li t-if="(not submenu.child_id) and not(submenu.is_mega_menu)" t-att-class="
+            'active' if submenu.url and submenu.url != '/' and request.httprequest.path == submenu.url.replace('/page/website.', '/page/') else None
+            ">
+            <a t-att-href="(website.menu_id.child_id[0] == submenu) and '/' or submenu.url" t-ignore="true"
+               t-att-target="'_blank' if submenu.new_window else None">
+                <span t-field="submenu.name"/>
+            </a>
+        </li>
+        <li t-if="submenu.child_id" t-attf-class="dropdown #{
+            (submenu.url and submenu.url != '/' and any([request.httprequest.path == child.url.replace('/page/website.', '/page/') for child in submenu.child_id if child.url]) or
+             (submenu.url and request.httprequest.path == submenu.url.replace('/page/website.', '/page/'))) and 'active'
+            }">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                <span t-field="submenu.name"/> <span class="caret" t-ignore="true"></span>
+            </a>
+            <ul class="dropdown-menu" role="menu">
+                <t t-foreach="submenu.child_id" t-as="submenu">
+                    <t t-call="website.submenu"/>
+                </t>
+            </ul>
+        </li>
+    </template>
+
+    <template id="layout_1" inherit_id="website.layout">
+        <xpath expr="//t[@t-foreach='website.menu_id.child_id']" position="replace">
+            <t t-foreach="website.menu_id.child_id" t-as="submenu">
+                <t t-call="theme_laze.submenu"/>
+            </t>
+        </xpath>
+
+    </template>
+</odoo>
+

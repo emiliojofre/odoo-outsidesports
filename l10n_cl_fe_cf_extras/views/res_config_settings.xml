@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <record id="res_config_settings_view_form" model="ir.ui.view">
+    <field name="name">res.config.settings.view.form.inherit.sale</field>
+    <field name="model">res.config.settings</field>
+    <field name="priority" eval="101"/>
+    <field name="inherit_id" ref="l10n_cl_fe.res_config_settings_view_form"/>
+    <field name="arch" type="xml">
+      <div id="cf_autosend" position="replace">
+         <div class="col-xs-12 col-md-6 o_setting_box" id="cf_autosend">
+            <div class="o_setting_left_pane">
+                <field name="cf_autosend" />
+            </div>
+            <div class="o_setting_right_pane" name="cf_autosend_right_pane">
+                <label string="Auto Enviar Consumo de Folios" for="cf_autosend"/>
+                <div class="text-muted">
+                   Auto Enviar Consumo de Folios a una hora definida
+                </div>
+            </div>
+          </div>
+
+          <div class="col-xs-12 col-md-6 o_setting_box" id="cf_hour">
+            <div class="o_setting_left_pane">
+            </div>
+            <div class="o_setting_right_pane" name="cf_hour_right_pane">
+                <label string="Hora de Envío Consumo de Folios" for="cf_hour"/>
+                <field name="cf_hour"/>
+                <div class="text-muted">
+                   Hora, minuto, segundo de autoenvío de Consumo de Folios(Se timbrará y enviará al SII)
+                </div>
+            </div>
+        </div>
+      </div>
+    </field>
+  </record>
+</odoo>

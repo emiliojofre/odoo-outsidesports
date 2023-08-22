@@ -1,0 +1,24 @@
+<odoo>
+    <data noupdate="0">
+        <record id="product_state1" model="state.product">
+            <field name="name">Pendiente</field>
+            <field name="shortcut">P</field>
+        </record>
+        <record id="product_state2" model="state.product">
+            <field name="name">Facturado</field>
+            <field name="shortcut">F</field>
+        </record>
+        <record id="product_state3" model="state.product">
+            <field name="name">No Facturado</field>
+            <field name="shortcut">NF</field>
+        </record>
+        <record id="product_state4" model="state.product">
+            <field name="name">Entregado</field>
+            <field name="shortcut">E</field>
+        </record>
+        <record id="product_state5" model="state.product">
+            <field name="name">No Entregado</field>
+            <field name="shortcut">NE</field>
+        </record>
+    </data>
+</odoo>
