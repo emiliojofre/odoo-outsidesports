@@ -1,3 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-"access_outside-state.OutsideState","access_outside-state.state.tp","model_state_tp",,1,1,1,1
-"access_outside-state.SelectState","access_outside-state.select.state","model_select_state",,1,1,1,1

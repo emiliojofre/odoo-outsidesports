@@ -1,2 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_nlh_print_report_nlh_print_report,nlh_print_report.nlh_print_report,model_nlh_print_report_nlh_print_report,,1,0,0,0
