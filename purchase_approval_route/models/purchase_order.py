@@ -36,21 +36,9 @@ class PurchaseOrder(models.Model):
 
     amount_total = fields.Monetary(tracking=True)
 
-    gerencia = fields.Selection(
-        selection=[
-            ('CONSTANZA_ABAID', 'Constanza Abaid'),
-            ('LORENA_FERNANDEZ', 'Lorena Fernandez'),
-            ('ITALO_HUERTA', 'Italo Huerta'),
-            ('HANS_CHADE', 'Hans Chade'),
-            ('GIANNINA_TAPIA', 'Giannina Tapia'),
-            ('PILAR_GARCIA', 'Pilar Garcia'),
-            ('JOSE_TOMAS_GUZMAN', 'Jose Tomás Guzman'),
-            ('JESSICA_FERNANDEZ', 'Jessica Fernández'),
-            ('ERICK_KESSLER', 'Erick Kessler'),
-            ('JUAN_GUARDA', 'Juan Guarda'),
-            ('FRANCISCO_LARRAIN', 'Francisco Larrain'),
-            ('ROSSANA_VALLEJO', 'Rossana Vallejo')
-        ],
+    approval_magnament = fields.Many2one(
+        comodel_name="purchase.approval.management",
+        domain="[('company_id', '=', company_id)]",
         string = "Gerencia"
     )
 
@@ -77,11 +65,9 @@ class PurchaseOrder(models.Model):
                     else:
                         # If there is not next approval, than assume that approval is finished and send notification
                         partner = order.user_id.partner_id if order.user_id else order.create_uid.partner_id
-                        servidor_correo_saliente = self.env['ir.mail_server'].search([], limit=1)
                         order.message_post_with_view(
                             'purchase_approval_route.order_approval',
                             subject=_('PO Approved: %s') % (order.name,),
-                            email_from= servidor_correo_saliente.smtp_user,
                             composition_mode='mass_mail',
                             partner_ids=[(4, partner.id)],
                             auto_delete=True,
@@ -215,10 +201,8 @@ class PurchaseOrder(models.Model):
             current_approver_partner = order.current_approver.user_id.partner_id
             if current_approver_partner not in order.message_partner_ids:
                 order.message_subscribe([current_approver_partner.id])
-            servidor_correo_saliente = self.env['ir.mail_server'].search([], limit=1)
             order.with_user(order.user_id).message_post_with_view(
                 'purchase_approval_route.request_to_approve',
-                email_from=servidor_correo_saliente.smtp_user,
                 subject=_('PO Approval: %s') % (order.name,),
                 composition_mode='mass_mail',
                 partner_ids=[(4, current_approver_partner.id)],

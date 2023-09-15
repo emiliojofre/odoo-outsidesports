@@ -49,6 +49,7 @@ Key Features:
         'data/purchase_approval_route.xml',
         'views/purchase_approval_route.xml',
         'views/res_config_settings_views.xml',
+        'views/purchase_approval_management.xml',
     ],
     'depends': ['purchase'],
     'qweb': [],
