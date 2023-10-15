@@ -87,14 +87,12 @@ class PricelistItem(models.Model):
             bra = product.product_brand_id
             _logger.warning('PRODUCTO:  %s', product)
             _logger.warning('Marca: %s', bra)
-            while bra:
+            if bra:
                 _logger.warning('entro al while')
                 _logger.warning('bra.id: %s', bra.id)
                 _logger.warning('self.brand_id.id: %s', self.brand_id.id)
                 if bra.id == self.brand_id.id:
-
                     _logger.warning('Entro al if ')
-                    break
             if not bra:
                 res = False
 
