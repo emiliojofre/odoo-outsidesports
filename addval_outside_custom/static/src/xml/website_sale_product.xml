@@ -1,5 +1,5 @@
 <template id="website_product_sku_pvp" name="website_sale.product">
-    <xpath expr="//p[@t-field='product.description_sale']" position="before">
+    <xpath expr="//div[@id='contact_us_wrapper']" position="after">
         <t t-if="product.default_code">
             <div>
               <b>SKU: <span t-field="product.default_code" class="text-muted my-2"/></b>

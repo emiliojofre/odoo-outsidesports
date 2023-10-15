@@ -28,10 +28,12 @@
         'views/pricelist_item.xml',
         
     ],
-
-    'qweb':  [
-        'views/website_sale_product.xml',
-    ],
+    
+    'assets': {
+        'web.assets_frontend': [
+            'addval_outside_custom/static/src/**/*',
+        ],
+    },
 
 
     'installable': True,
