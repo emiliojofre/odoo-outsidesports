@@ -7,8 +7,8 @@
             <div>
               <b>PVP: $<span t-field="product.list_price" class="text-muted my-2"/></b>
             </div>
-            </t>
-            <t t-else="">
+        </t>
+        <t t-else="">
             <div>
                 <b>PVP y SKU por variante:</b>
             </div>
