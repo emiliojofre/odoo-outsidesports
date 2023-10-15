@@ -1,0 +1,22 @@
+<template id="website_product_sku_pvp" name="website_sale.product">
+    <xpath expr="//p[@t-field='product.description_sale']" position="before">
+        <t t-if="product.default_code">
+            <div>
+              <b>SKU: <span t-field="product.default_code" class="text-muted my-2"/></b>
+            </div>
+            <div>
+              <b>PVP: $<span t-field="product.list_price" class="text-muted my-2"/></b>
+            </div>
+            </t>
+            <t t-else="">
+            <div>
+                <b>PVP y SKU por variante:</b>
+            </div>
+            <div t-foreach="product.product_variant_ids" t-as="variant">
+                <t t-esc="variant.display_name" class="text-muted my-2"/>
+                 - 
+                $<t t-esc="variant.lst_price" class="text-muted my-2"/>
+            </div>
+        </t>
+    </xpath>
+</template>
