@@ -6,7 +6,7 @@
         <field name="model">product.pricelist.item</field>
         <field name="arch" type="xml">
           <field name="applied_on" position="after">
-            <field name="categ_id" options="{'no_create':1}" attrs="{ 'invisible':[('applied_on', '!=', '4_brand')], 'required':[('applied_on', '=', '4_brand')]}"/>
+            <field name="brand_id" options="{'no_create':1}" attrs="{ 'invisible':[('applied_on', '!=', '4_brand')], 'required':[('applied_on', '=', '4_brand')]}"/>
           </field>
         </field>
       </record>
