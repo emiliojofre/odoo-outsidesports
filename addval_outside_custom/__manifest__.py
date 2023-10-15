@@ -31,7 +31,7 @@
     
     'assets': {
         'web.assets_frontend': [
-            'addval_outside_custom/static/src/**/*',
+            'static/src/**/*',
         ],
     },
 
