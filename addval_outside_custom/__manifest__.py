@@ -26,8 +26,13 @@
     'data': [
         # 'security/ir.model.access.csv',
         'views/pricelist_item.xml',
+        
+    ],
+
+    'qweb':  [
         'views/website_sale_product.xml',
     ],
+
 
     'installable': True,
     'application': True,
