@@ -10,7 +10,7 @@
 
 
     <template id="my_pricelist_report_link" name="Link to pricelist report" inherit_id="portal.portal_my_home" priority="100">
-        <xpath expr="//ul[hasclass('o_portal_my_home')]" position="after">
+        <xpath expr="//div[hasclass('o_portal_my_home')]" position="after">
             <li class="list-group-item">
                 <a href="/my/pricelist_report/csv" target="_blank">Descarga catálogo y stock</a>
             </li>
