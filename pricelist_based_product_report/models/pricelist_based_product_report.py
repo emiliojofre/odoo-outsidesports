@@ -113,7 +113,7 @@ class ReportPricelistBasedProductDetails(models.AbstractModel):
 
         }
 
-    @api.multi
+    
     def get_report_values(self, docids, data=None):
         data = dict(data or {})
         if data:
