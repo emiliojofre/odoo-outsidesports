@@ -16,7 +16,6 @@ class PricelistBasedProductReportWizard(models.TransientModel):
     json_file = fields.Binary('File')
     filename = fields.Char('Filename')
 
-    @api.multi
     def generate_report(self):
         csvfile = StringIO()
         writer = csv.writer(csvfile, delimiter=',')
@@ -163,7 +162,6 @@ class PricelistBasedProductReportWizard(models.TransientModel):
 
         return action
 
-    @api.multi
     def generate_report_from_website(self):
         csvfile = StringIO()
         writer = csv.writer(csvfile, delimiter=',')
