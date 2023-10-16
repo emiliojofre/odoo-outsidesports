@@ -20,7 +20,6 @@
         'base',
         'sale',
         'product',
-        'website_sale'
     ],
 
     'data': [
@@ -28,12 +27,7 @@
         'views/pricelist_item.xml',
         
     ],
-    
-    'assets': {
-        'web.assets_frontend': [
-            'static/src/**/*',
-        ],
-    },
+
 
 
     'installable': True,
