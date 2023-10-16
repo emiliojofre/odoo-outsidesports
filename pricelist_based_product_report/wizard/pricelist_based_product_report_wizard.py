@@ -35,7 +35,7 @@ class PricelistBasedProductReportWizard(models.TransientModel):
             if line.applied_on == '0_product_variant' and line.product_id.website_published and line.product_id.id not in products_added:
                     product_url=request.httprequest.host_url+"shop/product/%s" % (line.product_id.product_tmpl_id.id,)
                     principal_image_url=request.httprequest.host_url+'web/image/product.product/%s/image_medium' % line.product_id.id
-                    product_description = self.env['product.product'].get_description_name(line.product_id)
+                    product_description = line.product_id.name
                     vals={'product_id':line.product_id.id,'product_name':product_description,'code':line.product_id.default_code,'uom':'','qty':line.product_id.qty_available,'customer_price':0.0,'selling_price':0.0,'barcode':line.product_id.barcode or '','brand':line.product_id.product_brand_id.name if line.product_id.product_brand_id else '','product_url':product_url,'principal_image_url':principal_image_url}
                     customer_price = product_pricelist.get_product_price(line.product_id,1,False)
                     if not customer_price:
@@ -53,8 +53,7 @@ class PricelistBasedProductReportWizard(models.TransientModel):
                     if rec.id not in products_added and rec.website_published:
                         product_url = request.httprequest.host_url + "shop/product/%s" % (rec.product_tmpl_id.id,)
                         principal_image_url = request.httprequest.host_url + 'web/image/product.product/%s/image_medium' % rec.id
-                        product_description = self.env['product.product'].get_description_name(rec)
-                        vals = {'product_id': rec.id, 'product_name': product_description,
+                        vals = {'product_id': rec.id, 'product_name': rec.name,
                                 'code': rec.default_code, 'uom': '',
                                 'qty': rec.qty_available, 'customer_price': 0.0, 'selling_price': 0.0,'barcode':rec.barcode or '','brand':rec.product_brand_id.name if rec.product_brand_id else '','product_url':product_url,'principal_image_url':principal_image_url}
                         customer_price = product_pricelist.get_product_price(rec, 1, False)
@@ -81,8 +80,7 @@ class PricelistBasedProductReportWizard(models.TransientModel):
                         if rec.id not in products_added and rec.website_published:
                             product_url = request.httprequest.host_url + "shop/product/%s" % (rec.product_tmpl_id.id,)
                             principal_image_url = request.httprequest.host_url + 'web/image/product.product/%s/image_medium' % rec.id
-                            product_description = self.env['product.product'].get_description_name(rec)
-                            vals = {'product_id': rec.id, 'product_name': product_description,
+                            vals = {'product_id': rec.id, 'product_name': rec.name,
                                     'code': rec.default_code, 'uom': '',
                                     'qty': rec.qty_available, 'customer_price': 0.0, 'selling_price': 0.0,'barcode':rec.barcode or '','brand':rec.product_brand_id.name if rec.product_brand_id else '','product_url':product_url,'principal_image_url':principal_image_url}
                             customer_price = product_pricelist.get_product_price(rec, 1, False)
@@ -102,8 +100,7 @@ class PricelistBasedProductReportWizard(models.TransientModel):
                     if rec.id not in products_added and rec.website_published:
                         product_url = request.httprequest.host_url + "shop/product/%s" % (rec.product_tmpl_id.id,)
                         principal_image_url = request.httprequest.host_url + 'web/image/product.product/%s/image_medium' % rec.id
-                        product_description = self.env['product.product'].get_description_name(rec)
-                        vals = {'product_id': rec.id, 'product_name': product_description,
+                        vals = {'product_id': rec.id, 'product_name': rec.name,
                                 'code': rec.default_code, 'uom': '',
                                 'qty': rec.qty_available, 'customer_price': 0.0, 'selling_price': 0.0,'barcode':rec.barcode or '','brand':rec.product_brand_id.name if rec.product_brand_id else '','product_url':product_url,'principal_image_url':principal_image_url}
                         customer_price = product_pricelist.get_product_price(rec, 1, False)
@@ -181,8 +178,7 @@ class PricelistBasedProductReportWizard(models.TransientModel):
             if line.applied_on == '0_product_variant' and line.product_id.website_published and line.product_id.id not in products_added:
                 product_url = request.httprequest.host_url + "shop/product/%s" % (line.product_id.product_tmpl_id.id,)
                 principal_image_url = request.httprequest.host_url + 'web/image/product.product/%s/image_medium' % line.product_id.id
-                product_description = self.env['product.product'].get_description_name(line.product_id)
-                vals = {'product_id': line.product_id.id, 'product_name': product_description,
+                vals = {'product_id': line.product_id.id, 'product_name': line.product_id.name,
                         'code': line.product_id.default_code,
                         'uom': '',
                         'qty': line.product_id.qty_available, 'customer_price': 0.0, 'selling_price': 0.0,
@@ -205,8 +201,7 @@ class PricelistBasedProductReportWizard(models.TransientModel):
                     if rec.id not in products_added and rec.website_published:
                         product_url = request.httprequest.host_url + "shop/product/%s" % (rec.product_tmpl_id.id,)
                         principal_image_url = request.httprequest.host_url + 'web/image/product.product/%s/image_medium' % rec.id
-                        product_description = self.env['product.product'].get_description_name(rec)
-                        vals = {'product_id': rec.id, 'product_name': product_description,
+                        vals = {'product_id': rec.id, 'product_name': rec.name,
                                 'code': rec.default_code, 'uom': '',
                                 'qty': rec.qty_available, 'customer_price': 0.0, 'selling_price': 0.0,
                                 'barcode': rec.barcode or '',
@@ -236,8 +231,7 @@ class PricelistBasedProductReportWizard(models.TransientModel):
                         if rec.id not in products_added and rec.website_published:
                             product_url = request.httprequest.host_url + "shop/product/%s" % (rec.product_tmpl_id.id,)
                             principal_image_url = request.httprequest.host_url + 'web/image/product.product/%s/image_medium' % rec.id
-                            product_description = self.env['product.product'].get_description_name(rec)
-                            vals = {'product_id': rec.id, 'product_name': product_description,
+                            vals = {'product_id': rec.id, 'product_name': rec.name,
                                     'code': rec.default_code, 'uom': '',
                                     'qty': rec.qty_available, 'customer_price': 0.0, 'selling_price': 0.0,
                                     'barcode': rec.barcode or '',
@@ -260,8 +254,7 @@ class PricelistBasedProductReportWizard(models.TransientModel):
                     if rec.id not in products_added and rec.website_published:
                         product_url = request.httprequest.host_url + "shop/product/%s" % (rec.product_tmpl_id.id,)
                         principal_image_url = request.httprequest.host_url + 'web/image/product.product/%s/image_medium' % rec.id
-                        product_description = self.env['product.product'].get_description_name(rec)
-                        vals = {'product_id': rec.id, 'product_name': product_description,
+                        vals = {'product_id': rec.id, 'product_name': rec.name,
                                 'code': rec.default_code, 'uom': '',
                                 'qty': rec.qty_available, 'customer_price': 0.0, 'selling_price': 0.0,
                                 'barcode': rec.barcode or '',
