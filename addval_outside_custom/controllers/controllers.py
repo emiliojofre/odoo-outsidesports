@@ -12,5 +12,6 @@ class WebsiteSaleStockVariantController(WebsiteSaleVariantController):
         combination =  super(WebsiteSaleStockVariantController, self).get_combination_info_website(product_template_id, product_id, combination, add_qty, **kw)
         variant = request.env['product.product'].browse(product_id)
         combination['default_code'] = variant.default_code
+        combination['lst_price'] = variant.lst_price
         return combination
 
