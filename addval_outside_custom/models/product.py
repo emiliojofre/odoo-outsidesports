@@ -13,3 +13,5 @@ class ProductTemplate(models.Model):
             parent_combination=parent_combination, only_template=only_template)
 
         combination_info['default_code'] = self.default_code
+
+        return combination_info
