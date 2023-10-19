@@ -298,8 +298,8 @@ class PricelistBasedProductReportWizard(models.TransientModel):
             if record["uom"] != 'Unit(s)':
                 quantity += record["uom"]
             row_list.append(quantity)
-            row_list.append(str(float(record["customer_price"])))
-            row_list.append(str(float(record['selling_price']*1.19)))
+            row_list.append(str(record["customer_price"]))
+            row_list.append(str(record['selling_price']*1.19))
             writer.writerow(row_list)
         filename = 'Pricelist Based Product.csv'
         self.write(
