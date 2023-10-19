@@ -27,12 +27,12 @@ class ReportPricelistBasedProductDetails(models.AbstractModel):
         for line in product_pricelist.item_ids:
             if line.applied_on == '0_product_variant' and line.product_id.id not in products_added:
                     vals={'product_id':line.product_id.id,'product_name':line.product_id.name,'code':line.product_id.default_code,'uom':'','qty':line.product_id.qty_available,'customer_price':0.0,'selling_price':0.0}
-                    customer_price = product_pricelist.get_product_price(line.product_id,1,False)
+                    customer_price = product_pricelist._get_product_price(line.product_id,1,None,False)
                     if not customer_price:
                         customer_price = line.product_id.list_price
                     vals['customer_price'] =customer_price
                     if product_base_pricelist:
-                        selling_price = product_base_pricelist.get_product_price(line.product_id, 1, False)
+                        selling_price = product_base_pricelist._get_product_price(line.product_id, 1, None,False)
                         if not selling_price:
                             selling_price = line.product_id.list_price
                         vals['selling_price'] = selling_price
@@ -44,12 +44,12 @@ class ReportPricelistBasedProductDetails(models.AbstractModel):
                         vals = {'product_id': rec.id, 'product_name': rec.name,
                                 'code': rec.default_code, 'uom': rec.uom_id.name if rec.uom_id else '',
                                 'qty': rec.qty_available, 'customer_price': 0.0, 'selling_price': 0.0}
-                        customer_price = product_pricelist.get_product_price(rec, 1, False)
+                        customer_price = product_pricelist._get_product_price(rec, 1, None,False)
                         if not customer_price:
                             customer_price = rec.list_price
                         vals['customer_price'] = customer_price
                         if product_base_pricelist:
-                            selling_price = product_base_pricelist.get_product_price(rec, 1, False)
+                            selling_price = product_base_pricelist._get_product_price(rec, 1, None,False)
                             if not selling_price:
                                 selling_price = rec.list_price
                             vals['selling_price'] = selling_price
@@ -69,12 +69,12 @@ class ReportPricelistBasedProductDetails(models.AbstractModel):
                             vals = {'product_id': rec.id, 'product_name': rec.name,
                                     'code': rec.default_code, 'uom': rec.uom_id.name if rec.uom_id else '',
                                     'qty': rec.qty_available, 'customer_price': 0.0, 'selling_price': 0.0}
-                            customer_price = product_pricelist.get_product_price(rec, 1, False)
+                            customer_price = product_pricelist._get_product_price(rec, 1, None,False)
                             if not customer_price:
                                 customer_price = rec.list_price
                             vals['customer_price'] = customer_price
                             if product_base_pricelist:
-                                selling_price = product_base_pricelist.get_product_price(rec, 1, False)
+                                selling_price = product_base_pricelist._get_product_price(rec, 1, False)
                                 if not selling_price:
                                     selling_price = rec.list_price
                                 vals['selling_price'] = selling_price
@@ -87,12 +87,12 @@ class ReportPricelistBasedProductDetails(models.AbstractModel):
                         vals = {'product_id': rec.id, 'product_name': rec.name,
                                 'code': rec.default_code, 'uom': rec.uom_id.name if rec.uom_id else '',
                                 'qty': rec.qty_available, 'customer_price': 0.0, 'selling_price': 0.0}
-                        customer_price = product_pricelist.get_product_price(rec, 1, False)
+                        customer_price = product_pricelist._get_product_price(rec, 1, None,False)
                         if not customer_price:
                             customer_price = rec.list_price
                         vals['customer_price'] = customer_price
                         if product_base_pricelist:
-                            selling_price = product_base_pricelist.get_product_price(rec, 1, False)
+                            selling_price = product_base_pricelist._get_product_price(rec, 1, None,False)
                             if not selling_price:
                                 selling_price = rec.list_price
                             vals['selling_price'] = selling_price
