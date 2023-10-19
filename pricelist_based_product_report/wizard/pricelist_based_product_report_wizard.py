@@ -299,7 +299,7 @@ class PricelistBasedProductReportWizard(models.TransientModel):
                 quantity += record["uom"]
             row_list.append(quantity)
             row_list.append(str(record["customer_price"]))
-            result = record['selling_price']*1.19
+            result = float(record['selling_price'])*1.19
             row_list.append(str(result))
             writer.writerow(row_list)
         filename = 'Pricelist Based Product.csv'
