@@ -4,7 +4,6 @@
 from odoo import api, fields, models, _
 import csv
 from io import StringIO
-from io import BytesIO
 import base64
 from odoo.http import request
 
@@ -161,10 +160,8 @@ class PricelistBasedProductReportWizard(models.TransientModel):
         return action
 
     def generate_report_from_website(self):
-        #csvfile = StringIO()
-        output = BytesIO()
-        #writer = csv.writer(csvfile, delimiter=',')
-        writer = csv.writer(output, delimiter=',')
+        csvfile = StringIO()
+        writer = csv.writer(csvfile, delimiter=',')
         # write header
         header_list = [_("Código"), _("Descripción"),_("Código EAN"), _("Marca"), _( "URL Producto"), _("URL imagen"), _("Stock disponible"), _("Precio de venta"), _("Precio sugerido a público")]
         writer.writerow(header_list)
@@ -305,17 +302,14 @@ class PricelistBasedProductReportWizard(models.TransientModel):
             result = int(record['selling_price'])*1.19
             row_list.append(str(result))
             writer.writerow(row_list)
-            
         filename = 'Pricelist Based Product.csv'
-
-        file_data = base64.b64encode(output.getvalue())
-        self.csv_data = file_data
         #self.write(
-        #    {'json_file': base64.b64encode(csvfile.getvalue().encode('utf-8')),
+        #    {'json_file': base64.b64encode(csvfile.getvalue()),
         #     'filename': filename})
+        file_data = base64.b64encode(csvfile.getvalue())
+        self.csv_data = file_data
         # close file
-        #csvfile.close()
-        output.close()
+        csvfile.close()
         # action = {'name': 'Pricelist Based Product.csv', 'type': 'ir.actions.act_url',
         #           'url': "web/content/?model=pricelist.based.product.report.wizard&id=" + str(
         #               self.id) + "&filename_field=filename&field=json_file&download=true&filename=Pricelist Based Product.csv",
