@@ -318,7 +318,8 @@ class PricelistBasedProductReportWizard(models.TransientModel):
         base64_data = base64.b64encode(csv_data.encode('utf-8'))  
         
         padding = '=' * (-len(base64_data) % 4)
-        base64_data += padding
+        padding_bytes = padding.encode('utf-8')
+        base64_data += padding_bytes
         self.write({
             'json_file': base64.b64decode(base64_data).decode('utf-8'),
             'filename': filename,
