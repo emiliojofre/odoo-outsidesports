@@ -315,11 +315,7 @@ class PricelistBasedProductReportWizard(models.TransientModel):
         #               self.id) + "&filename_field=filename&field=json_file&download=true&filename=Pricelist Based Product.csv",
         #           'target': 'new', }
         url= "web/content/?model=pricelist.based.product.report.wizard&id=" + str(self.id) + "&filename_field=filename&field=json_file&download=true&filename=Pricelist Based Product.csv"
-        return {
-            "type": "ir.actions.act_url",
-            "target": "self",
-            "url": url,
-        }
+        return self
 
     # @api.multi
     # def generate_report(self):
