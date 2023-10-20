@@ -309,7 +309,7 @@ class PricelistBasedProductReportWizard(models.TransientModel):
         filename = 'Pricelist Based Product.csv'
 
         # Encode CSV data to base64
-        base64_data = base64.b64encode(csvfile.encode('utf-8'))
+        base64_data = base64.b64encode(csvfile.getvalue().encode('utf-8'))
 
         # Print base64 string
         _logger.warning(base64_data)
