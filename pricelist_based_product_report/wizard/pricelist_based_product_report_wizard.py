@@ -15,6 +15,7 @@ class PricelistBasedProductReportWizard(models.TransientModel):
     partner_id=fields.Many2one('res.partner','Customer')
     json_file = fields.Binary('File')
     filename = fields.Char('Filename')
+    mimetype = fields.Char('Mimetype')
 
     def generate_report(self):
         csvfile = StringIO()
@@ -305,10 +306,10 @@ class PricelistBasedProductReportWizard(models.TransientModel):
         
         filename = 'Pricelist Based Product.csv'
 
-        self.write(
-            {'json_file': base64.b64encode(csvfile.getvalue().encode('utf-8')),
-             'filename': filename,
-             'mimetype': 'text/csv'})
+        self.write({
+            'json_file': base64.b64encode(csvfile.getvalue().encode('utf-8')),
+            'filename': filename,
+            'mimetype': 'text/csv'})
         # close file
         csvfile.close()
         # action = {'name': 'Pricelist Based Product.csv', 'type': 'ir.actions.act_url',
