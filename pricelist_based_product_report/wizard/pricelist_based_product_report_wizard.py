@@ -6,6 +6,7 @@ import csv
 from io import StringIO
 import base64
 from odoo.http import request
+from unidecode import unidecode
 import logging
 _logger = logging.getLogger(__name__)
 
@@ -166,7 +167,7 @@ class PricelistBasedProductReportWizard(models.TransientModel):
         csvfile = StringIO()
         writer = csv.writer(csvfile, delimiter=',')
         # write header
-        header_list = [_("Código"), _("Descripción"),_("Código EAN"), _("Marca"), _( "URL Producto"), _("URL imagen"), _("Stock disponible"), _("Precio de venta"), _("Precio sugerido a público")]
+        header_list = [_("Codigo"), _("Descripcion"),_("Codigo EAN"), _("Marca"), _( "URL Producto"), _("URL imagen"), _("Stock disponible"), _("Precio de venta"), _("Precio sugerido a publico")]
         writer.writerow(header_list)
         if self.partner_id:
             product_pricelist = self.partner_id.property_product_pricelist
@@ -277,7 +278,7 @@ class PricelistBasedProductReportWizard(models.TransientModel):
 
         products = sorted([{
             'product_id': product['product_id'],
-            'product_name': product['product_name'],
+            'product_name': unidecode(product['product_name']),
             'code': product['code'],
             'quantity': product['qty'],
             'customer_price': product['customer_price'],
