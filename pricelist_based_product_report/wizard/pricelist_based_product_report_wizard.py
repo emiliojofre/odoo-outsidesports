@@ -306,7 +306,7 @@ class PricelistBasedProductReportWizard(models.TransientModel):
         filename = 'Pricelist Based Product.csv'
 
         self.write(
-            {'json_file': base64.b64encode(csvfile.getvalue().encode('utf-8')),
+            {'json_file': csvfile.getvalue().encode('utf-8'),
              'filename': filename})
         # close file
         csvfile.close()
