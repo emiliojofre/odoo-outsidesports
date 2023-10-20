@@ -306,11 +306,14 @@ class PricelistBasedProductReportWizard(models.TransientModel):
         
         filename = 'Pricelist Based Product.csv'
 
+        base64_data = base64.b64encode(csvfile.getvalue().encode('utf-8'))
+        csv_data = base64.b64decode(base64_data).decode('utf-8')
         self.write({
-            'json_file': base64.b64encode(csvfile.getvalue().encode('utf-8')),
+            'json_file': csv_data,
             'filename': filename,
             'mimetype': 'text/csv'})
         # close file
+        
         csvfile.close()
         # action = {'name': 'Pricelist Based Product.csv', 'type': 'ir.actions.act_url',
         #           'url': "web/content/?model=pricelist.based.product.report.wizard&id=" + str(
