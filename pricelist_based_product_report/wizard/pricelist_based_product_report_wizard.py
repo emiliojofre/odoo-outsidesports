@@ -6,6 +6,8 @@ import csv
 from io import StringIO
 import base64
 from odoo.http import request
+import logging
+_logger = logging.getLogger(__name__)
 
 
 class PricelistBasedProductReportWizard(models.TransientModel):
@@ -305,6 +307,18 @@ class PricelistBasedProductReportWizard(models.TransientModel):
             writer.writerow(row_list)
         
         filename = 'Pricelist Based Product.csv'
+
+        # Encode CSV data to base64
+        base64_data = base64.b64encode(csvfile.encode('utf-8'))
+
+        # Print base64 string
+        _logger.warning(base64_data)
+
+        # Decode base64 string to CSV data
+        csv_data = base64.b64decode(base64_data).decode('utf-8')
+
+        # Print CSV data
+        _logger.warning(csv_data)
 
         base64_data = base64.b64encode(csvfile.getvalue().encode('utf-8'))
         self.write({
