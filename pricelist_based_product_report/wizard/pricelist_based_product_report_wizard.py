@@ -310,20 +310,21 @@ class PricelistBasedProductReportWizard(models.TransientModel):
         filename = 'Pricelist Based Product.csv'
 
         # Encode CSV data to base64
-        base64_data = base64.b64encode(csvfile.getvalue().encode('utf-8'))
+        test_data_encode = base64.b64encode(csvfile.getvalue().encode('ISO-8859-1'))
 
         # Print base64 string
-        _logger.warning(base64_data)
+        _logger.warning('ENCODE ISO 8859: %s',test_data_encode)
 
         # Decode base64 string to CSV data
-        csv_data = base64.b64decode(base64_data).decode('utf-8')
+        test_data_decode = base64.b64decode(test_data_encode).decode('ISO-8859-1')
 
         # Print CSV data
-        _logger.warning(csv_data)
+        _logger.warning('DEOCDE ISO 8859: %s',test_data_decode)
 
-        base64_data = base64.b64encode(csvfile.getvalue().encode('utf-8'))
+        #base64_data = base64.b64encode(csvfile.getvalue().encode('utf-8')) - base64.b64decode(base64_data).decode('utf-8')
+        csv_data = csvfile.getvalue()
         self.write({
-            'json_file': base64.b64decode(base64_data).decode('utf-8'),
+            'json_file': csv_data,
             'filename': filename,
             'mimetype': 'text/csv'})
         # close file
