@@ -302,12 +302,12 @@ class PricelistBasedProductReportWizard(models.TransientModel):
             result = int(record['selling_price'])*1.19
             row_list.append(str(result))
             writer.writerow(row_list)
+        
         filename = 'Pricelist Based Product.csv'
-        #self.write(
-        #    {'json_file': base64.b64encode(csvfile.getvalue()),
-        #     'filename': filename})
-        file_data = base64.b64encode(csvfile.getvalue())
-        self.csv_data = file_data
+
+        self.write(
+            {'json_file': base64.b64encode(csvfile.getvalue().encode('utf-8')),
+             'filename': filename})
         # close file
         csvfile.close()
         # action = {'name': 'Pricelist Based Product.csv', 'type': 'ir.actions.act_url',
