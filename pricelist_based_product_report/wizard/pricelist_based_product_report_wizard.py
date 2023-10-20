@@ -16,7 +16,7 @@ class PricelistBasedProductReportWizard(models.TransientModel):
     _description = 'Pricelist Based Product Report'
 
     partner_id=fields.Many2one('res.partner','Customer')
-    json_file = fields.Binary('File')
+    json_file = fields.Text('File')
     filename = fields.Char('Filename')
     mimetype = fields.Char('Mimetype')
 
@@ -317,11 +317,9 @@ class PricelistBasedProductReportWizard(models.TransientModel):
 
         base64_data = base64.b64encode(csv_data.encode('utf-8'))  
         
-        padding = '=' * (-len(base64_data) % 4)
-        padding_bytes = padding.encode('utf-8')
-        base64_data += padding_bytes
+ 
         self.write({
-            'json_file': base64.b64decode(base64_data).decode('utf-8'),
+            'json_file': csv_data,
             'filename': filename,
             'mimetype': 'text/csv'})
         # close file
