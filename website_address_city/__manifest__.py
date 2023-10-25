@@ -37,7 +37,7 @@
     'assets': {
         'web.assets_frontend': [
             'website_address_city/static/src/js/website_sale.js',
-            #'website_address_city/static/src/js/portal.js',
+            'website_address_city/static/src/js/portal.js',
         ],
     },
     "images":  ['static/description/odoo-website-address-city-v15.gif'],
