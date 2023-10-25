@@ -4,6 +4,12 @@ from odoo import _, api, fields, models
 import logging
 _logger = logging.getLogger(__name__)
 
+READONLY_FIELD_STATES = {
+    state: [('readonly', True)]
+    for state in {'sale', 'done', 'cancel'}
+}
+
+
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
