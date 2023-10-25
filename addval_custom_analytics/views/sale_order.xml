@@ -1,0 +1,39 @@
+<odoo>
+    <data>
+      <record id="sale_order_custom_analytics" model="ir.ui.view">
+        <field name="name">sale.order.custom.analytics</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="model">sale.order</field>
+        <field name="arch" type="xml">
+            <field name="analytic_account_id" position="replace">
+                <field name="analytic_account_id" string="Proyecto" groups="analytic.group_analytic_accounting" context="{'default_partner_id': partner_id}"/>
+                <field name="area_analytic_account_id" string="Área" groups="analytic.group_analytic_accounting" context="{'default_partner_id': partner_id}"/>
+                <field name="activity_analytic_account_id" string="Actividad" groups="analytic.group_analytic_accounting" context="{'default_partner_id': partner_id}"/>
+            </field>
+            <xpath expr="//page[@name='order_lines']//field[@name='analytic_distribution']" position="replace">
+                <field name="analytic_distribution" widget="analytic_distribution"
+                    string="Proyecto"
+                    groups="analytic.group_analytic_accounting"
+                    optional="show"
+                    options="{'product_field': 'product_id', 'business_domain': 'sale_order'}"
+                />
+                
+                <field name="analytic_distribution_area" widget="analytic_distribution"
+                    string="Área"
+                    groups="analytic.group_analytic_accounting"
+                    optional="show"
+                    options="{'product_field': 'product_id', 'business_domain': 'sale_order'}"
+                />  
+
+                <field name="analytic_distribution_activity" widget="analytic_distribution"
+                    string="Actividad"
+                    groups="analytic.group_analytic_accounting"
+                    optional="show"
+                    options="{'product_field': 'product_id', 'business_domain': 'sale_order'}"
+                />
+            </xpath>
+  
+        </field>
+      </record>
+    </data>
+  </odoo>
