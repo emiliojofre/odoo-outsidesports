@@ -23,7 +23,7 @@
 
     'data': [
         #'security/ir.model.access.csv',
-        'views/res_company.xml',
+        'views/account_move.xml',
     ],
 
     'installable': True,
