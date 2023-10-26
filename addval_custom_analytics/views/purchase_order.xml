@@ -2,7 +2,7 @@
     <data>
       <record id="purchase_order_custom_analytics" model="ir.ui.view">
         <field name="name">purchase.order.custom.analytics</field>
-        <field name="inherit_id" ref="products"/>
+        <field name="inherit_id" ref="purchase.purchase_order_form"/>
         <field name="model">purchase.order</field>
         <field name="arch" type="xml">
             <xpath expr="//page[@name='products']//field[@name='analytic_distribution']" position="replace">
