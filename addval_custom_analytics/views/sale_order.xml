@@ -5,7 +5,7 @@
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="model">sale.order</field>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='order_line']//form//field[@name='analytic_distribution']" position="replace">
+            <xpath expr="//page[@name='order_lines']//field[@name='order_line']//tree//field[@name='analytic_distribution']" position="replace">
                 <field name="analytic_distribution" widget="analytic_distribution"
                     string="Proyecto"
                     groups="analytic.group_analytic_accounting"
