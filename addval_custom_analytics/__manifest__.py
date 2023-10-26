@@ -24,6 +24,9 @@
     'data': [
         #'security/ir.model.access.csv',
         'views/account_move.xml',
+        'views/project_task.xml',
+        'views/purchase_order.xml',
+        'views/sale_order.xml',
     ],
 
     'installable': True,
