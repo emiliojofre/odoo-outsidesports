@@ -7,10 +7,6 @@ _logger = logging.getLogger(__name__)
 class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'
 
-    analytic_distribution_area = fields.Json(
-        inverse="_inverse_analytic_distribution",
-    ) 
+    analytic_distribution_area = fields.Json() 
 
-    analytic_distribution_activity = fields.Json(
-        inverse="_inverse_analytic_distribution",
-    )
+    analytic_distribution_activity = fields.Json()
