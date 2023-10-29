@@ -18,7 +18,8 @@
         'base',
         'account',
         'sale',
-        'account_accountant'
+        'account_accountant',
+        'web_domain_field'
     ],
 
     'data': [
