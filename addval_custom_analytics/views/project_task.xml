@@ -6,9 +6,9 @@
         <field name="model">project.task</field>
         <field name="arch" type="xml">
           <field name="analytic_account_id" position="replace">
-                <field name="analytic_account_id" string="Proyecto" groups="analytic.group_analytic_accounting" context="{'default_partner_id': partner_id}"/>
-                <field name="area_analytic_account_id" string="Área" groups="analytic.group_analytic_accounting" context="{'default_partner_id': partner_id}"/>
-                <field name="activity_analytic_account_id" string="Actividad" groups="analytic.group_analytic_accounting" context="{'default_partner_id': partner_id}"/>
+                <field name="analytic_account_id" string="Proyecto" groups="analytic.group_analytic_accounting"/>
+                <field name="area_analytic_account_id" string="Área" groups="analytic.group_analytic_accounting" />
+                <field name="activity_analytic_account_id" string="Actividad" groups="analytic.group_analytic_accounting" />
           </field>
         </field>
       </record>
