@@ -1,8 +1,8 @@
 from odoo import fields, models
 
 
-class ResConfigSettings(models.TransientModel):
-    _inherit = "res.config.settings"
+class ResCompany(models.Model):
+    _inherit = "res.company"
 
     project_analytic_plan_id = fields.Many2one(
         'account.analytic.plan',

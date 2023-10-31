@@ -26,7 +26,7 @@
                                 string="Plan analítico para áreas"
                                 for="area_analytic__plan_id"/>
                             <div class="text-muted">
-                                Plan analítico de áreas para Tareas
+                                Plan analítico de áreas
                             </div>
                             <div class="content-group mt16">
                                 <field
@@ -39,7 +39,7 @@
                                 string="Plan analítico para actividades"
                                 for="activity_analytic_plan_id"/>
                             <div class="text-muted">
-                                Plan analítico de actividades para Tareas
+                                Plan analítico de actividades
                             </div>
                             <div class="content-group mt16">
                                 <field
