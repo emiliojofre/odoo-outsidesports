@@ -8,7 +8,7 @@ class ProjectTask(models.Model):
     _inherit = 'project.task'
 
     def _get_area_domain(self):
-        return [("plan_id", "=", self.env.ref("company_id.area_analytic_plan_id").id)]
+        return [("plan_id", "=", self.company_id.area_analytic_plan_id.id)]
     
     area_analytic_account_id = fields.Many2one(
         comodel_name='account.analytic.account',
@@ -17,7 +17,7 @@ class ProjectTask(models.Model):
         domain=_get_area_domain)
     
     def _get_activity_domain(self):
-        return [("plan_id", "=", self.env.ref("company_id.activity_analytic_plan_id").id)]
+        return [("plan_id", "=", self.company_id.activity_analytic_plan_id.id)]
     
     activity_analytic_account_id = fields.Many2one(
         comodel_name='account.analytic.account',
