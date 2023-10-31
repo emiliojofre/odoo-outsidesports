@@ -6,12 +6,10 @@
         <field name="model">sale.order</field>
         <field name="arch" type="xml">
             <xpath expr="//page[@name='order_lines']//field[@name='order_line']//tree//field[@name='analytic_distribution']" position="replace">
-                <field name="analytic_distribution_domain" invisible="1"/>
                 <field name="analytic_distribution" widget="analytic_distribution"
                     string="Proyecto"
                     groups="analytic.group_analytic_accounting"
                     options="{'product_field': 'product_id', 'business_domain': 'sale_order'}"
-                    domain="analytic_distribution_domain"
                 />
                 
                 <field name="analytic_distribution_area" widget="analytic_distribution"
