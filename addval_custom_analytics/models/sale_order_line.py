@@ -8,23 +8,28 @@ _logger = logging.getLogger(__name__)
 class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'
 
-    analytic_distribution = fields.Json()
+    @api.depends('order_id.partner_id', 'product_id')
+    def _compute_analytic_distribution_area(self):
+        for line in self:
+            if not line.display_type:
+                area_distribution = line.env['account.analytic.distrubution.model']._get_distribution({
+                    "product_id": line.product_id.id,
+                    "product_categ_id": line.product_id.categ_id.id,
+                    "partner_id": line.order_id.partner_id.id,
+                    "partner_category_id": line.order_id.partner_id.category_id.ids,
+                    "company_id": line.company_id.id,
+                })
+                line.analytic_distribution_area = area_distribution or line.analytic_distribution_area
 
-    analytic_distribution_area = fields.Json(
-        domain="['|', ('company_id', '=', False), ('company_id', '=', company_id), ('plan_id', '=', company_id.area_analytic__plan_id)]"
-    ) 
-
-    analytic_distribution_activity = fields.Json()
-
-    analytic_distribution_domain = fields.Char(
-        compute="_compute_analytic_distribution_domain",
-        readonly=True,
-        store=False,
-    )
-
-    @api.depends('plan_id')
-    def _compute_analytic_distribution_domain(self):
-        for rec in self:
-            rec.analytic_distribution_domain = json.dumps(
-                [('plan_id', '=', rec.company_id.project_analytic_plan_id)]
-            )
+    @api.depends('order_id.partner_id', 'product_id')
+    def _compute_analytic_distribution_activity(self):
+        for line in self:
+            if not line.display_type:
+                activity_distribution = line.env['account.analytic.distrubution.model']._get_distribution({
+                    "product_id": line.product_id.id,
+                    "product_categ_id": line.product_id.categ_id.id,
+                    "partner_id": line.order_id.partner_id.id,
+                    "partner_category_id": line.order_id.partner_id.category_id.ids,
+                    "company_id": line.company_id.id,
+                })
+                line.analytic_distribution_activity = activity_distribution or line.analytic_distribution_activity
