@@ -11,7 +11,7 @@ class ProjectTask(models.Model):
         comodel_name='account.analytic.account',
         string="Área",
         copy=False, check_company=True,  # Unrequired company
-        domain="['|', ('company_id', '=', False), ('company_id', '=', company_id), ('plan_id', '=', company_id.area_analytic__plan_id)]")
+        domain="['|', ('company_id', '=', False), ('company_id', '=', company_id), ('plan_id', '=', company_id.area_analytic_plan_id)]")
     
     activity_analytic_account_id = fields.Many2one(
         comodel_name='account.analytic.account',
