@@ -1,5 +1,5 @@
 from odoo import models, fields, api, _
-from odoo.tools.float_utils import flot_round, float_compare
+from odoo.tools.float_utils import float_round, float_compare
 from odoo.exceptions import UserError, ValidationError
 
 class AnalyticMixin(models.AbstractModel):
