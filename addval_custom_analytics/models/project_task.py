@@ -12,9 +12,6 @@ class ProjectTask(models.Model):
         task_company = self.company_id
         _logger.warning('****TASK COMPANY: %s', task_company)
 
-        allowed_company = self.env.context['allowed_company_ids'][0]
-        _logger.warning('****ALLOWED COMPANY: %s', allowed_company)
-
         user_company = self.env.user.company_id
         _logger.warning('****USER COMPANY: %s', user_company)
         
@@ -32,9 +29,6 @@ class ProjectTask(models.Model):
 
         task_company = self.company_id
         _logger.warning('****TASK COMPANY: %s', task_company)
-
-        allowed_company = self.env.context['allowed_company_ids'][0]
-        _logger.warning('****ALLOWED COMPANY: %s', allowed_company)
 
         user_company = self.env.user.company_id
         _logger.warning('****USER COMPANY: %s', user_company)
