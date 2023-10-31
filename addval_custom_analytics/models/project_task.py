@@ -8,8 +8,10 @@ class ProjectTask(models.Model):
     _inherit = 'project.task'
 
     def _get_area_domain(self):
-        company = self.env['res.company'].sudo().search(['id', '=', self.company_id.id])
+        company = self.env['res.company'].sudo().search([('id', '=', self.company_id.id)], limit=1)
+        _logger.warning('****COMPANY: %s', company)
         company_plan =  company.area_analytic_plan_id
+        _logger.warning('****PLAN_COMPANY: %s', company_plan)
         return [("plan_id", "=", company_plan.id)]
     
     area_analytic_account_id = fields.Many2one(
