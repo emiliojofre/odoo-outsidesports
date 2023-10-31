@@ -14,7 +14,7 @@ class ResConfigSettings(models.TransientModel):
 
     area_analytic__plan_id = fields.Many2one(
         'account.analytic.plan',
-        related='company_id.area_analytic__plan_id',
+        related='company_id.area_analytic_plan_id',
         string = 'Área',
         store = True,
         readonly=False,

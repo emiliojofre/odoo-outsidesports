@@ -11,9 +11,8 @@ class ResCompany(models.Model):
         readonly=False,
     )
 
-    area_analytic__plan_id = fields.Many2one(
+    area_analytic_plan_id = fields.Many2one(
         'account.analytic.plan',
-        related='',
         string = 'Área',
         store = True,
         readonly=False,
