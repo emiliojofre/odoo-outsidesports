@@ -12,7 +12,7 @@ class SaleOrderLine(models.Model):
     def _compute_analytic_distribution_area(self):
         for line in self:
             if not line.display_type:
-                area_distribution = line.env['account.analytic.distrubution.model']._get_distribution({
+                area_distribution = line.env['account.analytic.distribution.model']._get_distribution({
                     "product_id": line.product_id.id,
                     "product_categ_id": line.product_id.categ_id.id,
                     "partner_id": line.order_id.partner_id.id,
@@ -25,7 +25,7 @@ class SaleOrderLine(models.Model):
     def _compute_analytic_distribution_activity(self):
         for line in self:
             if not line.display_type:
-                activity_distribution = line.env['account.analytic.distrubution.model']._get_distribution({
+                activity_distribution = line.env['account.analytic.distribution.model']._get_distribution({
                     "product_id": line.product_id.id,
                     "product_categ_id": line.product_id.categ_id.id,
                     "partner_id": line.order_id.partner_id.id,
