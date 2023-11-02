@@ -14,7 +14,7 @@ class AccountAnalyticPlan(models.Model):
         company_id = kwargs.get('company_id', self.env.company.id)
         record_account_ids = kwargs.get('existing_account_ids', [])
         all_plans = self.search([
-            ('accounts_ids', '!=', False),
+            ('account_ids', '!=', False),
             '|', ('company_id', '=', company_id), ('company_id', '=', False),
         ])
         root_plans = self.browse({
