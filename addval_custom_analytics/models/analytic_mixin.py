@@ -27,6 +27,29 @@ class AnalyticMixin(models.AbstractModel):
         search='_search_analytic_distribution_activity'
     )
 
+    def init(self):
+        query = ''' SELECT table_name
+                    FROM information_schema.tables
+                    WHERE table_name=%s '''
+        self.env.cr.execute(query,[self._table])
+        if self.env.cr.dictfetchone(): 
+            query = f"""
+                CREATE INDEX IF NOT EXIST {self._table}_analytic_distribution_area_gin_index
+                                       ON {self._table} USING gin(analytic_distribution_area);
+            """
+            self.env.cr.execute(query)
+        query = ''' SELECT table_name
+                    FROM information_schema.tables
+                    WHERE table_name=%s '''
+        self.env.cr.execute(query,[self._table])
+        if self.env.cr.dictfetchone(): 
+            query = f"""
+                CREATE INDEX IF NOT EXIST {self._table}_analytic_distribution_activity_gin_index
+                                       ON {self._table} USING gin(analytic_distribution_activity);
+            """
+            self.env.cr.execute(query)
+        super().init()
+
     @api.model
     def fields_get(self, allfields=None, attributes=None):
         res = super().fields_get(allfields, attributes)
@@ -92,3 +115,11 @@ class AnalyticMixin(models.AbstractModel):
 
         operator_inselect = 'inselect' if operator in ('=', 'ilike') else 'not inselect'
         return [('id', operator_inselect, (query, [[str(account_id) for account_id in account_ids], company_plan_id]))]
+
+    def _apply_analytic_distribution_domain(self, domain):
+        return[
+            ('analytic_distribution_search', leaf[1], leaf[2]) if len(leaf) == 3 and leaf[0] == 'analytic_distribution' and isinstance(leaf[2], str) else leaf
+            ('analytic_distribution_area_search', leaf[1], leaf[2]) if len(leaf) == 3 and leaf[0] == 'analytic_distribution_area' and isinstance(leaf[2], str) else leaf
+            ('analytic_distribution_activity_search', leaf[1], leaf[2]) if len(leaf) == 3 and leaf[0] == 'analytic_distribution_activity' and isinstance(leaf[2], str) else leaf
+            for leaf in domain
+        ]
