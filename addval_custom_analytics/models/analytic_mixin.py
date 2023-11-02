@@ -42,8 +42,53 @@ class AnalyticMixin(models.AbstractModel):
     def _compute_analytic_distribution_activity(self):
         pass
 
-    def _apply_analytic_distribution_domain(self, domain):
-        return [
-            ('analytic_distribution_search', leaf[1], leaf[2]) if len(leaf) == 3 and leaf[0] == 'analytic_distribution' and isinstance(leaf[2], str) else leaf
-            for leaf in domain
-        ]
+    def _search_analytic_distribution(self, operator, value):
+        if operator not in ['=', '!=', 'ilike', 'not ilike'] or not isinstance(value, (str, bool)):
+            raise UserError(_('Operator nor supported'))
+        operator_name_search = '=' if operator in ('=', '!=') else 'ilike'
+        account_ids = list(self.env['account.analytic.account'].name_search(name=value, operator=operator_name_search))
+        user_company = self.env.user.company_id        
+        company_plan_id =  user_company.project_analytic_plan_id.id
+        query = f"""
+            SELECT id
+            FROM {self._table}
+            JOIN account_analytic_account ON {self._table}.analytic_account_id = account_analytic_account.id
+            WHERE analytic_distribution ?| array[%s] AND account_analytic_acocunt.plan_id = %s
+        """
+
+        operator_inselect = 'inselect' if operator in ('=', 'ilike') else 'not inselect'
+        return [('id', operator_inselect, (query, [[str(account_id) for account_id in account_ids], company_plan_id]))]
+    
+    def _search_analytic_distribution_area(self, operator, value):
+        if operator not in ['=', '!=', 'ilike', 'not ilike'] or not isinstance(value, (str, bool)):
+            raise UserError(_('Operator nor supported'))
+        operator_name_search = '=' if operator in ('=', '!=') else 'ilike'
+        account_ids = list(self.env['account.analytic.account'].name_search(name=value, operator=operator_name_search))
+        user_company = self.env.user.company_id        
+        company_plan_id =  user_company.area_analytic_plan_id.id
+        query = f"""
+            SELECT id
+            FROM {self._table}
+            JOIN account_analytic_account ON {self._table}.analytic_account_id = account_analytic_account.id
+            WHERE analytic_distribution ?| array[%s] AND account_analytic_acocunt.plan_id = %s
+        """
+
+        operator_inselect = 'inselect' if operator in ('=', 'ilike') else 'not inselect'
+        return [('id', operator_inselect, (query, [[str(account_id) for account_id in account_ids], company_plan_id]))]
+    
+    def _search_analytic_distribution_activity(self, operator, value):
+        if operator not in ['=', '!=', 'ilike', 'not ilike'] or not isinstance(value, (str, bool)):
+            raise UserError(_('Operator nor supported'))
+        operator_name_search = '=' if operator in ('=', '!=') else 'ilike'
+        account_ids = list(self.env['account.analytic.account'].name_search(name=value, operator=operator_name_search))
+        user_company = self.env.user.company_id        
+        company_plan_id =  user_company.activity_analytic_plan_id.id
+        query = f"""
+            SELECT id
+            FROM {self._table}
+            JOIN account_analytic_account ON {self._table}.analytic_account_id = account_analytic_account.id
+            WHERE analytic_distribution ?| array[%s] AND account_analytic_acocunt.plan_id = %s
+        """
+
+        operator_inselect = 'inselect' if operator in ('=', 'ilike') else 'not inselect'
+        return [('id', operator_inselect, (query, [[str(account_id) for account_id in account_ids], company_plan_id]))]
