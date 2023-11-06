@@ -30,6 +30,11 @@
         #'views/purchase_order.xml',
         'views/sale_order.xml',
     ],
+    'assets': {
+        'web.assets_backend': [
+            'addval_custom_analytics/static/src/components/**/*',
+        ]
+    },
 
     'installable': True,
     'application': True,
