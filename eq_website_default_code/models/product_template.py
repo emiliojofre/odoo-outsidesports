@@ -12,7 +12,7 @@ class ProductTemplate(models.Model):
     _inherit = 'product.template'
 
     product_tmpl_pvp = fields.Float(
-        'PVP Producto', default=1.0,
+        'PVP', default=1.0,
     )
 
     def _get_combination_info(self, combination=False, product_id=False, add_qty=1, pricelist=False, parent_combination=False, only_template=False):
