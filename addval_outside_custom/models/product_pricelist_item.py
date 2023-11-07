@@ -58,6 +58,8 @@ class PricelistItem(models.Model):
         for item in self:
             if item.applied_on == "2_product_category" and not item.categ_id:
                 raise ValidationError(_("Please specify the category for which this rule should be applied"))
+            elif item.applied_on == "4_brand" and not item.brand_id:
+                raise ValidationError(_("Please specify the brand for which this rule should be applied"))
             elif item.applied_on == "1_product" and not item.product_tmpl_id:
                 raise ValidationError(_("Please specify the product for which this rule should be applied"))
             elif item.applied_on == "0_product_variant" and not item.product_id:
