@@ -1,0 +1,14 @@
+<odoo>
+    <data>
+      <record id="product_product_pvp" model="ir.ui.view">
+        <field name="name">product.product.pvp</field>
+        <field name="inherit_id" ref="product.product_variant_easy_edit_view"/>
+        <field name="model">product.product</field>
+        <field name="arch" type="xml">
+          <field name="lst_price" position="after">
+              <field name="product_product_pvp" string="Marca" options="{'no_create': True, 'no_create_edit':True}"/>
+          </field>
+        </field>
+      </record>
+    </data>
+  </odoo>

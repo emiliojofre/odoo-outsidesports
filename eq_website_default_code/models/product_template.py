@@ -5,11 +5,15 @@
 #
 ##############################################################################
 
-from odoo import api, models, _
+from odoo import api, fields, models, _
 
 
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
+
+    product_tmpl_pvp = fields.Float(
+        'PVP Producto', default=1.0,
+    )
 
     def _get_combination_info(self, combination=False, product_id=False, add_qty=1, pricelist=False, parent_combination=False, only_template=False):
         combination_info = super(ProductTemplate, self)._get_combination_info(
@@ -20,11 +24,11 @@ class ProductTemplate(models.Model):
         if combination_info.get('product_id'):
             product_id = self.env['product.product'].browse(combination_info['product_id'])
             default_code = product_id.default_code
-            pvp = product_id.lst_price
+            pvp = product_id.product_product_pvp
         if not default_code and combination_info.get('product_template_id'):
             product_id = self.env['product.template'].browse(combination_info['product_template_id'])
             default_code = product_id.default_code
-            pvp = product_id.list_price
+            pvp = product_id.product_tmpl_pvp
         combination_info['default_code'] = default_code
         combination_info['pvp'] = pvp
         return combination_info
