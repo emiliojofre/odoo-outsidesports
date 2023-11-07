@@ -4,10 +4,10 @@
 <!-- License URL : https://store.webkul.com/license.html/ -->
 <odoo>
     <template id="inherit_address" inherit_id="website_sale.address" name="Add city in address">
-        <xpath expr="//div[1]/div[1]/div[2]/div[2]//form/div[hasclass('row')]/div[12]" position="after">
+        <xpath expr="//div[1]/div[1]/div[2]/div[2]//form/div[hasclass('row')]/div[11]" position="after">
             <div class="form-group col-lg-6 div_state_city" t-att-style="(not country or not country.state_ids) and 'display: none'">
                 <label class="col-form-label" for="city_id">Comuna</label>
-                <select name="city_id" t-attf-class="form-control #{error.get('city_id') and 'is-invalid' or ''}" data-init="1" style="padding: 0px 0px 0px 10px;">
+                <select name="city_id" t-attf-class="form-control #{error.get('city_id') and 'is-invalid' or ''}" data-init="1" style="margin-bottom: 5px;">
                     <option value="">Comuna...</option>
                     <t t-foreach="state_city" t-as="s">
                         <option t-att-value="s.id" t-att-selected="s.id == ('city_id' in checkout and country and checkout['city_id'] != '' and int(checkout['city_id']))">
