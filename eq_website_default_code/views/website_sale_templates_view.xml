@@ -25,7 +25,9 @@
                     <span style="font-weight: bold;">SKU: </span>
                     <span style="margin-left:3px;font-weight: bold;" class="default_code" t-esc="combination_info['default_code']" />
                 </div>
-                <br/>
+                <div>
+                    <p>____________________________________________________________</p>
+                </div>
                 <div>
                     <span style="font-weight: bold;">PVP: </span>
                     <span style="margin-left:3px;font-weight: bold;" class="pvp" t-esc="combination_info['pvp']" />
@@ -41,7 +43,9 @@
                     <span class="h6 mb-0" style="font-weight: bold;">SKU: </span>
                     <span class="h6 mb-0" style="font-weight: bold;" t-field="product.default_code"/>
                 </div>
-                <br/>
+                <div>
+                    <p>____________________________________________________________</p>
+                </div>
                 <div>
                     <span class="h6 mb-0" style="font-weight: bold;">PVP: </span>
                     <span class="h6 mb-0" style="font-weight: bold;" t-field="product.list_price"/>
