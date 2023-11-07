@@ -18,7 +18,7 @@
     </template>
 
     <template id="product_default_codes" inherit_id="website_sale.product" active="True" name="Product Internal Reference">
-        <xpath expr="//div[@id='product_details']//form//div[@id='product_option_block']" position="after">
+        <xpath expr="//div[@id='product_details']//form" position="after">
             <t t-if="combination_info['default_code']">
                 <hr/>
                 <div>
@@ -26,7 +26,10 @@
                     <span style="margin-left:3px;font-weight: bold;" class="default_code" t-esc="combination_info['default_code']" />
                 </div>
                 <div>
-                    <p> - </p>
+
+                </div>
+                <div>
+
                 </div>
                 <div>
                     <span style="font-weight: bold;">PVP: </span>
@@ -37,14 +40,17 @@
     </template>
 
     <template id="products_item_default_codes" inherit_id="website_sale.products_item" active="True" name="Product Internal Reference">
-        <xpath expr="//*[hasclass('o_wsale_products_item_title')]" position="after">
+        <xpath expr="//div[@id='product_details']//form" position="after">
             <t t-if="product.default_code">
                 <div>
                     <span class="h6 mb-0" style="font-weight: bold;">SKU: </span>
                     <span class="h6 mb-0" style="font-weight: bold;" t-field="product.default_code"/>
                 </div>
                 <div>
-                    <p> - </p>
+
+                </div>
+                <div>
+
                 </div>
                 <div>
                     <span class="h6 mb-0" style="font-weight: bold;">PVP: </span>
