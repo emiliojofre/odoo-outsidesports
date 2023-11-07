@@ -5,7 +5,7 @@
         <field name="inherit_id" ref="product.product_template_only_form_view"/>
         <field name="model">product.template</field>
         <field name="arch" type="xml">
-          <field name="list_price" position="after">
+          <field name="taxes_id" position="after">
                 <label for="product_tmpl_pvp" string="PVP"/>
                 <field name="product_tmpl_pvp" widget="monetary"/>
           </field>
