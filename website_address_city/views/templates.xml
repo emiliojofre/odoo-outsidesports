@@ -4,10 +4,10 @@
 <!-- License URL : https://store.webkul.com/license.html/ -->
 <odoo>
     <template id="inherit_address" inherit_id="website_sale.address" name="Add city in address">
-        <xpath expr="//div[1]/div[1]/div[2]/div[2]//form/div[hasclass('row')]/div[12]" position="after">
+        <xpath expr="//div[1]/div[1]/div[2]/div[2]//form/div[hasclass('row')]/div[10]" position="replace">
             <div class="form-group col-lg-6 div_state_city" t-att-style="(not country or not country.state_ids) and 'display: none'">
                 <label class="col-form-label" for="city_id">Comuna</label>
-                <select name="city_id" t-attf-class="form-control #{error.get('city_id') and 'is-invalid' or ''}" data-init="1" style="margin-bottom: 10px;">
+                <select name="city_id" t-attf-class="form-control #{error.get('city_id') and 'is-invalid' or ''}" data-init="1">
                     <option value="">Comuna...</option>
                     <t t-foreach="state_city" t-as="s">
                         <option t-att-value="s.id" t-att-selected="s.id == ('city_id' in checkout and country and checkout['city_id'] != '' and int(checkout['city_id']))">
@@ -23,12 +23,12 @@
         </xpath>
     </template>
     <template id="inherit_portal_my_details" inherit_id="portal.portal_my_details_fields" name="Inherit portal my detail">
-        <xpath expr="//div[11]" position="after">
+        <xpath expr="//div[11]" position="replace">
             <t t-set="cities" t-value="request.env['res.city'].search([('state_id','=',partner.state_id.id)])" />
             <div t-attf-class="form-group #{error.get('city_id') and 'o_has_error' or ''} col-xl-6" t-att-style="'display:block' if cities else 'display:none'">
                 <label class="col-form-label label-optional" for="city_id">Comuna</label>
                 <t t-set="cities" t-value="request.env['res.city'].search([('state_id','=',partner.state_id.id)])" />
-                <select name="city_id" t-attf-class="form-control #{error.get('city_id') and 'is-invalid' or ''}" style="margin-bottom: 10px;">
+                <select name="city_id" t-attf-class="form-control #{error.get('city_id') and 'is-invalid' or ''}">
                     <t t-foreach="cities or []" t-as="c">
                         <option t-att-value="c.id" t-att-data-state_id="c.state_id.id" t-att-selected="c.id == partner.city_id.id">
                             <t t-esc="c.name" />
