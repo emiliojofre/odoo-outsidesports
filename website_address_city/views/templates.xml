@@ -16,6 +16,17 @@
                     </t>
                 </select>
             </div>
+            <div t-attf-class="form-group #{error.get('city') and 'o_has_error' or ''} col-md-8 div_city">
+                <label class="col-form-label" for="city_id">Comuna</label>
+                <select name="city_id" t-attf-class="form-control #{error.get('city_id') and 'is-invalid' or ''}" data-init="1">
+                    <option value="">Comuna...</option>
+                    <t t-foreach="state_city" t-as="s">
+                        <option t-att-value="s.id" t-att-selected="s.id == ('city_id' in checkout and country and checkout['city_id'] != '' and int(checkout['city_id']))">
+                            <t t-esc="s.name" />
+                        </option>
+                    </t>
+                </select>
+            </div>
         </xpath>
     </template>
     <template id="inherit_portal_my_details" inherit_id="portal.portal_my_details_fields" name="Inherit portal my detail">
