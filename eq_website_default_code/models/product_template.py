@@ -11,8 +11,8 @@ from odoo import api, fields, models, _
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
 
-    product_tmpl_pvp = fields.Float(
-        'PVP', default=1.0,
+    product_tmpl_pvp = fields.Monetary(
+        'PVP', default=1,currency_field='currency_id'
     )
 
     def _get_combination_info(self, combination=False, product_id=False, add_qty=1, pricelist=False, parent_combination=False, only_template=False):
