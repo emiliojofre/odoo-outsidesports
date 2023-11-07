@@ -18,22 +18,18 @@
     </template>
 
     <template id="product_default_codes" inherit_id="website_sale.product" active="True" name="Product Internal Reference">
-        <xpath expr="//div[@id='product_details']//form" position="after">
+        <xpath expr="//div[@id='product_details']//form//div[@id='product_option_block']" position="after">
             <t t-if="combination_info['default_code']">
-                <hr/>
-                <div>
-                    <span style="font-weight: bold;">SKU: </span>
-                    <span style="margin-left:3px;font-weight: bold;" class="default_code" t-esc="combination_info['default_code']" />
-                </div>
-                <div>
-
-                </div>
-                <div>
-
-                </div>
-                <div>
-                    <span style="font-weight: bold;">PVP: </span>
-                    <span style="margin-left:3px;font-weight: bold;" class="pvp" t-esc="combination_info['pvp']" />
+                <div clas="d-flex flex-wrap align-items-center">
+                    <hr/>
+                    <div>
+                        <span style="font-weight: bold;">SKU: </span>
+                        <span style="margin-left:3px;font-weight: bold;" class="default_code" t-esc="combination_info['default_code']" />
+                    </div>
+                    <div>
+                        <span style="font-weight: bold;">PVP: </span>
+                        <span style="margin-left:3px;font-weight: bold;" class="pvp" t-esc="combination_info['pvp']" />
+                    </div>
                 </div>
             </t>
         </xpath>
@@ -43,18 +39,14 @@
         <xpath expr="//*[hasclass('o_wsale_products_item_title')]" position="after">
             <t t-if="product.default_code">
                 <div>
-                    <span class="h6 mb-0" style="font-weight: bold;">SKU: </span>
-                    <span class="h6 mb-0" style="font-weight: bold;" t-field="product.default_code"/>
-                </div>
-                <div>
-
-                </div>
-                <div>
-
-                </div>
-                <div>
-                    <span class="h6 mb-0" style="font-weight: bold;">PVP: </span>
-                    <span class="h6 mb-0" style="font-weight: bold;" t-field="product.list_price"/>
+                    <div>
+                        <span class="h6 mb-0" style="font-weight: bold;">SKU: </span>
+                        <span class="h6 mb-0" style="font-weight: bold;" t-field="product.default_code"/>
+                    </div>
+                    <div>
+                        <span class="h6 mb-0" style="font-weight: bold;">PVP: </span>
+                        <span class="h6 mb-0" style="font-weight: bold;" t-field="product.list_price"/>
+                    </div>
                 </div>
             </t>
         </xpath>
