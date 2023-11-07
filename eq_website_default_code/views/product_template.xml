@@ -6,7 +6,8 @@
         <field name="model">product.template</field>
         <field name="arch" type="xml">
           <field name="list_price" position="after">
-              <field name="product_tmpl_pvp" string="PVP" widget="monetary"/>
+                <label for="product_tmpl_pvp" string="PVP"/>
+                <field name="product_tmpl_pvp" widget="monetary"/>
           </field>
         </field>
       </record>
