@@ -23,7 +23,7 @@
         </xpath>
     </template>
     <template id="inherit_portal_my_details" inherit_id="portal.portal_my_details_fields" name="Inherit portal my detail">
-        <xpath expr="//div[12]" position="after">
+        <xpath expr="//div[11]" position="after">
             <t t-set="cities" t-value="request.env['res.city'].search([('state_id','=',partner.state_id.id)])" />
             <div t-attf-class="form-group #{error.get('city_id') and 'o_has_error' or ''} col-xl-6" t-att-style="'display:block' if cities else 'display:none'">
                 <label class="col-form-label label-optional" for="city_id">Comuna</label>
