@@ -17,15 +17,8 @@
                 </select>
             </div>
             <div t-attf-class="form-group #{error.get('city') and 'o_has_error' or ''} col-md-8 div_city">
-                <label class="col-form-label" for="city_id">Comuna</label>
-                <select name="city_id" t-attf-class="form-control #{error.get('city_id') and 'is-invalid' or ''}" data-init="1">
-                    <option value="">Comuna...</option>
-                    <t t-foreach="state_city" t-as="s">
-                        <option t-att-value="s.id" t-att-selected="s.id == ('city_id' in checkout and country and checkout['city_id'] != '' and int(checkout['city_id']))">
-                            <t t-esc="s.name" />
-                        </option>
-                    </t>
-                </select>
+                <label class="col-form-label" for="city">Comuna</label>
+                <input type="text" name="city" t-attf-class="form-control #{error.get('city') and 'is-invalid' or ''}" t-att-value="'city' in checkout and checkout['city']" />
             </div>
         </xpath>
     </template>
