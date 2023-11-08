@@ -101,8 +101,7 @@ class ReportPricelistBasedProductDetails(models.AbstractModel):
             elif line.applied_on == '4_brand':
                 brand_ids = {}
                 brand = line.brand_id
-                while brand:
-                    brand_ids[brand.id] = True
+                brand_ids[brand.id] = True
                 brand_ids = list(brand_ids)
                 product_tmpl_recs = product_template_obj.search([('product_brand_id', 'in', brand_ids)])
                 for product_tmpl in product_tmpl_recs:
