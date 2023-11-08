@@ -118,6 +118,35 @@ class PricelistBasedProductReportWizard(models.TransientModel):
                             vals['selling_price'] = selling_price
                         products[rec.id] = vals
                         products_added.append(rec.id)
+            elif line.applied_on == '4_brand':
+                brand_ids = {}
+                brand = line.brand_id
+                while brand:
+                    brand_ids[brand.id] = True
+                brand_ids = list(brand_ids)
+                product_tmpl_recs = product_template_obj.search([('product_brand_id', 'in', brand_ids)])
+                for product_tmpl in product_tmpl_recs:
+                    for rec in product_tmpl.product_variant_ids:
+                        if rec.id not in products_added and rec.website_published:
+                            product_url = request.httprequest.host_url + "shop/product/%s" % (rec.product_tmpl_id.id,)
+                            principal_image_url = request.httprequest.host_url + 'web/image/product.product/%s/image_medium' % rec.id
+                            vals = {'product_id': rec.id, 'product_name': rec.name,
+                                    'code': rec.default_code, 'uom': '',
+                                    'qty': rec.qty_available, 'customer_price': 0.0, 'selling_price': 0.0,
+                                    'barcode': rec.barcode or '',
+                                    'brand': rec.product_brand_id.name if rec.product_brand_id else '',
+                                    'product_url': product_url, 'principal_image_url': principal_image_url}
+                            customer_price = product_pricelist._get_product_price(line.product_id,1,None,False)
+                            if not customer_price:
+                                customer_price = rec.list_price
+                            vals['customer_price'] = customer_price
+                            if product_base_pricelist:
+                                selling_price = product_base_pricelist._get_product_price(line.product_id,1,None,False)
+                                if not selling_price:
+                                    selling_price = rec.list_price
+                                vals['selling_price'] = selling_price
+                            products[rec.id] = vals
+                            products_added.append(rec.id)
 
 
         products=sorted([{
@@ -275,6 +304,35 @@ class PricelistBasedProductReportWizard(models.TransientModel):
                             vals['selling_price'] = selling_price
                         products[rec.id] = vals
                         products_added.append(rec.id)
+            elif line.applied_on == '4_brand':
+                brand_ids = {}
+                brand = line.brand_id
+                while brand:
+                    brand_ids[brand.id] = True
+                brand_ids = list(brand_ids)
+                product_tmpl_recs = product_template_obj.search([('product_brand_id', 'in', brand_ids)])
+                for product_tmpl in product_tmpl_recs:
+                    for rec in product_tmpl.product_variant_ids:
+                        if rec.id not in products_added and rec.website_published:
+                            product_url = request.httprequest.host_url + "shop/product/%s" % (rec.product_tmpl_id.id,)
+                            principal_image_url = request.httprequest.host_url + 'web/image/product.product/%s/image_medium' % rec.id
+                            vals = {'product_id': rec.id, 'product_name': rec.name,
+                                    'code': rec.default_code, 'uom': '',
+                                    'qty': rec.qty_available, 'customer_price': 0.0, 'selling_price': 0.0,
+                                    'barcode': rec.barcode or '',
+                                    'brand': rec.product_brand_id.name if rec.product_brand_id else '',
+                                    'product_url': product_url, 'principal_image_url': principal_image_url}
+                            customer_price = product_pricelist._get_product_price(line.product_id,1,None,False)
+                            if not customer_price:
+                                customer_price = rec.list_price
+                            vals['customer_price'] = customer_price
+                            if product_base_pricelist:
+                                selling_price = product_base_pricelist._get_product_price(line.product_id,1,None,False)
+                                if not selling_price:
+                                    selling_price = rec.list_price
+                                vals['selling_price'] = selling_price
+                            products[rec.id] = vals
+                            products_added.append(rec.id)
 
         products = sorted([{
             'product_id': product['product_id'],
