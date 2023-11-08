@@ -273,7 +273,7 @@ class PricelistBasedProductReportWizard(models.TransientModel):
                                     'barcode': rec.barcode or '',
                                     'brand': rec.product_brand_id.name if rec.product_brand_id else '',
                                     'product_url': product_url, 'principal_image_url': principal_image_url}
-                            _logger.warning('LINE.PRODUCT_ID: %s', rec.product_id)
+                            _logger.warning('LINE.PRODUCT_ID: %s', rec.id)
                             customer_price = product_pricelist._get_product_price(rec.id,1,None,False)
                             if not customer_price:
                                 customer_price = rec.lst_price
@@ -298,7 +298,7 @@ class PricelistBasedProductReportWizard(models.TransientModel):
                                 'barcode': rec.barcode or '',
                                 'brand': rec.product_brand_id.name if rec.product_brand_id else '', 'product_url': product_url,
                                 'principal_image_url': principal_image_url}
-                        _logger.warning('LINE.PRODUCT_ID: %s', line.product_id)
+                        _logger.warning('LINE.PRODUCT_ID: %s', rec.product_id)
                         customer_price = product_pricelist._get_product_price(rec.product_id,1,None,False)
                         if not customer_price:
                             customer_price = rec.lst_price
@@ -328,7 +328,7 @@ class PricelistBasedProductReportWizard(models.TransientModel):
                                     'barcode': rec.barcode or '',
                                     'brand': rec.product_brand_id.name if rec.product_brand_id else '',
                                     'product_url': product_url, 'principal_image_url': principal_image_url}
-                            _logger.warning('LINE.PRODUCT_ID: %s', line.product_id)
+                            _logger.warning('LINE.PRODUCT_ID: %s', rec.id)
                             customer_price = product_pricelist._get_product_price(rec.id,1,None,False)
                             if not customer_price:
                                 customer_price = rec.lst_price
