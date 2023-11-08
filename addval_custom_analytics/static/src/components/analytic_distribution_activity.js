@@ -663,17 +663,17 @@ export class AnalyticDistributionActivity extends Component {
         return formatPercentage(value / 100, { digits: [false, this.props.record.data.analytic_precision || 2] });
     }
 }
-AnalyticDistribution.template = "analytic.AnalyticDistribution";
-AnalyticDistribution.supportedTypes = ["char", "text"];
-AnalyticDistribution.components = {
+AnalyticDistributionActivity.template = "analytic.AnalyticDistribution";
+AnalyticDistributionActivity.supportedTypes = ["char", "text"];
+AnalyticDistributionActivity.components = {
     AutoComplete,
     TagsList,
 }
 
-AnalyticDistribution.fieldDependencies = {
+AnalyticDistributionActivity.fieldDependencies = {
     analytic_precision: { type: 'integer' },
 }
-AnalyticDistribution.props = {
+AnalyticDistributionActivity.props = {
     ...standardFieldProps,
     business_domain: { type: String, optional: true },
     account_field: { type: String, optional: true },
@@ -682,7 +682,7 @@ AnalyticDistribution.props = {
     force_applicability: { type: String, optional: true },
     allow_save: { type: Boolean },
 }
-AnalyticDistribution.extractProps = ({ field, attrs }) => {
+AnalyticDistributionActivity.extractProps = ({ field, attrs }) => {
     return {
         business_domain: attrs.options.business_domain,
         account_field: attrs.options.account_field,
