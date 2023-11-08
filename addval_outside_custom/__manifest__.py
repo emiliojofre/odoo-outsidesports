@@ -20,6 +20,7 @@
         'base',
         'sale',
         'product',
+        'website_product_brands'
     ],
 
     'data': [
