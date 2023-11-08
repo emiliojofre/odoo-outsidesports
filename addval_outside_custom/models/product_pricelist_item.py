@@ -44,7 +44,10 @@ class ProductPricelistItem(models.Model):
     def _is_applicable_for(self, product, qty):
         self.ensure_one()
         if self.applied_on == '4_brand':
-            return product.brand_id == self.brand_id
+            if product.brand_id:
+                return product.brand_id == self.brand_id
+            else:
+                return product.product_tmpl_id.brand_id == self.brand_id
         else:
             return super(ProductPricelistItem, self)._is_applicable_for(product, qty)
     
