@@ -46,5 +46,5 @@ class ProductPricelistItem(models.Model):
         if self.applied_on == '4_brand':
             return product.brand_id == self.brand_id
         else:
-            return super(ProductPricelistItem, self)._compute_price(product, qty)
+            return super(ProductPricelistItem, self)._is_applicable_for(product, qty)
     
