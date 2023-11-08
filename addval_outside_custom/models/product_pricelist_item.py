@@ -19,7 +19,7 @@ class ProductPricelistItem(models.Model):
         selection_add=[
             ('4_brand', "Marca")
         ],
-        ondelete='set_default')
+        ondelete='set null')
     
     brand_id = fields.Many2one(
         comodel_name='wk.product.brand', 
