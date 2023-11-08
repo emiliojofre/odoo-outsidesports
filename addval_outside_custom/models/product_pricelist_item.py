@@ -18,13 +18,11 @@ class ProductPricelistItem(models.Model):
     applied_on = fields.Selection(
         selection_add=[
             ('4_brand', "Marca")
-        ],
-        ondelete='set null')
+        ])
     
     brand_id = fields.Many2one(
         comodel_name='wk.product.brand', 
         string="Marca", 
-        ondelete='cascade',
         store=True)
 
     @api.depends('applied_on', 'categ_id', 'product_tmpl_id', 'product_id', 'brand_id','compute_price', 'fixed_price', \
