@@ -222,39 +222,37 @@ class PricelistBasedProductReportWizard(models.TransientModel):
                 _logger.warning('LINE.PRODUCT_ID: %s', line.product_id)
                 customer_price = product_pricelist._get_product_price(line.product_id,1,None,False)
                 if not customer_price:
-                    customer_price = line.product_id.list_price
+                    customer_price = line.product_id.lst_price
                 vals['customer_price'] = customer_price
                 if product_base_pricelist:
                     selling_price = product_base_pricelist._get_product_price(line.product_id,1,None,False)
                     if not selling_price:
-                        selling_price = line.product_id.list_price
+                        selling_price = line.product_id.lst_price
                     vals['selling_price'] = selling_price
                 products[line.product_id.id] = vals
                 products_added.append(line.product_id.id)
             elif line.applied_on == '1_product':
                 _logger.warning('ENTRO EN PRODUCT')
-                for rec in line.product_tmpl_id.product_variant_ids:
-                    if rec.id not in products_added and rec.website_published:
-                        product_url = request.httprequest.host_url + "shop/product/%s" % (rec.product_tmpl_id.id,)
-                        principal_image_url = request.httprequest.host_url + 'web/image/product.product/%s/image_medium' % rec.id
-                        vals = {'product_id': rec.id, 'product_name': rec.name,
-                                'code': rec.default_code, 'uom': '',
-                                'qty': rec.qty_available, 'customer_price': 0.0, 'selling_price': 0.0,
-                                'barcode': rec.barcode or '',
-                                'brand': rec.product_brand_id.name if rec.product_brand_id else '', 'product_url': product_url,
-                                'principal_image_url': principal_image_url}
-                        _logger.warning('LINE.PRODUCT_ID: %s', line.product_id)
-                        customer_price = product_pricelist._get_product_price(line.product_id,1,None,False)
-                        if not customer_price:
-                            customer_price = rec.list_price
-                        vals['customer_price'] = customer_price
-                        if product_base_pricelist:
-                            selling_price = product_base_pricelist._get_product_price(line.product_id,1,None,False)
-                            if not selling_price:
-                                selling_price = rec.list_price
-                            vals['selling_price'] = selling_price
-                        products[rec.id] = vals
-                        products_added.append(rec.id)
+                product_url = request.httprequest.host_url + "shop/product/%s" % (line.product_tmpl_id.id,)
+                principal_image_url = request.httprequest.host_url + 'web/image/product.product/%s/image_medium' % line.id
+                vals = {'product_id': line.product_tmpl_id.id, 'product_name': line.product_tmpl_id.name,
+                        'code': line.product_tmpl_id.id.default_code, 'uom': '',
+                        'qty': line.product_tmpl_id.id.qty_available, 'customer_price': 0.0, 'selling_price': 0.0,
+                        'barcode': line.product_tmpl_id.id.barcode or '',
+                        'brand': line.product_tmpl_id.product_brand_id.name if line.product_tmpl_id.id.product_brand_id else '', 'product_url': product_url,
+                        'principal_image_url': principal_image_url}
+                _logger.warning('LINE.product_tmpl_id: %s', line.product_tmpl_id)
+                customer_price = product_pricelist._get_product_price(line.product_tmpl_id,1,None,False)
+                if not customer_price:
+                    customer_price = line.product_tmpl_id.list_price 
+                vals['customer_price'] = customer_price
+                if product_base_pricelist:
+                    selling_price = product_base_pricelist._get_product_price(line.product_tmpl_id,1,None,False)
+                    if not selling_price:
+                        selling_price = line.product_tmpl_id.list_price
+                    vals['selling_price'] = selling_price
+                products[rec.id] = vals
+                products_added.append(rec.id)
             elif line.applied_on == '2_product_category':
                 _logger.warning('ENTRO EN PRODUCT CATEGORY')
                 categ_ids = {}
@@ -275,15 +273,15 @@ class PricelistBasedProductReportWizard(models.TransientModel):
                                     'barcode': rec.barcode or '',
                                     'brand': rec.product_brand_id.name if rec.product_brand_id else '',
                                     'product_url': product_url, 'principal_image_url': principal_image_url}
-                            _logger.warning('LINE.PRODUCT_ID: %s', line.product_id)
-                            customer_price = product_pricelist._get_product_price(line.product_id,1,None,False)
+                            _logger.warning('LINE.PRODUCT_ID: %s', rec.product_id)
+                            customer_price = product_pricelist._get_product_price(rec.id,1,None,False)
                             if not customer_price:
-                                customer_price = rec.list_price
+                                customer_price = rec.lst_price
                             vals['customer_price'] = customer_price
                             if product_base_pricelist:
-                                selling_price = product_base_pricelist._get_product_price(line.product_id,1,None,False)
+                                selling_price = product_base_pricelist._get_product_price(rec.id,1,None,False)
                                 if not selling_price:
-                                    selling_price = rec.list_price
+                                    selling_price = rec.lst_price
                                 vals['selling_price'] = selling_price
                             products[rec.id] = vals
                             products_added.append(rec.id)
@@ -301,14 +299,14 @@ class PricelistBasedProductReportWizard(models.TransientModel):
                                 'brand': rec.product_brand_id.name if rec.product_brand_id else '', 'product_url': product_url,
                                 'principal_image_url': principal_image_url}
                         _logger.warning('LINE.PRODUCT_ID: %s', line.product_id)
-                        customer_price = product_pricelist._get_product_price(line.product_id,1,None,False)
+                        customer_price = product_pricelist._get_product_price(rec.product_id,1,None,False)
                         if not customer_price:
-                            customer_price = rec.list_price
+                            customer_price = rec.lst_price
                         vals['customer_price'] = customer_price
                         if product_base_pricelist:
-                            selling_price = product_base_pricelist._get_product_price(line.product_id,1,None,False)
+                            selling_price = product_base_pricelist._get_product_price(rec.product_id,1,None,False)
                             if not selling_price:
-                                selling_price = rec.list_price
+                                selling_price = rec.lst_price
                             vals['selling_price'] = selling_price
                         products[rec.id] = vals
                         products_added.append(rec.id)
@@ -331,14 +329,14 @@ class PricelistBasedProductReportWizard(models.TransientModel):
                                     'brand': rec.product_brand_id.name if rec.product_brand_id else '',
                                     'product_url': product_url, 'principal_image_url': principal_image_url}
                             _logger.warning('LINE.PRODUCT_ID: %s', line.product_id)
-                            customer_price = product_pricelist._get_product_price(line.product_id,1,None,False)
+                            customer_price = product_pricelist._get_product_price(rec.id,1,None,False)
                             if not customer_price:
-                                customer_price = rec.list_price
+                                customer_price = rec.lst_price
                             vals['customer_price'] = customer_price
                             if product_base_pricelist:
-                                selling_price = product_base_pricelist._get_product_price(line.product_id,1,None,False)
+                                selling_price = product_base_pricelist._get_product_price(rec.id,1,None,False)
                                 if not selling_price:
-                                    selling_price = rec.list_price
+                                    selling_price = rec.lsst_price
                                 vals['selling_price'] = selling_price
                             products[rec.id] = vals
                             products_added.append(rec.id)
