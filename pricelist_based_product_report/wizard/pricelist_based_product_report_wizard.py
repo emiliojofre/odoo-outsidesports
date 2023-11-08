@@ -206,64 +206,91 @@ class PricelistBasedProductReportWizard(models.TransientModel):
         product_base_pricelist = self.env['product.pricelist'].sudo().search([('name', '=', 'Sugerido Público')], limit=1)
         product_template_obj = self.env['product.template'].sudo()
         product_product_obj = self.env['product.product'].sudo()
-        for line in product_pricelist.item_ids:
-            _logger.warning('APPLIED_ON: %s', line.applied_on)
-            if line.applied_on == '0_product_variant' and line.product_id.website_published and line.product_id.id not in products_added:
-                _logger.warning('ENTRO EN PRODUCT VARIANT')
-                product_url = request.httprequest.host_url + "shop/product/%s" % (line.product_id.product_tmpl_id.id,)
-                principal_image_url = request.httprequest.host_url + 'web/image/product.product/%s/image_medium' % line.product_id.id
-                vals = {'product_id': line.product_id.id, 'product_name': line.product_id.name,
-                        'code': line.product_id.default_code,
-                        'uom': '',
-                        'qty': line.product_id.qty_available, 'customer_price': 0.0, 'selling_price': 0.0,
-                        'barcode': line.product_id.barcode or '',
-                        'brand': line.product_id.product_brand_id.name if line.product_id.product_brand_id else '',
-                        'product_url': product_url, 'principal_image_url': principal_image_url}
-                _logger.warning('LINE.PRODUCT_ID: %s', line.product_id)
-                customer_price = product_pricelist._get_product_price(line.product_id,1,None,False)
-                if not customer_price:
-                    customer_price = line.product_id.lst_price
-                vals['customer_price'] = customer_price
-                if product_base_pricelist:
-                    selling_price = product_base_pricelist._get_product_price(line.product_id,1,None,False)
-                    if not selling_price:
-                        selling_price = line.product_id.lst_price
-                    vals['selling_price'] = selling_price
-                products[line.product_id.id] = vals
-                products_added.append(line.product_id.id)
-            elif line.applied_on == '1_product':
-                _logger.warning('ENTRO EN PRODUCT')
-                product_url = request.httprequest.host_url + "shop/product/%s" % (line.product_tmpl_id.id,)
-                principal_image_url = request.httprequest.host_url + 'web/image/product.product/%s/image_medium' % line.id
-                vals = {'product_id': line.product_tmpl_id.id, 'product_name': line.product_tmpl_id.name,
-                        'code': line.product_tmpl_id.id.default_code, 'uom': '',
-                        'qty': line.product_tmpl_id.id.qty_available, 'customer_price': 0.0, 'selling_price': 0.0,
-                        'barcode': line.product_tmpl_id.id.barcode or '',
-                        'brand': line.product_tmpl_id.product_brand_id.name if line.product_tmpl_id.id.product_brand_id else '', 'product_url': product_url,
-                        'principal_image_url': principal_image_url}
-                _logger.warning('LINE.product_tmpl_id: %s', line.product_tmpl_id)
-                customer_price = product_pricelist._get_product_price(line.product_tmpl_id,1,None,False)
-                if not customer_price:
-                    customer_price = line.product_tmpl_id.list_price 
-                vals['customer_price'] = customer_price
-                if product_base_pricelist:
-                    selling_price = product_base_pricelist._get_product_price(line.product_tmpl_id,1,None,False)
-                    if not selling_price:
-                        selling_price = line.product_tmpl_id.list_price
-                    vals['selling_price'] = selling_price
-                products[rec.id] = vals
-                products_added.append(rec.id)
-            elif line.applied_on == '2_product_category':
-                _logger.warning('ENTRO EN PRODUCT CATEGORY')
-                categ_ids = {}
-                categ = line.categ_id
-                while categ:
-                    categ_ids[categ.id] = True
-                    categ = categ.parent_id
-                categ_ids = list(categ_ids)
-                product_tmpl_recs = product_template_obj.search([('categ_id', 'in', categ_ids)])
-                for product_tmpl in product_tmpl_recs:
-                    for rec in product_tmpl.product_variant_ids:
+        if product_base_pricelist:
+            _logger.warning('ENTRO EN IF PRODUCT BASE')
+            for line in product_base_pricelist.item_ids:
+                _logger.warning('APPLIED_ON: %s', line.applied_on)
+                if line.applied_on == '0_product_variant' and line.product_id.website_published and line.product_id.id not in products_added:
+                    _logger.warning('ENTRO EN PRODUCT VARIANT')
+                    product_url = request.httprequest.host_url + "shop/product/%s" % (line.product_id.product_tmpl_id.id,)
+                    principal_image_url = request.httprequest.host_url + 'web/image/product.product/%s/image_medium' % line.product_id.id
+                    vals = {'product_id': line.product_id.id, 'product_name': line.product_id.name,
+                            'code': line.product_id.default_code,
+                            'uom': '',
+                            'qty': line.product_id.qty_available, 'customer_price': 0.0, 'selling_price': 0.0,
+                            'barcode': line.product_id.barcode or '',
+                            'brand': line.product_id.product_brand_id.name if line.product_id.product_brand_id else '',
+                            'product_url': product_url, 'principal_image_url': principal_image_url}
+                    _logger.warning('LINE.PRODUCT_ID: %s', line.product_id)
+                    customer_price = product_pricelist._get_product_price(line.product_id,1,None,False)
+                    if not customer_price:
+                        customer_price = line.product_id.lst_price
+                    vals['customer_price'] = customer_price
+                    if product_base_pricelist:
+                        selling_price = product_base_pricelist._get_product_price(line.product_id,1,None,False)
+                        if not selling_price:
+                            selling_price = line.product_id.lst_price
+                        vals['selling_price'] = selling_price
+                    products[line.product_id.id] = vals
+                    products_added.append(line.product_id.id)
+                elif line.applied_on == '1_product':
+                    _logger.warning('ENTRO EN PRODUCT')
+                    product_url = request.httprequest.host_url + "shop/product/%s" % (line.product_tmpl_id.id,)
+                    principal_image_url = request.httprequest.host_url + 'web/image/product.product/%s/image_medium' % line.id
+                    vals = {'product_id': line.product_tmpl_id.id, 'product_name': line.product_tmpl_id.name,
+                            'code': line.product_tmpl_id.id.default_code, 'uom': '',
+                            'qty': line.product_tmpl_id.id.qty_available, 'customer_price': 0.0, 'selling_price': 0.0,
+                            'barcode': line.product_tmpl_id.id.barcode or '',
+                            'brand': line.product_tmpl_id.product_brand_id.name if line.product_tmpl_id.id.product_brand_id else '', 'product_url': product_url,
+                            'principal_image_url': principal_image_url}
+                    _logger.warning('LINE.product_tmpl_id: %s', line.product_tmpl_id)
+                    customer_price = product_pricelist._get_product_price(line.product_tmpl_id,1,None,False)
+                    if not customer_price:
+                        customer_price = line.product_tmpl_id.list_price 
+                    vals['customer_price'] = customer_price
+                    if product_base_pricelist:
+                        selling_price = product_base_pricelist._get_product_price(line.product_tmpl_id,1,None,False)
+                        if not selling_price:
+                            selling_price = line.product_tmpl_id.list_price
+                        vals['selling_price'] = selling_price
+                    products[rec.id] = vals
+                    products_added.append(rec.id)
+                elif line.applied_on == '2_product_category':
+                    _logger.warning('ENTRO EN PRODUCT CATEGORY')
+                    categ_ids = {}
+                    categ = line.categ_id
+                    while categ:
+                        categ_ids[categ.id] = True
+                        categ = categ.parent_id
+                    categ_ids = list(categ_ids)
+                    product_tmpl_recs = product_template_obj.search([('categ_id', 'in', categ_ids)])
+                    for product_tmpl in product_tmpl_recs:
+                        for rec in product_tmpl.product_variant_ids:
+                            if rec.id not in products_added and rec.website_published:
+                                product_url = request.httprequest.host_url + "shop/product/%s" % (rec.product_tmpl_id.id,)
+                                principal_image_url = request.httprequest.host_url + 'web/image/product.product/%s/image_medium' % rec.id
+                                vals = {'product_id': rec.id, 'product_name': rec.name,
+                                        'code': rec.default_code, 'uom': '',
+                                        'qty': rec.qty_available, 'customer_price': 0.0, 'selling_price': 0.0,
+                                        'barcode': rec.barcode or '',
+                                        'brand': rec.product_brand_id.name if rec.product_brand_id else '',
+                                        'product_url': product_url, 'principal_image_url': principal_image_url}
+                                _logger.warning('LINE.PRODUCT_ID: %s', rec)
+                                customer_price = product_pricelist._get_product_price(rec,1,None,False)
+                                if not customer_price:
+                                    customer_price = rec.lst_price
+                                vals['customer_price'] = customer_price
+                                if product_base_pricelist:
+                                    selling_price = product_base_pricelist._get_product_price(rec,1,None,False)
+                                    if not selling_price:
+                                        selling_price = rec.lst_price
+                                    vals['selling_price'] = selling_price
+                                products[rec.id] = vals
+                                products_added.append(rec.id)
+                elif line.applied_on == '3_global':
+                    _logger.warning('ENTRO EN GLOBAL ')
+                    product_recs = product_product_obj.search([])
+                    for rec in product_recs:
                         if rec.id not in products_added and rec.website_published:
                             product_url = request.httprequest.host_url + "shop/product/%s" % (rec.product_tmpl_id.id,)
                             principal_image_url = request.httprequest.host_url + 'web/image/product.product/%s/image_medium' % rec.id
@@ -271,8 +298,8 @@ class PricelistBasedProductReportWizard(models.TransientModel):
                                     'code': rec.default_code, 'uom': '',
                                     'qty': rec.qty_available, 'customer_price': 0.0, 'selling_price': 0.0,
                                     'barcode': rec.barcode or '',
-                                    'brand': rec.product_brand_id.name if rec.product_brand_id else '',
-                                    'product_url': product_url, 'principal_image_url': principal_image_url}
+                                    'brand': rec.product_brand_id.name if rec.product_brand_id else '', 'product_url': product_url,
+                                    'principal_image_url': principal_image_url}
                             _logger.warning('LINE.PRODUCT_ID: %s', rec)
                             customer_price = product_pricelist._get_product_price(rec,1,None,False)
                             if not customer_price:
@@ -285,40 +312,120 @@ class PricelistBasedProductReportWizard(models.TransientModel):
                                 vals['selling_price'] = selling_price
                             products[rec.id] = vals
                             products_added.append(rec.id)
-            elif line.applied_on == '3_global':
-                _logger.warning('ENTRO EN GLOBAL ')
-                product_recs = product_product_obj.search([])
-                for rec in product_recs:
-                    if rec.id not in products_added and rec.website_published:
-                        product_url = request.httprequest.host_url + "shop/product/%s" % (rec.product_tmpl_id.id,)
-                        principal_image_url = request.httprequest.host_url + 'web/image/product.product/%s/image_medium' % rec.id
-                        vals = {'product_id': rec.id, 'product_name': rec.name,
-                                'code': rec.default_code, 'uom': '',
-                                'qty': rec.qty_available, 'customer_price': 0.0, 'selling_price': 0.0,
-                                'barcode': rec.barcode or '',
-                                'brand': rec.product_brand_id.name if rec.product_brand_id else '', 'product_url': product_url,
-                                'principal_image_url': principal_image_url}
-                        _logger.warning('LINE.PRODUCT_ID: %s', rec)
-                        customer_price = product_pricelist._get_product_price(rec,1,None,False)
-                        if not customer_price:
-                            customer_price = rec.lst_price
-                        vals['customer_price'] = customer_price
-                        if product_base_pricelist:
-                            selling_price = product_base_pricelist._get_product_price(rec,1,None,False)
-                            if not selling_price:
-                                selling_price = rec.lst_price
-                            vals['selling_price'] = selling_price
-                        products[rec.id] = vals
-                        products_added.append(rec.id)
-            elif line.applied_on == '4_brand':
-                _logger.warning('ENTRO EN PRODUCT BRAND')
-                brand_ids = {}
-                brand = line.brand_id
-                brand_ids[brand.id] = True
-                brand_ids = list(brand_ids)
-                product_tmpl_recs = product_template_obj.search([('product_brand_id', 'in', brand_ids)])
-                for product_tmpl in product_tmpl_recs:
-                    for rec in product_tmpl.product_variant_ids:
+                elif line.applied_on == '4_brand':
+                    _logger.warning('ENTRO EN PRODUCT BRAND')
+                    brand_ids = {}
+                    brand = line.brand_id
+                    brand_ids[brand.id] = True
+                    brand_ids = list(brand_ids)
+                    product_tmpl_recs = product_template_obj.search([('product_brand_id', 'in', brand_ids)])
+                    for product_tmpl in product_tmpl_recs:
+                        for rec in product_tmpl.product_variant_ids:
+                            if rec.id not in products_added and rec.website_published:
+                                product_url = request.httprequest.host_url + "shop/product/%s" % (rec.product_tmpl_id.id,)
+                                principal_image_url = request.httprequest.host_url + 'web/image/product.product/%s/image_medium' % rec.id
+                                vals = {'product_id': rec.id, 'product_name': rec.name,
+                                        'code': rec.default_code, 'uom': '',
+                                        'qty': rec.qty_available, 'customer_price': 0.0, 'selling_price': 0.0,
+                                        'barcode': rec.barcode or '',
+                                        'brand': rec.product_brand_id.name if rec.product_brand_id else '',
+                                        'product_url': product_url, 'principal_image_url': principal_image_url}
+                                _logger.warning('LINE.PRODUCT_ID: %s', rec)
+                                customer_price = product_pricelist._get_product_price(rec,1,None,False)
+                                if not customer_price:
+                                    customer_price = rec.lst_price
+                                vals['customer_price'] = customer_price
+                                if product_base_pricelist:
+                                    selling_price = product_base_pricelist._get_product_price(rec,1,None,False)
+                                    if not selling_price:
+                                        selling_price = rec.lsst_price
+                                    vals['selling_price'] = selling_price
+                                products[rec.id] = vals
+                                products_added.append(rec.id)
+        else:       
+            for line in product_pricelist.item_ids:
+                _logger.warning('APPLIED_ON: %s', line.applied_on)
+                if line.applied_on == '0_product_variant' and line.product_id.website_published and line.product_id.id not in products_added:
+                    _logger.warning('ENTRO EN PRODUCT VARIANT')
+                    product_url = request.httprequest.host_url + "shop/product/%s" % (line.product_id.product_tmpl_id.id,)
+                    principal_image_url = request.httprequest.host_url + 'web/image/product.product/%s/image_medium' % line.product_id.id
+                    vals = {'product_id': line.product_id.id, 'product_name': line.product_id.name,
+                            'code': line.product_id.default_code,
+                            'uom': '',
+                            'qty': line.product_id.qty_available, 'customer_price': 0.0, 'selling_price': 0.0,
+                            'barcode': line.product_id.barcode or '',
+                            'brand': line.product_id.product_brand_id.name if line.product_id.product_brand_id else '',
+                            'product_url': product_url, 'principal_image_url': principal_image_url}
+                    _logger.warning('LINE.PRODUCT_ID: %s', line.product_id)
+                    customer_price = product_pricelist._get_product_price(line.product_id,1,None,False)
+                    if not customer_price:
+                        customer_price = line.product_id.lst_price
+                    vals['customer_price'] = customer_price
+                    if product_base_pricelist:
+                        selling_price = product_base_pricelist._get_product_price(line.product_id,1,None,False)
+                        if not selling_price:
+                            selling_price = line.product_id.lst_price
+                        vals['selling_price'] = selling_price
+                    products[line.product_id.id] = vals
+                    products_added.append(line.product_id.id)
+                elif line.applied_on == '1_product':
+                    _logger.warning('ENTRO EN PRODUCT')
+                    product_url = request.httprequest.host_url + "shop/product/%s" % (line.product_tmpl_id.id,)
+                    principal_image_url = request.httprequest.host_url + 'web/image/product.product/%s/image_medium' % line.id
+                    vals = {'product_id': line.product_tmpl_id.id, 'product_name': line.product_tmpl_id.name,
+                            'code': line.product_tmpl_id.id.default_code, 'uom': '',
+                            'qty': line.product_tmpl_id.id.qty_available, 'customer_price': 0.0, 'selling_price': 0.0,
+                            'barcode': line.product_tmpl_id.id.barcode or '',
+                            'brand': line.product_tmpl_id.product_brand_id.name if line.product_tmpl_id.id.product_brand_id else '', 'product_url': product_url,
+                            'principal_image_url': principal_image_url}
+                    _logger.warning('LINE.product_tmpl_id: %s', line.product_tmpl_id)
+                    customer_price = product_pricelist._get_product_price(line.product_tmpl_id,1,None,False)
+                    if not customer_price:
+                        customer_price = line.product_tmpl_id.list_price 
+                    vals['customer_price'] = customer_price
+                    if product_base_pricelist:
+                        selling_price = product_base_pricelist._get_product_price(line.product_tmpl_id,1,None,False)
+                        if not selling_price:
+                            selling_price = line.product_tmpl_id.list_price
+                        vals['selling_price'] = selling_price
+                    products[rec.id] = vals
+                    products_added.append(rec.id)
+                elif line.applied_on == '2_product_category':
+                    _logger.warning('ENTRO EN PRODUCT CATEGORY')
+                    categ_ids = {}
+                    categ = line.categ_id
+                    while categ:
+                        categ_ids[categ.id] = True
+                        categ = categ.parent_id
+                    categ_ids = list(categ_ids)
+                    product_tmpl_recs = product_template_obj.search([('categ_id', 'in', categ_ids)])
+                    for product_tmpl in product_tmpl_recs:
+                        for rec in product_tmpl.product_variant_ids:
+                            if rec.id not in products_added and rec.website_published:
+                                product_url = request.httprequest.host_url + "shop/product/%s" % (rec.product_tmpl_id.id,)
+                                principal_image_url = request.httprequest.host_url + 'web/image/product.product/%s/image_medium' % rec.id
+                                vals = {'product_id': rec.id, 'product_name': rec.name,
+                                        'code': rec.default_code, 'uom': '',
+                                        'qty': rec.qty_available, 'customer_price': 0.0, 'selling_price': 0.0,
+                                        'barcode': rec.barcode or '',
+                                        'brand': rec.product_brand_id.name if rec.product_brand_id else '',
+                                        'product_url': product_url, 'principal_image_url': principal_image_url}
+                                _logger.warning('LINE.PRODUCT_ID: %s', rec)
+                                customer_price = product_pricelist._get_product_price(rec,1,None,False)
+                                if not customer_price:
+                                    customer_price = rec.lst_price
+                                vals['customer_price'] = customer_price
+                                if product_base_pricelist:
+                                    selling_price = product_base_pricelist._get_product_price(rec,1,None,False)
+                                    if not selling_price:
+                                        selling_price = rec.lst_price
+                                    vals['selling_price'] = selling_price
+                                products[rec.id] = vals
+                                products_added.append(rec.id)
+                elif line.applied_on == '3_global':
+                    _logger.warning('ENTRO EN GLOBAL ')
+                    product_recs = product_product_obj.search([])
+                    for rec in product_recs:
                         if rec.id not in products_added and rec.website_published:
                             product_url = request.httprequest.host_url + "shop/product/%s" % (rec.product_tmpl_id.id,)
                             principal_image_url = request.httprequest.host_url + 'web/image/product.product/%s/image_medium' % rec.id
@@ -326,8 +433,8 @@ class PricelistBasedProductReportWizard(models.TransientModel):
                                     'code': rec.default_code, 'uom': '',
                                     'qty': rec.qty_available, 'customer_price': 0.0, 'selling_price': 0.0,
                                     'barcode': rec.barcode or '',
-                                    'brand': rec.product_brand_id.name if rec.product_brand_id else '',
-                                    'product_url': product_url, 'principal_image_url': principal_image_url}
+                                    'brand': rec.product_brand_id.name if rec.product_brand_id else '', 'product_url': product_url,
+                                    'principal_image_url': principal_image_url}
                             _logger.warning('LINE.PRODUCT_ID: %s', rec)
                             customer_price = product_pricelist._get_product_price(rec,1,None,False)
                             if not customer_price:
@@ -336,10 +443,40 @@ class PricelistBasedProductReportWizard(models.TransientModel):
                             if product_base_pricelist:
                                 selling_price = product_base_pricelist._get_product_price(rec,1,None,False)
                                 if not selling_price:
-                                    selling_price = rec.lsst_price
+                                    selling_price = rec.lst_price
                                 vals['selling_price'] = selling_price
                             products[rec.id] = vals
                             products_added.append(rec.id)
+                elif line.applied_on == '4_brand':
+                    _logger.warning('ENTRO EN PRODUCT BRAND')
+                    brand_ids = {}
+                    brand = line.brand_id
+                    brand_ids[brand.id] = True
+                    brand_ids = list(brand_ids)
+                    product_tmpl_recs = product_template_obj.search([('product_brand_id', 'in', brand_ids)])
+                    for product_tmpl in product_tmpl_recs:
+                        for rec in product_tmpl.product_variant_ids:
+                            if rec.id not in products_added and rec.website_published:
+                                product_url = request.httprequest.host_url + "shop/product/%s" % (rec.product_tmpl_id.id,)
+                                principal_image_url = request.httprequest.host_url + 'web/image/product.product/%s/image_medium' % rec.id
+                                vals = {'product_id': rec.id, 'product_name': rec.name,
+                                        'code': rec.default_code, 'uom': '',
+                                        'qty': rec.qty_available, 'customer_price': 0.0, 'selling_price': 0.0,
+                                        'barcode': rec.barcode or '',
+                                        'brand': rec.product_brand_id.name if rec.product_brand_id else '',
+                                        'product_url': product_url, 'principal_image_url': principal_image_url}
+                                _logger.warning('LINE.PRODUCT_ID: %s', rec)
+                                customer_price = product_pricelist._get_product_price(rec,1,None,False)
+                                if not customer_price:
+                                    customer_price = rec.lst_price
+                                vals['customer_price'] = customer_price
+                                if product_base_pricelist:
+                                    selling_price = product_base_pricelist._get_product_price(rec,1,None,False)
+                                    if not selling_price:
+                                        selling_price = rec.lsst_price
+                                    vals['selling_price'] = selling_price
+                                products[rec.id] = vals
+                                products_added.append(rec.id)
 
         products = sorted([{
             'product_id': product['product_id'],
