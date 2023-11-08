@@ -298,13 +298,13 @@ class PricelistBasedProductReportWizard(models.TransientModel):
                                 'barcode': rec.barcode or '',
                                 'brand': rec.product_brand_id.name if rec.product_brand_id else '', 'product_url': product_url,
                                 'principal_image_url': principal_image_url}
-                        _logger.warning('LINE.PRODUCT_ID: %s', rec.product_id)
-                        customer_price = product_pricelist._get_product_price(rec.product_id,1,None,False)
+                        _logger.warning('LINE.PRODUCT_ID: %s', rec)
+                        customer_price = product_pricelist._get_product_price(rec,1,None,False)
                         if not customer_price:
                             customer_price = rec.lst_price
                         vals['customer_price'] = customer_price
                         if product_base_pricelist:
-                            selling_price = product_base_pricelist._get_product_price(rec.product_id,1,None,False)
+                            selling_price = product_base_pricelist._get_product_price(rec,1,None,False)
                             if not selling_price:
                                 selling_price = rec.lst_price
                             vals['selling_price'] = selling_price
