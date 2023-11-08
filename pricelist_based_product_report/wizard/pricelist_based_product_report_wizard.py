@@ -207,7 +207,9 @@ class PricelistBasedProductReportWizard(models.TransientModel):
         product_template_obj = self.env['product.template'].sudo()
         product_product_obj = self.env['product.product'].sudo()
         for line in product_pricelist.item_ids:
+            _logger.warning('APPLIED_ON: %s', line.applied_on)
             if line.applied_on == '0_product_variant' and line.product_id.website_published and line.product_id.id not in products_added:
+                _logger.warning('ENTRO EN PRODUCT VARIANT')
                 product_url = request.httprequest.host_url + "shop/product/%s" % (line.product_id.product_tmpl_id.id,)
                 principal_image_url = request.httprequest.host_url + 'web/image/product.product/%s/image_medium' % line.product_id.id
                 vals = {'product_id': line.product_id.id, 'product_name': line.product_id.name,
@@ -217,6 +219,7 @@ class PricelistBasedProductReportWizard(models.TransientModel):
                         'barcode': line.product_id.barcode or '',
                         'brand': line.product_id.product_brand_id.name if line.product_id.product_brand_id else '',
                         'product_url': product_url, 'principal_image_url': principal_image_url}
+                _logger.warning('LINE.PRODUCT_ID: %s', line.product_id)
                 customer_price = product_pricelist._get_product_price(line.product_id,1,None,False)
                 if not customer_price:
                     customer_price = line.product_id.list_price
@@ -229,6 +232,7 @@ class PricelistBasedProductReportWizard(models.TransientModel):
                 products[line.product_id.id] = vals
                 products_added.append(line.product_id.id)
             elif line.applied_on == '1_product':
+                _logger.warning('ENTRO EN PRODUCT')
                 for rec in line.product_tmpl_id.product_variant_ids:
                     if rec.id not in products_added and rec.website_published:
                         product_url = request.httprequest.host_url + "shop/product/%s" % (rec.product_tmpl_id.id,)
@@ -239,6 +243,7 @@ class PricelistBasedProductReportWizard(models.TransientModel):
                                 'barcode': rec.barcode or '',
                                 'brand': rec.product_brand_id.name if rec.product_brand_id else '', 'product_url': product_url,
                                 'principal_image_url': principal_image_url}
+                        _logger.warning('LINE.PRODUCT_ID: %s', line.product_id)
                         customer_price = product_pricelist._get_product_price(line.product_id,1,None,False)
                         if not customer_price:
                             customer_price = rec.list_price
@@ -251,6 +256,7 @@ class PricelistBasedProductReportWizard(models.TransientModel):
                         products[rec.id] = vals
                         products_added.append(rec.id)
             elif line.applied_on == '2_product_category':
+                _logger.warning('ENTRO EN PRODUCT CATEGORY')
                 categ_ids = {}
                 categ = line.categ_id
                 while categ:
@@ -269,6 +275,7 @@ class PricelistBasedProductReportWizard(models.TransientModel):
                                     'barcode': rec.barcode or '',
                                     'brand': rec.product_brand_id.name if rec.product_brand_id else '',
                                     'product_url': product_url, 'principal_image_url': principal_image_url}
+                            _logger.warning('LINE.PRODUCT_ID: %s', line.product_id)
                             customer_price = product_pricelist._get_product_price(line.product_id,1,None,False)
                             if not customer_price:
                                 customer_price = rec.list_price
@@ -281,6 +288,7 @@ class PricelistBasedProductReportWizard(models.TransientModel):
                             products[rec.id] = vals
                             products_added.append(rec.id)
             elif line.applied_on == '3_global':
+                _logger.warning('ENTRO EN GLOBAL ')
                 product_recs = product_product_obj.search([])
                 for rec in product_recs:
                     if rec.id not in products_added and rec.website_published:
@@ -292,6 +300,7 @@ class PricelistBasedProductReportWizard(models.TransientModel):
                                 'barcode': rec.barcode or '',
                                 'brand': rec.product_brand_id.name if rec.product_brand_id else '', 'product_url': product_url,
                                 'principal_image_url': principal_image_url}
+                        _logger.warning('LINE.PRODUCT_ID: %s', line.product_id)
                         customer_price = product_pricelist._get_product_price(line.product_id,1,None,False)
                         if not customer_price:
                             customer_price = rec.list_price
@@ -304,6 +313,7 @@ class PricelistBasedProductReportWizard(models.TransientModel):
                         products[rec.id] = vals
                         products_added.append(rec.id)
             elif line.applied_on == '4_brand':
+                _logger.warning('ENTRO EN PRODUCT BRAND')
                 brand_ids = {}
                 brand = line.brand_id
                 brand_ids[brand.id] = True
@@ -320,6 +330,7 @@ class PricelistBasedProductReportWizard(models.TransientModel):
                                     'barcode': rec.barcode or '',
                                     'brand': rec.product_brand_id.name if rec.product_brand_id else '',
                                     'product_url': product_url, 'principal_image_url': principal_image_url}
+                            _logger.warning('LINE.PRODUCT_ID: %s', line.product_id)
                             customer_price = product_pricelist._get_product_price(line.product_id,1,None,False)
                             if not customer_price:
                                 customer_price = rec.list_price
