@@ -36,14 +36,14 @@
             options="{'product_field': 'product_id', 'account_field': 'account_id'}"
             business_domain_compute="parent.move_type in ['out_invoice', 'out_refund', 'out_receipt'] and 'invoice' or parent.move_type in ['in_invoice', 'in_refund', 'in_receipt'] and 'bill' or 'general'"/>
 
-          <field name="analytic_distribution_area" widget="analytic_distribution"
+          <field name="analytic_distribution_area" widget="analytic_distribution_area"
             string="Área"
             groups="analytic.group_analytic_accounting"
             optional="show"
             options="{'product_field': 'product_id', 'account_field': 'account_id'}"
             business_domain_compute="parent.move_type in ['out_invoice', 'out_refund', 'out_receipt'] and 'invoice' or parent.move_type in ['in_invoice', 'in_refund', 'in_receipt'] and 'bill' or 'general'"/>
           
-          <field name="analytic_distribution_activity" widget="analytic_distribution"
+          <field name="analytic_distribution_activity" widget="analytic_distribution_activity"
             string="Actividad"
             groups="analytic.group_analytic_accounting"
             optional="show"
