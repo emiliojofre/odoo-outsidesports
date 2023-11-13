@@ -24,8 +24,6 @@
     'website': "",
     'data': [
         'views/website_sale_templates_view.xml',
-        'views/product_template.xml',
-        'views/product_product.xml',
     ],
     'assets': {
         'web.assets_frontend': [

@@ -17,21 +17,7 @@ class ProductTemplate(models.Model):
 
     @api.depends('list_price')
     def _compute_product_pvp(self):
-        pricelist = self.env['product.pricelist'].search([('name', '=', 'Sugerido Público')], limit=1)
-        if pricelist:
-            for record in self:
-                pricelist_item = self.env['product.pricelist.item'].search([
-                    ('pricelist_id', '=', pricelist.id),
-                    ('product_id', '=', record.id)
-                ], limit=1)
-                if pricelist_item:
-                    price = pricelist_item.price.replace('$', '').replace(',', '').replace('\xa0', '').replace('.', '')
-                    price_plus_iva = float(price)*1.19
-                    record.product_tmpl_pvp = price_plus_iva
-                else:
-                    record.product_tmpl_pvp =  record.list_price
-        else:
-            record.product_tmpl_pvp =  record.list_price
+        self.product_tmpl_pvp =  self.list_price*1.19
 
     def _get_combination_info(self, combination=False, product_id=False, add_qty=1, pricelist=False, parent_combination=False, only_template=False):
         combination_info = super(ProductTemplate, self)._get_combination_info(
