@@ -20,4 +20,4 @@ class ProductProduct(models.Model):
                 ], limit=1)
                 if pricelist_item:
                     price = pricelist_item.price.replace('$', '').replace(',', '').replace('\xa0', '')
-                    record.product_pvp = float(price)
+                    record.product_product_pvp = float(price)
