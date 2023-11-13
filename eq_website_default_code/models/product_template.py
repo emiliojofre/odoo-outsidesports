@@ -26,11 +26,11 @@ class ProductTemplate(models.Model):
                 ], limit=1)
                 if pricelist_item:
                     price = pricelist_item.price.replace('$', '').replace(',', '').replace('\xa0', '').replace('.', '')
-                    record.product_product_pvp = float(price)
+                    record.product_tmpl_pvp = float(price)
                 else:
-                    record.product_product_pvp =  record.list_price
+                    record.product_tmpl_pvp =  record.list_price
         else:
-            record.product_product_pvp =  record.list_price
+            record.product_tmpl_pvp =  record.list_price
 
     def _get_combination_info(self, combination=False, product_id=False, add_qty=1, pricelist=False, parent_combination=False, only_template=False):
         combination_info = super(ProductTemplate, self)._get_combination_info(
