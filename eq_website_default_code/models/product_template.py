@@ -12,8 +12,25 @@ class ProductTemplate(models.Model):
     _inherit = 'product.template'
 
     product_tmpl_pvp = fields.Monetary(
-        'PVP', default=1,currency_field='currency_id'
+        'PVP', default=1,currency_field='currency_id', compute='_compute_product_pvp'
     )
+
+    @api.depends('list_price')
+    def _compute_product_pvp(self):
+        pricelist = self.env['product.pricelist'].search([('name', '=', 'Sugerido Público')], limit=1)
+        if pricelist:
+            for record in self:
+                pricelist_item = self.env['product.pricelist.item'].search([
+                    ('pricelist_id', '=', pricelist.id),
+                    ('product_id', '=', record.id)
+                ], limit=1)
+                if pricelist_item:
+                    price = pricelist_item.price.replace('$', '').replace(',', '').replace('\xa0', '').replace('.', '')
+                    record.product_product_pvp = float(price)
+                else:
+                    record.product_product_pvp =  record.list_price
+        else:
+            record.product_product_pvp =  record.list_price
 
     def _get_combination_info(self, combination=False, product_id=False, add_qty=1, pricelist=False, parent_combination=False, only_template=False):
         combination_info = super(ProductTemplate, self)._get_combination_info(
