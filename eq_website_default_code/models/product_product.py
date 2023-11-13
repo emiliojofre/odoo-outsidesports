@@ -19,5 +19,9 @@ class ProductProduct(models.Model):
                     ('product_id', '=', record.id)
                 ], limit=1)
                 if pricelist_item:
-                    price = pricelist_item.price.replace('$', '').replace(',', '').replace('\xa0', '')
+                    price = pricelist_item.price
                     record.product_product_pvp = float(price)
+                else:
+                    record.product_product_pvp =  record.lst_price
+        else:
+            record.product_product_pvp =  record.lst_price
