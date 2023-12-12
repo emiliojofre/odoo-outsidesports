@@ -117,7 +117,7 @@
         <xpath expr="//t[@t-foreach='website.menu_id.child_id']" position="after">
                 <li class="nav-item oe_sale_brands">
                     <a href="/shop/brands" class="nav-link">
-                        MARCAS 
+                        Brands 
                     </a>
                 </li>
         </xpath>

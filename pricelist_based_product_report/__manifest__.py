@@ -6,7 +6,7 @@
     'category': 'Report',
     'summary': "Allows you to print pricelist based report for products from website" ,
     'description': "Allows you to print pricelist based report for products from website",
-    'depends': ['portal','product','stock','website_sale','product_manufacturer'],
+    'depends': ['portal','product','stock','website_sale','product_manufacturer','website_product_brands'],
     'data': [
         'views/report_view.xml',
         'views/views.xml',
