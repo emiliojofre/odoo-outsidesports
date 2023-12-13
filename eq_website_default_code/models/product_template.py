@@ -14,9 +14,10 @@ class ProductTemplate(models.Model):
     product_tmpl_pvp = fields.Monetary(
         'PVP', default=1,currency_field='currency_id', compute='_compute_product_pvp'
     )
-    
+
     def _compute_product_pvp(self):
-        self.product_tmpl_pvp =  self.list_price*1.19
+        for record in self:
+            record.product_tmpl_pvp =  record.list_price*1.19
 
     def _get_combination_info(self, combination=False, product_id=False, add_qty=1, pricelist=False, parent_combination=False, only_template=False):
         combination_info = super(ProductTemplate, self)._get_combination_info(
