@@ -44,7 +44,7 @@
                         <span class="h6 mb-0" style="font-weight: bold;" t-field="product.default_code"/>
                     </div>
                     <div>
-                        <span class="h6 mb-0" style="font-weight: bold;">PVP: </span>
+                        <span class="h6 mb-0" style="font-weight: bold;">PVP: $</span>
                         <span class="h6 mb-0" style="font-weight: bold;" t-field="product.product_tmpl_pvp" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}" />
                     </div>
                 </div>

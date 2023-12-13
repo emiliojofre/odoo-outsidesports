@@ -14,8 +14,7 @@ class ProductTemplate(models.Model):
     product_tmpl_pvp = fields.Monetary(
         'PVP', default=1,currency_field='currency_id', compute='_compute_product_pvp'
     )
-
-    @api.depends('list_price')
+    
     def _compute_product_pvp(self):
         self.product_tmpl_pvp =  self.list_price*1.19
 
