@@ -10,14 +10,14 @@
                 <field name="oc_hes_required" string="OC y HES requeridos"/>
             </field>
             <field name="client_order_date" position="after">
-                <field name="client_hes_ref" string="Referencia HES cliente" attrs="{'required': [('is_subscription', '=', False), ('oc_hes_required', '=', True)]}"/>
-                <field name="cliente_hes_date" string="Fecha HES cliente" attrs="{'required': [('is_subscription', '=', False), ('oc_hes_required', '=', True)]}"/>
+                <field name="client_hes_ref" string="Referencia HES cliente" attrs="{'required': ['|', ('is_subscription', '=', False), ('oc_hes_required', '=', True)]}"/>
+                <field name="cliente_hes_date" string="Fecha HES cliente" attrs="{'required': ['|', ('is_subscription', '=', False), ('oc_hes_required', '=', True)]}"/>
             </field>
             <field name="client_order_ref" position="attributes">
-                <attribute name="attrs">{'required': [('is_subscription', '=', False), ('oc_hes_required', '=', True)]}</attribute>
+                <attribute name="attrs">{'required': ['|', ('is_subscription', '=', False), ('oc_hes_required', '=', True)]}</attribute>
             </field>
             <field name="client_order_date" position="attributes">
-                <attribute name="attrs">{'required': [('is_subscription', '=', False), ('oc_hes_required', '=', True)]}</attribute>
+                <attribute name="attrs">{'required': ['|', ('is_subscription', '=', False), ('oc_hes_required', '=', True)]}</attribute>
             </field>
         </field>
       </record>
