@@ -21,7 +21,7 @@
 
     'data': [
         #'views/account_move.xml',
-        'views/sale_order.xml',
+        #'views/sale_order.xml',
         #'security/ir.model.access.csv',
     ],
     'installable': True,

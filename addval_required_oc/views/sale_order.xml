@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<!-- <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
       <record id="sale_order_hes" model="ir.ui.view">
@@ -29,4 +29,4 @@
         </field>
       </record>
     </data>
-  </odoo>
+  </odoo> -->
