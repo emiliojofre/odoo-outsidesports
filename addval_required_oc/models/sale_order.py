@@ -12,7 +12,7 @@ _logger = logging.getLogger(__name__)
 class SaleOrder(models.Model):
     _inherit = "sale.order"
 
-    reference_ids = fields.One2many('sale.reference', 'sale_id')
+    #reference_ids = fields.One2many('sale.reference', 'sale_id')
 
     oc_hes_required = fields.Selection(
         selection=[
