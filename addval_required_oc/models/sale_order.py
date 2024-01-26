@@ -12,17 +12,37 @@ _logger = logging.getLogger(__name__)
 class SaleOrder(models.Model):
     _inherit = "sale.order"
 
-    client_hes_ref = fields.Char('Referencia HES cliente')
-    cliente_hes_date = fields.Date('Fecha HES cliente')
-    oc_hes_required = fields.Boolean('OC y HES requeridos')
+    reference_ids = fields.One2many('sale.reference', 'sale_id')
+
+    oc_hes_required = fields.Selection(
+        selection=[
+            ('nothing', 'Nada'),
+            ('oc', 'Orden de compra'),
+            ('hes', 'HES')
+            ('oc_hes', 'OC y HES')
+        ],
+        string='Referencia requerida',
+        default='nothing'
+    )
     
+    @api.model
+    def _cron_recurring_create_invoice(self):
+        if self.oc_hes_required == 'nothing':
+            return self._create_recurring_invoice(automatic=True)
+        # if self.oc_hes_required == 'oc':
+        #     oc_actual = self.env['sale.reference'].search([('sale_id', '=', self.id), ('reference_doc_type_id.code', '=', '801')],limit=1)
+        #     oc_in_invoice = False
+        #     invoices = self.env['account_move'].search([('invoice_origin', '=', self.name)])
+        #     for invoice in invoices:
+                
+
+        
+
     def _create_invoices(self, grouped=False, final=False, date=None):
 
         invoices = super()._create_invoices(grouped=grouped, final=final, date=date)
 
-        if self.is_subscription == False or self.oc_hes_required == True:
-            order_oc = self.env['l10n_latam.document.type'].search([('code', '=', '801')],limit =1)
-            order_hes = self.env['l10n_latam.document.type'].search([('code', '=', 'HES')],limit =1)
+        if self.oc_hes_required == 'nothing':
             for invoice in invoices:
                 self.env['l10n_cl.account.invoice.reference'].create({
                     'origin_doc_number': self.client_order_ref,

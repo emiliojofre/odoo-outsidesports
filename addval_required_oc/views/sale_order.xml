@@ -6,18 +6,25 @@
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="model">sale.order</field>
         <field name="arch" type="xml">
-            <field name="client_order_ref" position="before">
-                <field name="oc_hes_required" string="OC y HES requeridos"/>
+            <field name="payment_term_id" position="after">
+                <field name="oc_hes_required" string="Referencia requerida"/>
             </field>
-            <field name="client_order_date" position="after">
-                <field name="client_hes_ref" string="Referencia HES cliente" attrs="{'required': ['|', ('is_subscription', '=', False), ('oc_hes_required', '=', True)]}"/>
-                <field name="cliente_hes_date" string="Fecha HES cliente" attrs="{'required': ['|', ('is_subscription', '=', False), ('oc_hes_required', '=', True)]}"/>
-            </field>
+            <xpath expr="//notebook[1]" position="inside">
+                <page name="references" string="Referencias">
+                    <field name="reference_ids" widget="one2many" colspan="3" nolabel="1" mode="tree">
+                        <tree string="Cuentas" editable="top">
+                            <field name="reference_number"/>
+                            <field name="reference_date"/>
+                            <field name="reference_doc_type_id"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
             <field name="client_order_ref" position="attributes">
-                <attribute name="attrs">{'required': ['|', ('is_subscription', '=', False), ('oc_hes_required', '=', True)]}</attribute>
+                <attribute name="attrs">{'invisible': True}</attribute>
             </field>
             <field name="client_order_date" position="attributes">
-                <attribute name="attrs">{'required': ['|', ('is_subscription', '=', False), ('oc_hes_required', '=', True)]}</attribute>
+                <attribute name="attrs">{'invisible': True}</attribute>
             </field>
         </field>
       </record>
