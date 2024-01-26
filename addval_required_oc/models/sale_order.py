@@ -18,8 +18,8 @@ class SaleOrder(models.Model):
         selection=[
             ('nothing', 'Nada'),
             ('oc', 'Orden de compra'),
-            ('hes', 'HES')
-            ('oc_hes', 'OC y HES')
+            ('hes', 'HES'),
+            ('oc_hes', 'OC y HES'),
         ],
         string='Referencia requerida',
         default='nothing'
