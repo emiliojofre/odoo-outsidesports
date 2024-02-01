@@ -65,15 +65,25 @@ class PurchaseOrder(models.Model):
                     else:
                         # If there is not next approval, than assume that approval is finished and send notification
                         partner = order.user_id.partner_id if order.user_id else order.create_uid.partner_id
+                        template = self.env.ref('purchase_approval_route.order_approval_template')
                         order.message_post_with_view(
-                            'purchase_approval_route.order_approval',
+                            template.id,
                             subject=_('PO Approved: %s') % (order.name,),
                             composition_mode='mass_mail',
                             partner_ids=[(4, partner.id)],
-                            auto_delete=True,
-                            auto_delete_message=True,
+                            auto_delete=False,
+                            auto_delete_message=False,
                             parent_id=False,
                             subtype_id=self.env.ref('mail.mt_note').id)
+                        # order.message_post_with_view(
+                        #     'purchase_approval_route.order_approval',
+                        #     subject=_('PO Approved: %s') % (order.name,),
+                        #     composition_mode='mass_mail',
+                        #     partner_ids=[(4, partner.id)],
+                        #     auto_delete=True,
+                        #     auto_delete_message=True,
+                        #     parent_id=False,
+                        #     subtype_id=self.env.ref('mail.mt_note').id)
                         # Do default behaviour to set state as "purchase" and update date_approve
                         order.state='purchase'
                         return super(PurchaseOrder, order).button_approve(force)
