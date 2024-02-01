@@ -201,15 +201,25 @@ class PurchaseOrder(models.Model):
             current_approver_partner = order.current_approver.user_id.partner_id
             if current_approver_partner not in order.message_partner_ids:
                 order.message_subscribe([current_approver_partner.id])
-            order.with_user(order.user_id).message_post_with_view(
-                'purchase_approval_route.request_to_approve',
-                subject=_('PO Approval: %s') % (order.name,),
+            template = self.env.ref('purchase_approval_route.request_to_approve_template')
+            order.with_user(order.user_id).message_post_with_template(
+                template.id,
                 composition_mode='mass_mail',
                 partner_ids=[(4, current_approver_partner.id)],
-                auto_delete=True,
-                auto_delete_message=True,
+                auto_delete=False, #Cambiar a True dps de probar
+                auto_delete_message=False, #Cambiar a True dps de probar
                 parent_id=False,
                 subtype_id=self.env.ref('mail.mt_note').id)
+            
+            # order.with_user(order.user_id).message_post_with_view(
+            #     'purchase_approval_route.request_to_approve',
+            #     subject=_('PO Approval: %s') % (order.name,),
+            #     composition_mode='mass_mail',
+            #     partner_ids=[(4, current_approver_partner.id)],
+            #     auto_delete=True,
+            #     auto_delete_message=True,
+            #     parent_id=False,
+            #     subtype_id=self.env.ref('mail.mt_note').id)
 
     def _check_lock_amount_total(self):
         msg = _('Sorry, you are not allowed to change Amount Total of PO. ')
