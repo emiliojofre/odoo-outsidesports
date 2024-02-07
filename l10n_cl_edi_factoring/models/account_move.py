@@ -209,10 +209,10 @@ class AccountMove(models.Model):
             '__keep_empty_lines': True,
         })
         # add AEC tag after signature
-        final_aec = self.env['ir.ui.view']._render_template('l10n_cl_edi_factoring.aec_template', {
+        final_aec = Markup(str(self.env['ir.ui.view']._render_template('l10n_cl_edi_factoring.aec_template', {
             'signed_aec': aec,
             '__keep_empty_lines': True,
-        })
+        })).replace('<?xml version="1.0" encoding="ISO-8859-1" ?>', ''))
         final_aec = self._sign_full_xml(final_aec, digital_signature, 'AEC', 'aec')
 
         timestamp = self._get_cl_current_strftime(date_format='%Y%m%d_%H%M%S')
