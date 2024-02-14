@@ -216,7 +216,7 @@
                       <div class="product_price" itemprop="offers" itemscope="itemscope" itemtype="http://schema.org/Offer">
                            <span t-esc="wk_brand.total_products" /> Products
                       </div>
-                      <p>Country of Origin: <t t-out="wk_brand.country_of_origin"/></p>
+                      
                         <div class="brand_description" itemprop="offers" itemscope="itemscope" itemtype="http://schema.org/Offer"/>
                   </div>
                   <div class="o_wsale_product_btn"/>
@@ -299,8 +299,10 @@
                                 <div class="wk_product_count col-lg-3 col-sm-6" style="">  
                                     <p>All Products</p>
                                     <div class="border p-2 wk_product_count_1" t-if="wk_brand.total_products"> <t t-esc="wk_brand.total_products"/> Products</div><br/>
-                                    <p>Country of Origin: <br/><t t-out="country_origin"/></p>
                                     
+                                    <div t-if="opt_wsale_categories" class="products_categories mb-3">
+                                        <t t-call="website_sale.products_categories_list"/>
+                                    </div>
                                 </div>
 
                                 <!-- <div class="products_pager form-inline flex-md-nowrap justify-content-between justify-content-md-center mx-auto" style=" margin-left:1.5%;">
