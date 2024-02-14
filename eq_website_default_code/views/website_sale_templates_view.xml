@@ -28,7 +28,7 @@
                     </div>
                     <div>
                         <span style="font-weight: bold;">PVP: $</span>
-                        <span style="margin-left:3px;font-weight: bold;" class="pvp" t-esc="combination_info['pvp']" t-options="{'widget': 'monetary', 'display_currency': product.currency_id}"/>
+                        <span style="margin-left:3px;font-weight: bold;" class="pvp" t-esc="combination_info['pvp']" t-options="{'widget': 'monetary', 'display_currency': product.currency_id, 'format': '#,##0.00'}"/>
                     </div>
                 </div>
             </t>
@@ -45,7 +45,7 @@
                     </div>
                     <div>
                         <span class="h6 mb-0" style="font-weight: bold;">PVP: </span>
-                        <span class="h6 mb-0" style="font-weight: bold;" t-field="product.product_tmpl_pvp" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}" />
+                        <span class="h6 mb-0" style="font-weight: bold;" t-field="product.product_tmpl_pvp" t-options="{'widget': 'monetary', 'display_currency': website.currency_id, 'format': '#,##0.00'}" />
                     </div>
                 </div>
             </t>
