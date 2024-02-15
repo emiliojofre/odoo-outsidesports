@@ -40,18 +40,19 @@ class SignRequestItem(models.Model):
             signer_email_normalized = email_normalize(signer.signer_email or '')
             signer_lang = get_lang(self.env, lang_code=signer.partner_id.lang).code
             context = {'lang': signer_lang}
-            body = self.env['ir.qweb']._render('addval_sign_extension.request_to_sign_template', {
-                'record': signer,
-                'link': url_join(signer.get_base_url(), "sign/document/mail/%(request_id)s/%(access_token)s" % {'request_id': signer.sign_request_id.id, 'access_token': signer.sudo().access_token}),
-                'subject': signer.sign_request_id.subject,
-                'body': signer.sign_request_id.message if not is_html_empty(signer.sign_request_id.message) else False,
-                'use_sign_terms': self.env['ir.config_parameter'].sudo().get_param('sign.use_sign_terms'),
-                'user_signature': signer.create_uid.signature,
-            }, lang=signer_lang, minimal_qcontext=True)
+            # body = self.env['ir.qweb']._render('addval_sign_extension.request_to_sign_template', {
+            #     'record': signer,
+            #     'link': url_join(signer.get_base_url(), "sign/document/mail/%(request_id)s/%(access_token)s" % {'request_id': signer.sign_request_id.id, 'access_token': signer.sudo().access_token}),
+            #     'subject': signer.sign_request_id.subject,
+            #     'body': signer.sign_request_id.message if not is_html_empty(signer.sign_request_id.message) else False,
+            #     'use_sign_terms': self.env['ir.config_parameter'].sudo().get_param('sign.use_sign_terms'),
+            #     'user_signature': signer.create_uid.signature,
+            # }, lang=signer_lang, minimal_qcontext=True)
+            template = self.env.ref('addval_sign_extension.request_to_sign_template')
 
             attachment_ids = signer.sign_request_id.attachment_ids.ids
             self.env['sign.request']._message_send_mail(
-                body, 'mail.mail_notification_light',
+                template.body_html, 'mail.mail_notification_light',
                 {'record_name': signer.sign_request_id.reference},
                 {'model_description': _('Signature'), 'company': signer.communication_company_id or signer.sign_request_id.create_uid.company_id},
                 {'email_from': signer.create_uid.email_formatted,
