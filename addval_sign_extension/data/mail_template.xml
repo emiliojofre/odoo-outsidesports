@@ -3,14 +3,14 @@
     <data>
         <record id="request_to_sign_template" model="mail.template">
             <field name="name">Solicitud Firma Documento</field>
-            <field name="model_id" ref="sign.model_sign_request_item"/>
+            <field name="model_id" ref="sign.model_sign_request"/>
             <field name="subject">{{ object.sign_request_id.subject }}</field>
             <field name="email_from">{{ object.create_uid.email_formatted }}</field>
             <field name="email_to">{{ object.signer_email_normalized }}</field>
             <field name="body_html" type="html">
 <table border="0" cellpadding="0" style="background-color: white; padding: 0px; border-collapse:separate;">
     <tr><td valign="top">
-        <p>Hello <t t-esc="object.partner_id.name"/>,</p>
+        <p>Holanda <t t-esc="object.partner_id.name"/>,</p>
         <t t-esc="object.create_uid.name"/>
         (<a t-att-href="object._get_mail_link(object.create_uid.email, subject)"
             style="color:#428BCA; text-decoration:none;"
