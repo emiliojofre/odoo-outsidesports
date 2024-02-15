@@ -3,11 +3,12 @@
     <data>
         <record id="request_to_sign_template" model="mail.template">
             <field name="name">Solicitud Firma Documento</field>
-            <field name="model_id" ref="sing.sign_request_item"/>
+            <field name="model_id" ref="sign.sign_request_item"/>
             <field name="subject">{{ object.sign_request_id.subject }}</field>
             <field name="email_from">{{ object.create_uid.email_formatted }}</field>
             <field name="email_to">{{ object.sudo().partner_id.email }}</field>
-            <field name="body_html" type="html"><table border="0" cellpadding="0" style="background-color: white; padding: 0px; border-collapse:separate;">
+            <field name="body_html" type="html">
+<table border="0" cellpadding="0" style="background-color: white; padding: 0px; border-collapse:separate;">
     <tr><td valign="top">
         <p>Hello <t t-esc="record.partner_id.name"/>,</p>
         <t t-esc="record.create_uid.name"/>
@@ -20,7 +21,7 @@
         <div style="margin: 16px 0px 16px 0px; padding: 8px 16px 8px 16px; background-color: #F1F1F1;">
             <span>
                 <!-- <t t-out="body"/> -->
-                {{ object.sign_request_id.message }}
+                <t t-esc="object.sign_request_id.message"/>
             </span>
         </div>
     </td></tr>
@@ -48,13 +49,13 @@
         </t>
         <t t-else="">
             <td>
-                <!-- <t t-out="company.sign_terms" class="text-dark"/> -->
+                <t t-out="company.sign_terms" class="text-dark"/>
             </td>
         </t>
     </tr>
 </table>
         <!-- <t t-out="user_signature"/> -->
-        {{ object.create_uid.signature }}
+        <t t-esc="object.create_uid.signature"/>
             </field>
             <!-- <field name="lang">{{ object.employee_id.address_home_id.lang }}</field> -->
             <field name="auto_delete" eval="False"/>
