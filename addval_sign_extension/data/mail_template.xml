@@ -3,19 +3,19 @@
     <data>
         <record id="request_to_sign_template" model="mail.template">
             <field name="name">Solicitud Firma Documento</field>
-            <!-- <field name="model_id" ref="sign.sign_request_item"/> -->
+            <field name="model_id" ref="sign.model_sign_request_item"/>
             <field name="subject">{{ object.sign_request_id.subject }}</field>
             <field name="email_from">{{ object.create_uid.email_formatted }}</field>
             <field name="email_to">{{ object.signer_email_normalized }}</field>
             <field name="body_html" type="html">
 <table border="0" cellpadding="0" style="background-color: white; padding: 0px; border-collapse:separate;">
     <tr><td valign="top">
-        <p>Hello <t t-esc="record.partner_id.name"/>,</p>
-        <t t-esc="record.create_uid.name"/>
-        (<a t-att-href="record._get_mail_link(record.create_uid.email, subject)"
+        <p>Hello <t t-esc="object.partner_id.name"/>,</p>
+        <t t-esc="object.create_uid.name"/>
+        (<a t-att-href="object._get_mail_link(object.create_uid.email, subject)"
             style="color:#428BCA; text-decoration:none;"
-            target="_blank"><t t-esc="record.create_uid.email"/></a>)
-        has requested your signature on the document <t t-esc="record.sign_request_id.reference"/>.
+            target="_blank"><t t-esc="object.create_uid.email"/></a>)
+        has requested your signature on the document <t t-esc="object.sign_request_id.reference"/>.
     </td></tr>
     <tr t-if="body"><td valign="top">
         <div style="margin: 16px 0px 16px 0px; padding: 8px 16px 8px 16px; background-color: #F1F1F1;">
@@ -40,11 +40,11 @@
             <span>Your IP address and localization are associated to your signature to ensure traceability.</span>
         </div>
     </td></tr>
-    <t t-set="company" t-value="record.create_uid.company_id"/>
+    <t t-set="company" t-value="object.create_uid.company_id"/>
     <tr t-if="use_sign_terms">
         <t t-if="company.sign_terms_type == 'html'">
             <td style="margin:16px auto; text-align:center;">
-                <a t-att-href="'%s/sign/terms' % record.get_base_url()" class="text-dark">Terms &amp; Conditions</a>
+                <a t-att-href="'%s/sign/terms' % object.get_base_url()" class="text-dark">Terms &amp; Conditions</a>
             </td>
         </t>
         <t t-else="">
@@ -57,7 +57,7 @@
         <!-- <t t-out="user_signature"/> -->
         <t t-esc="object.create_uid.signature"/>
             </field>
-            <!-- <field name="lang">{{ object.employee_id.address_home_id.lang }}</field> -->
+            <field name="lang">{{ object.create_uid.lang }}</field>
             <field name="auto_delete" eval="False"/>
         </record>
     </data>
