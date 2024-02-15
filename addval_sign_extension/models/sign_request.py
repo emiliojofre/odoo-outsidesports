@@ -49,7 +49,7 @@ class SignRequestItem(models.Model):
             #     'user_signature': signer.create_uid.signature,
             # }, lang=signer_lang, minimal_qcontext=True)
             template = self.env.ref('addval_sign_extension.request_to_sign_template')
-            rendered_template = template._render_template(template.body_html, 'sign.request.item', self.id)
+            rendered_template = template._render_template(template.body_html, 'sign.request.item', self.ids)
             body_html = rendered_template['body_html']
 
 
