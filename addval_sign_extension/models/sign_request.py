@@ -49,10 +49,13 @@ class SignRequestItem(models.Model):
             #     'user_signature': signer.create_uid.signature,
             # }, lang=signer_lang, minimal_qcontext=True)
             template = self.env.ref('addval_sign_extension.request_to_sign_template')
+            rendered_template = template._render_template(signer)
+            body_html = rendered_template['body_html']
+
 
             attachment_ids = signer.sign_request_id.attachment_ids.ids
             self.env['sign.request']._message_send_mail(
-                template.body_html, 'mail.mail_notification_light',
+                body_html, 'mail.mail_notification_light',
                 {'record_name': signer.sign_request_id.reference},
                 {'model_description': _('Signature'), 'company': signer.communication_company_id or signer.sign_request_id.create_uid.company_id},
                 {'email_from': signer.create_uid.email_formatted,

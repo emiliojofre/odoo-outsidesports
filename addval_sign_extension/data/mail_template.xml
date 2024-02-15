@@ -10,11 +10,11 @@
             <field name="body_html" type="html">
 <table border="0" cellpadding="0" style="background-color: white; padding: 0px; border-collapse:separate;">
     <tr><td valign="top">
-        <p>Holanda <t t-esc="object.sign_request_id.partner_id.name"/>,</p>
-        <t t-esc="object.sign_request_id.create_uid.name"/>
-        (<a t-att-href="object.sign_request_id._get_mail_link(object.create_uid.email, subject)"
+        <p>Holanda <t t-esc="object.partner_id.name"/>,</p>
+        <t t-esc="object.create_uid.name"/>
+        (<a t-att-href="object._get_mail_link(object.create_uid.email, subject)"
             style="color:#428BCA; text-decoration:none;"
-            target="_blank"><t t-esc="object.sign_request_id.create_uid.email"/></a>)
+            target="_blank"><t t-esc="object.create_uid.email"/></a>)
         has requested your signature on the document <t t-esc="object.sign_request_id.reference"/>.
     </td></tr>
     <tr t-if="body"><td valign="top">
@@ -40,11 +40,11 @@
             <span>Your IP address and localization are associated to your signature to ensure traceability.</span>
         </div>
     </td></tr>
-    <t t-set="company" t-value="object.sign_request_id.create_uid.company_id"/>
+    <t t-set="company" t-value="object.create_uid.company_id"/>
     <tr t-if="use_sign_terms">
         <t t-if="company.sign_terms_type == 'html'">
             <td style="margin:16px auto; text-align:center;">
-                <a t-att-href="'%s/sign/terms' % object.sign_request_id.get_base_url()" class="text-dark">Terms &amp; Conditions</a>
+                <a t-att-href="'%s/sign/terms' % object.get_base_url()" class="text-dark">Terms &amp; Conditions</a>
             </td>
         </t>
         <t t-else="">
@@ -55,9 +55,9 @@
     </tr>
 </table>
         <!-- <t t-out="user_signature"/> -->
-        <t t-esc="object.sign_request_id.create_uid.signature"/>
+        <t t-esc="object.create_uid.signature"/>
             </field>
-            <field name="lang">{{ object.sign_request_id.create_uid.lang }}</field>
+            <field name="lang">{{ object.create_uid.lang }}</field>
             <field name="auto_delete" eval="False"/>
         </record>
     </data>
