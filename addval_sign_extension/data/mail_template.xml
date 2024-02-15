@@ -57,3 +57,5 @@
             <!-- <field name="lang">{{ object.employee_id.address_home_id.lang }}</field> -->
             <field name="auto_delete" eval="False"/>
         </record>
+    </data>
+</odoo>
