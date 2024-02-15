@@ -230,31 +230,31 @@
             <t t-set="additional_title"><t t-esc="wk_brand.name"/></t>
               <div id="wrap" class="js_sale">
                 <div class="oe_structure" id="oe_structure_website_sale_products_1"/>
-                <div style="height: 200px;">
+                <!-- <div style="height: 200px;">
                         <div class="carousel-inner" >
                             <t t-set="brand_banner" t-value="wk_brand.sudo().brand_banner"/>
-                            <t t-if="brand_banner">
+                            <t t-if="brand_banner"> -->
                                 <!-- <div class="item oe_img_bg oe_custom_bg active" t-attf-style="background-image: url('/web/image/wk.product.brand/#{wk_brand.id}/brand_banner');width: 100%;height: -webkit-fill-available;background-size:cover; height:320px;"></div> -->
 
-                                <div class="item oe_img_bg oe_custom_bg active" t-attf-style="width: 100%;height: -webkit-fill-available;background-size:cover; height:320px;">
+                                <!-- <div class="item oe_img_bg oe_custom_bg active" t-attf-style="width: 100%;height: -webkit-fill-available;background-size:cover; height:320px;"> -->
                                     <!-- <span t-out="wk_brand.sudo().brand_banner"/> -->
 
                                     <!-- <t t-out="wk_brand.sudo().brand_banner and wk_brand.sudo().brand_banner.embed_code"/> -->
-								    <div class="carousel-item oe_img_bg oe_custom_bg active" t-attf-style="background-image: url('/web/image/wk.product.brand/#{wk_brand.id}/brand_banner');width: 100%;height: 320px;background-size:100% 320px;"></div>
+								    <!-- <div class="carousel-item oe_img_bg oe_custom_bg active" t-attf-style="background-image: url('/web/image/wk.product.brand/#{wk_brand.id}/brand_banner');width: 100%;height: 320px;background-size:100% 320px;"></div> -->
                                     
                                     <!-- <span t-field="wk_brand.sudo().brand_banner"
                                           t-options="{'widget': 'image', 'preview_image': 'image_256', 'class': 'w-100 h-100 o_object_fit_cover rounded'}"
                                           class=""/> -->
-                                </div>
+                                <!-- </div>
 
 
                             </t>
-                            <t t-if="not brand_banner">
+                            <t t-if="not brand_banner"> -->
                                 <!-- <div class="item oe_img_bg oe_custom_bg active" t-attf-style="background-image: url('/website_product_brands/static/description/dummy-banner.png');width: 100%;height: -webkit-fill-available; height:320px;"></div> -->
-                                <div class="item oe_img_bg oe_custom_bg active mt-md-0 mt-5" t-attf-style="background-image: url('/website_product_brands/static/description/dummy-banner.png');width: 100%;height: 320px;background-size:100% 320px;background-position: center top; background-repeat: no-repeat;"></div>
+                                <!-- <div class="item oe_img_bg oe_custom_bg active mt-md-0 mt-5" t-attf-style="background-image: url('/website_product_brands/static/description/dummy-banner.png');width: 100%;height: 320px;background-size:100% 320px;background-position: center top; background-repeat: no-repeat;"></div>
                             </t>
                         </div>
-                </div>
+                </div> -->
                 <!-- <div style="display: inline-block;float: right;margin: 15px;"><button  class="btn btn-secondary" data-toggle="modal" data-target=".bd-example-modal-lg">More Information</button></div>
                 <div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true"> -->
                 <div style="display: inline-block;float: right;margin: 15px; position:relative;"><button  class="btn btn-secondary" data-bs-toggle="modal" data-bs-target=".bd-example-modal-lg">More Information</button></div>
@@ -278,18 +278,18 @@
                             </div>
                         </div>
                     </div>
-                <div class='container'>
+                <!-- <div class='container'>
 						<div class="col-md-12 mp_seller_desc" id="" style="padding-top:15px;padding-bottom:15px;">
-							<div class="row">
+							<div class="row"> -->
 								<!-- <div class="col-sm-3 hidden-xs hidden-sm">
 									<div class="item oe_img_bg oe_custom_bg wk-brand-image border" t-attf-style="background-image: url('/web/image/wk.product.brand/#{wk_brand.id}/image');background-size:contain;"></div>
 								</div> -->
-                                <div class="col-sm-3 hidden-xs hidden-sm mp_seller_desc_profile">
+                                <!-- <div class="col-sm-3 hidden-xs hidden-sm mp_seller_desc_profile">
                                     <div class="item oe_img_bg oe_custom_bg wk-brand-image border" t-attf-style="background-image: url('/web/image/wk.product.brand/#{wk_brand.id}/image');background-size:contain;background-color:white;background-position:center;top: 270px;left:80px;"></div>
                                 </div>
                             </div>
                         </div>
-                </div>
+                </div> -->
                 <div class="container d-flex oe_website_sale">
                     <div class="">
                         <!-- <div t-if="enable_left_column" id="products_grid_before" class="col-lg-2 col-12" style="margin-top:15%; margin-left:5%"/> -->
@@ -297,8 +297,8 @@
                             <span><h1 class="wk_product_name"><t t-out="wk_brand.name"/></h1></span><br/>
                             <div class="row">
                                 <div class="wk_product_count col-lg-3 col-sm-6" style="">  
-                                    <p>All Products</p>
-                                    <div class="border p-2 wk_product_count_1" t-if="wk_brand.total_products"> <t t-esc="wk_brand.total_products"/> Products</div><br/>
+                                    <!-- <p>All Products</p> -->
+                                    <!-- <div class="border p-2 wk_product_count_1" t-if="wk_brand.total_products"> <t t-esc="wk_brand.total_products"/> Products</div><br/> -->
                                     
                                     <div t-if="opt_wsale_categories" class="products_categories mb-3">
                                         <t t-call="website_sale.products_categories_list"/>
