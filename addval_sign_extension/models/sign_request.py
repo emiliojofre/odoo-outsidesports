@@ -55,7 +55,7 @@ class SignRequestItem(models.Model):
 
             attachment_ids = signer.sign_request_id.attachment_ids.ids
             self.env['sign.request']._message_send_mail(
-                rendered_template.body_html, 'mail.mail_notification_light',
+                rendered_template.get('body_html'), 'mail.mail_notification_light',
                 {'record_name': signer.sign_request_id.reference},
                 {'model_description': _('Signature'), 'company': signer.communication_company_id or signer.sign_request_id.create_uid.company_id},
                 {'email_from': signer.create_uid.email_formatted,
