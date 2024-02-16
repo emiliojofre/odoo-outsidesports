@@ -75,24 +75,6 @@ class SignRequestItem(models.Model):
     #         signer.is_mail_sent = True
     #         del context
     
-    # def _send_signature_access_mail(self):
-    #     for signer in self:
-    #         signer_email_normalized = email_normalize(signer.signer_email or '')
-    #         signer_lang = get_lang(self.env, lang_code=signer.partner_id.lang).code
-    #         context = {'lang': signer_lang}
-
-    #         attachment_ids = signer.sign_request_id.attachment_ids.ids
-    #         template = self.env.ref('addval_sign_extension.request_to_sign_template')
-    #         template_with_lang = self.env['mail.template'].with_context(lang=signer_lang).browse(template.id)
-    #         template_with_lang.send_mail(signer.id, force_send=True, email_values={
-    #             'attachment_ids': [(6, 0, attachment_ids)],
-    #             'subject': signer.sign_request_id.subject,
-    #             'email_to': formataddr((signer.partner_id.name, signer_email_normalized)),
-    #         })
-
-    #         signer.is_mail_sent = True
-    #         del context
-    
     def _send_signature_access_mail(self):
         for signer in self:
             signer_email_normalized = email_normalize(signer.signer_email or '')
@@ -101,16 +83,11 @@ class SignRequestItem(models.Model):
 
             attachment_ids = signer.sign_request_id.attachment_ids.ids
             template = self.env.ref('addval_sign_extension.request_to_sign_template')
-
-            # Obtener el diseño de notificación de mail.mail_notification_light
-            notification_layout = self.env.ref('mail.mail_notification_light')
-
-            # Enviar correo utilizando mail.template y el diseño de notificación
-            template.send_mail(signer.id, force_send=True, email_values={
+            template_with_lang = self.env['mail.template'].with_context(lang=signer_lang).browse(template.id)
+            template_with_lang.send_mail(signer.id, force_send=True, email_values={
                 'attachment_ids': [(6, 0, attachment_ids)],
                 'subject': signer.sign_request_id.subject,
                 'email_to': formataddr((signer.partner_id.name, signer_email_normalized)),
-                'notification_layout': notification_layout.id,  # Establecer el diseño de notificación
             })
 
             signer.is_mail_sent = True
