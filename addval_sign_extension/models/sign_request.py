@@ -31,6 +31,10 @@ from odoo import api, fields, models, http, _, Command
 from odoo.tools import config, email_normalize, get_lang, is_html_empty, format_date, formataddr, groupby
 from odoo.exceptions import UserError, ValidationError
 
+import logging
+
+_logger = logging.getLogger(__name__)
+
 class SignRequestItem(models.Model):
     _inherit = "sign.request.item"
 
@@ -51,6 +55,8 @@ class SignRequestItem(models.Model):
             template = self.env.ref('addval_sign_extension.request_to_sign_template')
             rendered_template = template._render_template(template.body_html, 'sign.request.item', self.ids)
             #body_html = rendered_template['body_html']
+            
+            _logger.info(rendered_template)
 
 
             attachment_ids = signer.sign_request_id.attachment_ids.ids
