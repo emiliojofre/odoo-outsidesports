@@ -75,23 +75,34 @@ class SignRequestItem(models.Model):
     #         signer.is_mail_sent = True
     #         del context
     
+    # def _send_signature_access_mail(self):
+    #     for signer in self:
+    #         signer_email_normalized = email_normalize(signer.signer_email or '')
+    #         signer_lang = get_lang(self.env, lang_code=signer.partner_id.lang).code
+    #         context = {'lang': signer_lang}
+
+    #         attachment_ids = signer.sign_request_id.attachment_ids.ids
+    #         template = self.env.ref('addval_sign_extension.request_to_sign_template')
+    #         template_with_lang = self.env['mail.template'].with_context(lang=signer_lang).browse(template.id)
+    #         template_with_lang.send_mail(signer.id, force_send=True, email_values={
+    #             'attachment_ids': [(6, 0, attachment_ids)],
+    #             'subject': signer.sign_request_id.subject,
+    #             'email_to': formataddr((signer.partner_id.name, signer_email_normalized)),
+    #         })
+
+    #         signer.is_mail_sent = True
+    #         del context
+    
     def _send_signature_access_mail(self):
         for signer in self:
             signer_email_normalized = email_normalize(signer.signer_email or '')
             signer_lang = get_lang(self.env, lang_code=signer.partner_id.lang).code
             context = {'lang': signer_lang}
-            # body = self.env['ir.qweb']._render('mail.template', {
-            #     'record': signer,
-            #     'link': url_join(signer.get_base_url(), "sign/document/mail/%(request_id)s/%(access_token)s" % {'request_id': signer.sign_request_id.id, 'access_token': signer.sudo().access_token}),
-            #     'subject': signer.sign_request_id.subject,
-            #     'body': signer.sign_request_id.message if not is_html_empty(signer.sign_request_id.message) else False,
-            #     'use_sign_terms': self.env['ir.config_parameter'].sudo().get_param('sign.use_sign_terms'),
-            #     'user_signature': signer.create_uid.signature,
-            # }, lang=signer_lang, minimal_qcontext=True)
 
             attachment_ids = signer.sign_request_id.attachment_ids.ids
             template = self.env.ref('addval_sign_extension.request_to_sign_template')
             template_with_lang = self.env['mail.template'].with_context(lang=signer_lang).browse(template.id)
+            template_with_lang.write({'notification_layout': 'mail.mail_notification_light'})
             template_with_lang.send_mail(signer.id, force_send=True, email_values={
                 'attachment_ids': [(6, 0, attachment_ids)],
                 'subject': signer.sign_request_id.subject,
