@@ -91,11 +91,12 @@ class SignRequestItem(models.Model):
 
             attachment_ids = signer.sign_request_id.attachment_ids.ids
             template = self.env.ref('addval_sign_extension.request_to_sign_template')
-            template.send_mail(signer.id, force_send=True, email_values={
+            template_with_lang = self.env['mail.template'].with_context(lang=signer_lang).browse(template.id)
+            template_with_lang.send_mail(signer.id, force_send=True, email_values={
                 'attachment_ids': [(6, 0, attachment_ids)],
                 'subject': signer.sign_request_id.subject,
                 'email_to': formataddr((signer.partner_id.name, signer_email_normalized)),
-            }, lang=signer_lang)
+            })
 
             signer.is_mail_sent = True
             del context
