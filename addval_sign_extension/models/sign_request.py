@@ -101,12 +101,16 @@ class SignRequestItem(models.Model):
 
             attachment_ids = signer.sign_request_id.attachment_ids.ids
             template = self.env.ref('addval_sign_extension.request_to_sign_template')
-            template_with_lang = self.env['mail.template'].with_context(lang=signer_lang).browse(template.id)
-            template_with_lang.write({'notification_layout': 'mail.mail_notification_light'})
-            template_with_lang.send_mail(signer.id, force_send=True, email_values={
+
+            # Obtener el diseño de notificación de mail.mail_notification_light
+            notification_layout = self.env.ref('mail.mail_notification_light')
+
+            # Enviar correo utilizando mail.template y el diseño de notificación
+            template.send_mail(signer.id, force_send=True, email_values={
                 'attachment_ids': [(6, 0, attachment_ids)],
                 'subject': signer.sign_request_id.subject,
                 'email_to': formataddr((signer.partner_id.name, signer_email_normalized)),
+                'notification_layout': notification_layout.id,  # Establecer el diseño de notificación
             })
 
             signer.is_mail_sent = True
