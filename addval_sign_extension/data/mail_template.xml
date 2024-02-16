@@ -6,7 +6,7 @@
             <field name="model_id" ref="sign.model_sign_request_item"/>
             <field name="subject">{{ object.sign_request_id.subject }}</field>
             <field name="email_from">{{ object.create_uid.email_formatted }}</field>
-            <field name="email_to">{{ object.signer_email_normalized }}</field>
+            <!-- <field name="email_to">{{ object.signer_email_normalized }}</field> -->
             <field name="body_html" type="html">
 <table border="0" cellpadding="0" style="background-color: white; padding: 0px; border-collapse:separate;">
     <tr><td valign="top">
