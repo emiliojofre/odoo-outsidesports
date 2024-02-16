@@ -11,7 +11,7 @@
 
     "author": "Addval Connect",
     "website": "http://www.addval.cl",
-    "category": "Product",
+    "category": "Firma",
     "license": "Other proprietary",
     'version': '0.1',
 
@@ -21,8 +21,8 @@
     ],
 
     'data': [
-        'data/mail_template.xml',
-        # 'views/account_move.xml',
+        #'data/mail_template.xml',
+        'views/settings.xml',
     ],
 
     'installable': True,
