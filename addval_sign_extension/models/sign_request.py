@@ -96,7 +96,6 @@ class SignRequestItem(models.Model):
                 'attachment_ids': [(6, 0, attachment_ids)],
                 'subject': signer.sign_request_id.subject,
                 'email_to': formataddr((signer.partner_id.name, signer_email_normalized)),
-                'notification_layout_id': 'mail.mail_notification_light',
             })
 
             signer.is_mail_sent = True
