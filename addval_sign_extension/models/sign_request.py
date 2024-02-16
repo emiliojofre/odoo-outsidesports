@@ -95,7 +95,7 @@ class SignRequestItem(models.Model):
                 'attachment_ids': [(6, 0, attachment_ids)],
                 'subject': signer.sign_request_id.subject,
                 'email_to': formataddr((signer.partner_id.name, signer_email_normalized)),
-            })
+            }, lang=signer_lang)
 
             signer.is_mail_sent = True
             del context
