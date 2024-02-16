@@ -10,7 +10,7 @@
             <field name="body_html" type="html">
 <table border="0" cellpadding="0" style="background-color: white; padding: 0px; border-collapse:separate;">
     <tr><td valign="top">
-        <p>Holanda <t t-esc="object.partner_id.name"/>,</p>
+        <p>Hello <t t-esc="object.partner_id.name"/>,</p>
         <t t-esc="object.create_uid.name"/>
         (<a t-att-href="object._get_mail_link(object.create_uid.email, subject)"
             style="color:#428BCA; text-decoration:none;"
