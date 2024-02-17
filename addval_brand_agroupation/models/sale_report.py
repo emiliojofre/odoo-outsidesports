@@ -20,7 +20,7 @@ class SaleReport(models.Model):
             LEFT JOIN uom_uom u ON u.id=l.product_uom
             LEFT JOIN uom_uom u2 ON u2.id=t.uom_id
             LEFT JOIN product_template pt ON pt.id = p.product_tmpl_id
-            LEFT JOIN wk_product_brand pb ON pb.id = pt.product_brand_id
+            LEFT JOIN wk_product_brand wpb ON wpb.id = pt.product_brand_id
             JOIN {currency_table} ON currency_table.company_id = s.company_id
             """.format(
             currency_table=self.env['res.currency']._get_query_currency_table(
