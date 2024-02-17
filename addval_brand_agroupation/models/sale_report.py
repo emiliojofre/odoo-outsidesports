@@ -12,7 +12,7 @@ class SaleReport(models.Model):
     def _select_sale(self):
         select_ = super(SaleReport, self)._select_sale()
         # Inserta tu línea justo antes de la cláusula AND
-        select_ = select_.replace("p.product_tmpl_id,", "p.product_tmpl_id, t.product_brand_id AS product_brand_id")
+        select_ = select_.replace("p.product_tmpl_id,", "p.product_tmpl_id, t.product_brand_id AS product_brand_id,")
         return select_
 
     def _group_by_sale(self):
