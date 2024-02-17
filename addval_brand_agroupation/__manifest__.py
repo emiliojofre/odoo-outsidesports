@@ -17,6 +17,7 @@
 
     'depends': [
         'base',
+        'sale',
         'website_product_brands',
     ],
 
