@@ -51,7 +51,7 @@ class SaleReport(models.Model):
             s.medium_id AS medium_id,
             s.source_id AS source_id,
             t.categ_id AS categ_id,
-            t.product_brand_id AS brand_id,
+            t.product_brand_id AS product_brand_id,
             s.pricelist_id AS pricelist_id,
             s.analytic_account_id AS analytic_account_id,
             s.team_id AS team_id,
