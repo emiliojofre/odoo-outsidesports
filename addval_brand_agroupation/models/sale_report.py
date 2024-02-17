@@ -12,14 +12,21 @@ class SaleReport(models.Model):
     def _select_sale(self):
         select_ = super(SaleReport, self)._select_sale()
         select_ = select_.replace("p.product_tmpl_id,", "p.product_tmpl_id, t.product_brand_id AS product_brand_id,")
-        _logger.info("### SELECT ###")
-        _logger.info(select_)
         return select_
 
     def _group_by_sale(self):
         group_by = super(SaleReport, self)._group_by_sale()
         group_by += """,
             t.product_brand_id"""
-        _logger.info("### GROUP BY ###")
-        _logger.info(group_by)
+        return group_by
+
+    def _select_pos(self):
+        select_ = super(SaleReport, self)._select_pos()
+        select_ = select_.replace("p.product_tmpl_id,", "p.product_tmpl_id, t.product_brand_id AS product_brand_id,")
+        return select_
+
+    def _group_by_pos(self):
+        group_by = super(SaleReport, self)._group_by_pos()
+        group_by += """,
+            t.product_brand_id"""
         return group_by
