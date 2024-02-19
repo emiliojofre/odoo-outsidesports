@@ -18,5 +18,5 @@ class Website(models.Model):
         sale_order_lines = self.env['sale.order.line'].sudo().search([('order_id', '=', sale_order_sudo.id)])
  
         for line in sale_order_lines:
-            line.analytic_distribution = {sale_order_lines.analytic_account_id.id: 100}
+            line.analytic_distribution = {sale_order_sudo.analytic_account_id.id: 100}
         return sale_order_sudo
