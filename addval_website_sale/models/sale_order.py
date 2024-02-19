@@ -21,3 +21,10 @@ class SaleOrder(models.Model):
                     analytic = company.api_analytic_id.id
                     vals['analytic_account_id'] = analytic
         return super().create(vals_list)
+    
+    def _prepare_order_line_update_values(self, order_line, quantity, linked_line_id=False, **kwargs):
+        values = super(SaleOrder, self)._prepare_order_line_update_values(order_line, quantity, linked_line_id=linked_line_id, **kwargs)
+        
+        values['analytic_distribution'] = {self.analytic_account_id.id: 100}
+
+        return values
