@@ -17,7 +17,9 @@
 
     'depends': [
         'base',
-        'sale'
+        'sale',
+        'website_sale',
+        'website_sale_delivery'
     ],
 
     'data': [
