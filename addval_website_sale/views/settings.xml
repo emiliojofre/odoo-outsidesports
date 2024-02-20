@@ -12,13 +12,13 @@
                         <div>
                             <label
                                 string="Cuenta analítica Sitio Web"
-                                for="api_analytic_id"/>
+                                for="website_analytic_id"/>
                             <div class="text-muted">
                                 Cuenta analítica Sitio Web
                             </div>
                             <div class="content-group mt16">
                                 <field
-                                    name="api_analytic_id"
+                                    name="website_analytic_id"
                                     colspan="4"
                                     nolabel="1"
                                     options="{'no_create': True, 'no_create_edit':True}"

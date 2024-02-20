@@ -21,6 +21,6 @@ class SaleOrder(models.Model):
             if vals.get('website_id'):
                 if 'company_id' in vals:
                     company = self.env['res.company'].browse(vals['company_id'])
-                    analytic = company.api_analytic_id.id
+                    analytic = company.website_analytic_id.id
                     vals['analytic_account_id'] = analytic
         return super().create(vals_list)
