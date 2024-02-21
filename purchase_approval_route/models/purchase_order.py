@@ -3,6 +3,10 @@ from odoo import api, fields, models, _
 from odoo.exceptions import UserError
 from odoo.tools.safe_eval import safe_eval
 
+import logging
+
+_logger = logging.getLogger(__name__)
+
 
 class PurchaseOrder(models.Model):
     _inherit = "purchase.order"
@@ -66,6 +70,8 @@ class PurchaseOrder(models.Model):
                         # If there is not next approval, than assume that approval is finished and send notification
                         partner = order.user_id.partner_id if order.user_id else order.create_uid.partner_id
                         template = self.env.ref('purchase_approval_route.order_approval_template')
+                        _logger.info("### PLANTILLA ###")
+                        _logger.info(template)
                         order.message_post_with_view(
                             template.id,
                             subject=_('PO Approved: %s') % (order.name,),
