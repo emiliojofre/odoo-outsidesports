@@ -70,9 +70,7 @@ class PurchaseOrder(models.Model):
                         # If there is not next approval, than assume that approval is finished and send notification
                         partner = order.user_id.partner_id if order.user_id else order.create_uid.partner_id
                         template = self.env.ref('purchase_approval_route.order_approval_template')
-                        _logger.info("### PLANTILLA ###")
-                        _logger.info(template)
-                        order.message_post_with_view(
+                        order.with_user(order.user_id).message_post_with_view(
                             template.id,
                             subject=_('PO Approved: %s') % (order.name,),
                             composition_mode='mass_mail',
