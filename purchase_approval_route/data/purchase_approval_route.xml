@@ -41,7 +41,7 @@
             <field name="name">Solicitud de Aprobación Orden de Compra</field>
             <field name="model_id" ref="purchase.model_purchase_order"/>
             <field name="subject">Aprobación {{ object.name }}</field>
-            <field name="email_from">{{ user.email_formatted }}</field>
+            <!-- <field name="email_from">{{ user.email_formatted }}</field> -->
             <field name="email_to">{{ object.sudo().current_approver.user_id.email }}</field>
             <field name="body_html" type="html">
 <p>
@@ -68,7 +68,7 @@
             <field name="name">Confirmación de Aprobación Orden de Compra</field>
             <field name="model_id" ref="purchase.model_purchase_order"/>
             <field name="subject">Confirmación Aprobación {{ object.name }}</field>
-            <field name="email_from">{{ user.email_formatted }}</field>
+            <!-- <field name="email_from">{{ user.email_formatted }}</field> -->
             <field name="email_to">{{ object.sudo().current_approver.user_id.email }}</field>
             <field name="body_html" type="html">
 <p>
