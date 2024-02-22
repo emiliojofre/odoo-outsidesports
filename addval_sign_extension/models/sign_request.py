@@ -41,7 +41,8 @@ class SignRequestItem(models.Model):
     
     def _send_signature_access_mail(self):
         for signer in self:
-            email = self.env['ir.config_parameter'].sudo().get_param('addval_sign_extension.sign_request_mail')
+            #email = self.env['ir.config_parameter'].sudo().get_param('addval_sign_extension.sign_request_mail')
+            email = signer.sign_request_id.create_uid.company_id.outgoing_mail
             signer_email_normalized = email_normalize(signer.signer_email or '')
             signer_lang = get_lang(self.env, lang_code=signer.partner_id.lang).code
             context = {'lang': signer_lang}
@@ -74,7 +75,8 @@ class SignRequestItem(models.Model):
         self.ensure_one()
         if access_token is None:
             access_token = self.access_token
-        email = self.env['ir.config_parameter'].sudo().get_param('addval_sign_extension.sign_request_mail')
+        #email = self.env['ir.config_parameter'].sudo().get_param('addval_sign_extension.sign_request_mail')
+        email = self.sign_request_id.create_uid.company_id.outgoing_mail
         partner_lang = get_lang(self.env, lang_code=partner.lang).code
         base_url = self.get_base_url()
         body = self.env['ir.qweb']._render('sign.sign_template_mail_completed', {

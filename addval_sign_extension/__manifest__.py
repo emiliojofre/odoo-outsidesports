@@ -17,12 +17,13 @@
 
     'depends': [
         'base',
-        'sign'
+        'sign',
+        'addval_mail_configuration'
     ],
 
     'data': [
         #'data/mail_template.xml',
-        'views/settings.xml',
+        #'views/settings.xml',
     ],
 
     'installable': True,
