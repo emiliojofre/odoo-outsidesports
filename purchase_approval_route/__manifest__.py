@@ -51,7 +51,7 @@ Key Features:
         'views/res_config_settings_views.xml',
         'views/purchase_approval_management.xml',
     ],
-    'depends': ['purchase', 'addval_mail_configuration'],
+    'depends': ['purchase'],
     'qweb': [],
     'images': [
         'static/description/purchase_approval_route.png',
