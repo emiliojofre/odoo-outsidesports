@@ -10,4 +10,4 @@ _logger = logging.getLogger(__name__)
 class ResCompany(models.Model):
     _inherit = 'res.company'
 
-    outgoing_mail = fields.Char('Dominio de correos')
+    outgoing_mail = fields.Char('Dominio de correos', store=True)
