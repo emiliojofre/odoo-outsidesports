@@ -70,7 +70,8 @@ class PurchaseOrder(models.Model):
                         # If there is not next approval, than assume that approval is finished and send notification
                         partner = order.user_id.partner_id if order.user_id else order.create_uid.partner_id
                         template = self.env.ref('purchase_approval_route.order_approval_template')
-                        template.email_from = order.company_id.outgoing_email
+                        template = self.env['mail.template'].sudo().search([('id', '=', template.id)])
+                        template.sudo().write({'email_from': order.company_id.outgoing_email})
                         order.message_post_with_template(
                             template.id,
                             subject=_('PO Approved: %s') % (order.name,),
@@ -215,8 +216,11 @@ class PurchaseOrder(models.Model):
             current_approver_partner = order.current_approver.user_id.partner_id
             if current_approver_partner not in order.message_partner_ids:
                 order.message_subscribe([current_approver_partner.id])
+            
             template = self.env.ref('purchase_approval_route.request_to_approve_template')
-            template.email_from = order.company_id.outgoing_email
+            # template = self.env['mail.template'].sudo().search([('id', '=', template.id)])
+            # template.sudo().write({'email_from': order.company_id.outgoing_email})
+            
             order.with_user(order.user_id).message_post_with_template(
                 template.id,
                 subject=_('PO Approval: %s') % (order.name,),
@@ -225,7 +229,8 @@ class PurchaseOrder(models.Model):
                 auto_delete=False,
                 auto_delete_message=False,
                 parent_id=False,
-                subtype_id=self.env.ref('mail.mt_note').id)
+                subtype_id=self.env.ref('mail.mt_note').id,
+                context={'default_email_from': order.company_id.outgoing_email})
             
             # order.with_user(order.user_id).message_post_with_view(
             #     'purchase_approval_route.request_to_approve',
