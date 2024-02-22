@@ -5,12 +5,23 @@
     <field name="priority" eval="101"/>
     <field name="inherit_id" ref="base.view_partner_form"/>
     <field name="arch" type="xml">
-      <field name="city" position="after">
+      <xpath expr="//field[@name='state_id']" position="attributes">
+          <attribute name="invisible">True</attribute>
+      </xpath>
+      
+      <!-- <field name="city" position="after">
         <field name="city_id" class="o_address_city" attrs="{'readonly': [('type', '=', 'contact'),('parent_id', '!=', False)]}" domain="[('state_id', '=', state_id)]" placeholder="Comuna"/>
-      </field>
+      </field> -->
+      
       <xpath expr="//field[@name='city']" position="attributes">
           <attribute name="invisible">True</attribute>
       </xpath>
+
+      <xpath expr="//div[@name='partner_address_country']" position="after">
+        <field name="state_id" class="o_address_state" placeholder="State" options="{'no_open': True, 'no_quick_create': True}" attrs="{'readonly': [('type', '=', 'contact'),('parent_id', '!=', False)]}" context="{'country_id': country_id, 'default_country_id': country_id, 'zip': zip}"/>
+        <field name="city_id" class="o_address_city" attrs="{'readonly': [('type', '=', 'contact'),('parent_id', '!=', False)]}" domain="[('state_id', '=', state_id)]" placeholder="Comuna"/>
+      </xpath>
+      
     </field>
   </record>
 </odoo>
