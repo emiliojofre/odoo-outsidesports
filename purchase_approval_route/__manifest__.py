@@ -50,8 +50,9 @@ Key Features:
         'views/purchase_approval_route.xml',
         'views/res_config_settings_views.xml',
         'views/purchase_approval_management.xml',
+        'views/company.xml',
     ],
-    'depends': ['purchase'],
+    'depends': ['base','purchase'],
     'qweb': [],
     'images': [
         'static/description/purchase_approval_route.png',
