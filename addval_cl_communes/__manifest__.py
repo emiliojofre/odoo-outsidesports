@@ -18,6 +18,7 @@
     'data': [
         'data/res_city.xml',
         'views/res_partner.xml',
+        'views/website_sale_address.xml',
     ],
     
     'depends': [
