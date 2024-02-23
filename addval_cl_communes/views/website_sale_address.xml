@@ -16,6 +16,10 @@
             <attribute name="t-attf-style">display: none;</attribute>
         </xpath>
 
+        <xpath expr="//t[@t-set='zip_city']" position="replace">
+            <t t-set='zip_city' t-value='country and [x for x in country.get_address_fields() if x in ["zip"]] or ["zip"]'/>
+        </xpath>
+
         <xpath expr="//div[contains(@t-attf-class, 'mb-3')][contains(@t-attf-class, 'div_street')]" position="after">
             <div t-attf-class="mb-3 #{error.get('street2') and 'o_has_error' or ''} col-lg-12 div_street2">
                 <label class="col-form-label label-optional" for="street2">Calle 2</label>
