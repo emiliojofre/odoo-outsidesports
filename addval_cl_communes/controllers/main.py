@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
+# Part of Odoo. See LICENSE file for full copyright and licensing details.
 
+import json
+import logging
 from datetime import datetime
-from odoo import http, tools
-from odoo.fields import Command
+from werkzeug.exceptions import Forbidden
+
+from odoo import http, _
 from odoo.http import request
 from odoo.addons.website_sale.controllers.main import WebsiteSale
-from odoo.exceptions import AccessError, MissingError, ValidationError
-import logging
-from odoo.tools.translate import _
+
+
 _logger = logging.getLogger(__name__)
 
 
@@ -92,9 +95,6 @@ class WebsiteSaleAddressInfo(WebsiteSale):
                 order.message_partner_ids = [(4, partner_id), (3, request.website.partner_id.id)]
                 if not errors:
                     return request.redirect(kw.get('callback') or '/shop/confirm_order')
-        
-        _logger.info("#### WEBSITE ADDRESS INFO ###")
-        _logger.info(values)
 
         render_values = {
             'website_sale_order': order,
