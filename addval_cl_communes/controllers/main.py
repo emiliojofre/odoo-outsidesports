@@ -110,4 +110,8 @@ class WebsiteSaleAddressInfo(WebsiteSale):
         }
         render_values.update(self._get_country_related_render_values(kw, render_values))
         _logger.info(render_values)
+
+        cities = request.env['res.city'].search([])
+
+        render_values['cities'] = cities
         return request.render("website_sale.address", render_values)
