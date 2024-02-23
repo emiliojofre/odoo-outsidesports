@@ -4,11 +4,16 @@
 <!-- License URL : https://store.webkul.com/license.html/ -->
 <odoo>
     <template id="inherit_address" inherit_id="website_sale.address" name="Add city in address">
-        <xpath expr="//div[contains(@t-attf-class, 'mb-3')][contains(@t-attf-class, 'div_street2')]" position="replace">
+        <xpath expr="//div[contains(@t-attf-class, 'mb-3')][contains(@t-attf-class, 'div_street2')]" position="attributes">
+            <attribute name="t-attf-style">display: none;</attribute>
         </xpath>
-        <xpath expr="//div[contains(@t-attf-class, 'mb-3')][contains(@t-attf-class, 'div_zip')]" position="replace">
+
+        <xpath expr="//div[contains(@t-attf-class, 'mb-3')][contains(@t-attf-class, 'div_zip')]" position="attributes">
+            <attribute name="t-attf-style">display: none;</attribute>
         </xpath>
-        <xpath expr="//div[contains(@t-attf-class, 'mb-3')][contains(@t-attf-class, 'div_state')]" position="replace">
+
+        <xpath expr="//div[contains(@t-attf-class, 'mb-3')][contains(@t-attf-class, 'div_state')]" position="attributes">
+            <attribute name="t-attf-style">display: none;</attribute>
         </xpath>
 
         <xpath expr="//div[contains(@t-attf-class, 'mb-3')][contains(@t-attf-class, 'div_street')]" position="after">
