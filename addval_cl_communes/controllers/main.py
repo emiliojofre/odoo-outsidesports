@@ -109,4 +109,5 @@ class WebsiteSaleAddressInfo(WebsiteSale):
             'is_public_user': request.website.is_public_user()
         }
         render_values.update(self._get_country_related_render_values(kw, render_values))
+        _logger.info(render_values)
         return request.render("website_sale.address", render_values)
