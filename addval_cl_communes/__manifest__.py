@@ -23,7 +23,8 @@
     
     'depends': [
         'base', 
-        'base_address_extended'
+        'base_address_extended',
+        'website_sale',
     ],
     
     'installable': True,
