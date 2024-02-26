@@ -57,12 +57,9 @@
                 <select name="city" class="form-select" t-attf-class="form-control #{error.get('city') and 'is-invalid' or ''}" t-att-mode="mode[1]">
                     <option value="">Ciudad...</option>
                     <t t-foreach="cities" t-as="city">
-                        <option value="">Ciudad...</option>
-                        <!-- <t t-if="city.state_id.id == checkout['state_id']">
-                            <option t-att-value="city.id" t-att-selected="('city' in checkout and checkout['city'] == city.id) or -1">
-                                <t t-esc="city.name" />
-                            </option>
-                        </t> -->
+                        <option t-att-value="city.id" t-att-selected="('city' in checkout and checkout['city'] == city.id) or -1">
+                            <t t-esc="city.name" />
+                        </option>
                     </t>
                 </select>
             </div>
