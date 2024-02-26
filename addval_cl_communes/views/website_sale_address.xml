@@ -57,14 +57,38 @@
                 <select name="city" class="form-select" t-attf-class="form-control #{error.get('city') and 'is-invalid' or ''}" t-att-mode="mode[1]">
                     <option value="">Ciudad...</option>
                     <t t-foreach="cities" t-as="city">
-                        <t t-if="city.state_id.id == checkout['state_id']">
+                        <option value="">Ciudad...</option>
+                        <!-- <t t-if="city.state_id.id == checkout['state_id']">
                             <option t-att-value="city.id" t-att-selected="('city' in checkout and checkout['city'] == city.id) or -1">
                                 <t t-esc="city.name" />
                             </option>
-                        </t>
+                        </t> -->
                     </t>
                 </select>
             </div>
+            <script type="text/javascript">
+                $(document).ready(function() {
+                    // Handler para el cambio en el selector de regiones
+                    $('select[name="state_id"]').on('change', function() {
+                        var stateId = $(this).val(); // Obtener el ID del estado seleccionado
+                        var $citySelect = $('select[name="city"]'); // Selector del campo de ciudades
+
+                        // Limpia las opciones actuales del selector de ciudades
+                        $citySelect.empty();
+
+                        // Agrega una opción predeterminada
+                        $citySelect.append('<option value="">Ciudad...</option>');
+
+                        // Itera sobre las ciudades disponibles
+                        cities.forEach(function(city) {
+                            // Si la ciudad pertenece al estado seleccionado, agrégala al selector de ciudades
+                            if (city.state_id.id === stateId) {
+                                $citySelect.append('<option value="' + city.id + '">' + city.name + '</option>');
+                            }
+                        });
+                    });
+                });
+            </script>
         </xpath>
 
     </template>
