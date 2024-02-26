@@ -41,9 +41,11 @@
                 <select name="state_id" t-attf-class="form-select #{error.get('state_id') and 'is-invalid' or ''}" data-init="1">
                     <option value="">Provincia ...</option>
                     <t t-foreach="country_states" t-as="s">
-                        <option t-att-value="s.id" t-att-selected="s.id == ('state_id' in checkout and country and checkout['state_id'] != '' and int(checkout['state_id']))">
-                            <t t-esc="s.name" />
-                        </option>
+                        <t t-if="s.id in country.state_ids">
+                            <option t-att-value="s.id" t-att-selected="s.id == ('state_id' in checkout and country and checkout['state_id'] != '' and int(checkout['state_id']))">
+                                <t t-esc="s.name" />
+                            </option>
+                        </t>
                     </t>
                 </select>
             </div>
@@ -55,9 +57,11 @@
                 <select name="city" class="form-select" t-attf-class="form-control #{error.get('city') and 'is-invalid' or ''}" t-att-mode="mode[1]">
                     <option value="">Ciudad...</option>
                     <t t-foreach="cities" t-as="city">
-                        <option t-att-value="city.id" t-att-selected="('city' in checkout and checkout['city'] == city.id) or -1">
-                            <t t-esc="city.name" />
-                        </option>
+                        <t t-if="city.country_id.id == country.id">
+                            <option t-att-value="city.id" t-att-selected="('city' in checkout and checkout['city'] == city.id) or -1">
+                                <t t-esc="city.name" />
+                            </option>
+                        </t>
                     </t>
                 </select>
             </div>
