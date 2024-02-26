@@ -63,28 +63,20 @@
                     </t>
                 </select>
             </div>
-            <script>
-                var cities = {{ cities|safe }};
+            <div id="cities-data" style="display: none;" data-cities="{{ cities|safe }}"></div>
+            <script type="text/javascript">
                 document.addEventListener('DOMContentLoaded', function() {
-                    // Handler para el cambio en el selector de regiones
-                    document.querySelector('select[name="state_id"]').addEventListener('change', function() {
-                        var stateId = this.value; // Obtener el ID del estado seleccionado
-                        var citySelect = document.querySelector('select[name="city"]'); // Selector del campo de ciudades
-                        console.log('HOLA');
+                    var stateSelect = document.querySelector('select[name="state_id"]');
+                    var citySelect = document.querySelector('select[name="city"]');
+                    var citiesDataElement = document.getElementById('cities-data');
+                    var cities = JSON.parse(citiesDataElement.dataset.cities);
+                    console.log('HOLA');
 
-                        // Limpia las opciones actuales del selector de ciudades
-                        citySelect.innerHTML = '';
-
-                        // Agrega una opción predeterminada
-                        var defaultOption = document.createElement('option');
-                        defaultOption.value = '';
-                        defaultOption.text = 'Ciudad...';
-                        citySelect.appendChild(defaultOption);
-
-                        // Itera sobre las ciudades disponibles
+                    stateSelect.addEventListener('change', function() {
+                        var stateId = stateSelect.value;
+                        citySelect.innerHTML = '<option value="">Ciudad...</option>';
                         cities.forEach(function(city) {
-                            // Si la ciudad pertenece al estado seleccionado, agrégala al selector de ciudades
-                            if (city.state_id.id === stateId) {
+                            if (city.state_id === stateId) {
                                 var option = document.createElement('option');
                                 option.value = city.id;
                                 option.text = city.name;
