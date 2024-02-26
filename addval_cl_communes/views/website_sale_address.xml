@@ -65,8 +65,6 @@
             </div>
             <script>
                 var cities = {{ cities|safe }};
-            </script>
-            <script>
                 document.addEventListener('DOMContentLoaded', function() {
                     // Handler para el cambio en el selector de regiones
                     document.querySelector('select[name="state_id"]').addEventListener('change', function() {
