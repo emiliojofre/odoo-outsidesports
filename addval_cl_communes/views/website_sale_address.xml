@@ -69,6 +69,7 @@
                     $('select[name="state_id"]').on('change', function() {
                         var stateId = $(this).val(); // Obtener el ID del estado seleccionado
                         var $citySelect = $('select[name="city"]'); // Selector del campo de ciudades
+                        console.log('HOLA');
 
                         // Limpia las opciones actuales del selector de ciudades
                         $citySelect.empty();
