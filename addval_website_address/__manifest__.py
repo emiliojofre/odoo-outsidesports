@@ -1,28 +1,28 @@
 # -*- coding: utf-8 -*-
 {
-    'name': "Comunas por Región",
+    'name': "Modificaciones Formulario Direcciones Website",
 
     'summary': """
-        Comunas con dominio en regiones (addval_cl_communes)""",
+        Modificaciones Formulario Direcciones Website (addval_website_address)""",
 
     'description': """
-        Comunas con dominio en regiones (addval_cl_communes)
+        Modificaciones Formulario Direcciones Website (addval_website_address)
     """,
 
     "author": "Addval Connect",
     "website": "http://www.addval.cl",
-    "category": "Partner",
+    "category": "Website",
     "license": "Other proprietary",
     'version': '0.1',
     
     'data': [
-        'data/res_city.xml',
-        'views/res_partner.xml',
+        'views/website_sale_address.xml',
     ],
     
     'depends': [
         'base', 
-        'base_address_extended'
+        'website_sale',
+        'addval_cl_communes'
     ],
     
     'installable': True,
