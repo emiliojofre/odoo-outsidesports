@@ -8,6 +8,9 @@
 
         <xpath expr="//div[contains(@t-attf-class, 'mb-3')][contains(@t-attf-class, 'div_state')]" position="replace">
         </xpath>
+        
+        <xpath expr="//div[contains(@t-attf-class, 'mb-3')][contains(@t-attf-class, 'div_city')]" position="replace">
+        </xpath>
 
         <!-- Campos a mover de posición -->
         <xpath expr="//div[contains(@t-attf-class, 'mb-3')][contains(@t-attf-class, 'div_country')]" position="after">
@@ -24,7 +27,7 @@
                     </t>
                 </select>
             </div>
-
+            <div class="w-100"/>
             <div t-attf-class="mb-3 #{error.get('city') and 'o_has_error' or ''} col-md-8 div_city">
                 <label class="col-form-label" for="city">Comuna</label>
                 <select name="city" class="form-select" t-attf-class="form-control #{error.get('city') and 'is-invalid' or ''}" t-att-mode="mode[1]">
