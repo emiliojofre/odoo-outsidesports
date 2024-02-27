@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <template id="inherit_address" inherit_id="website_sale.address" name="Add city in address">
+        <!-- Campos a ocultar  -->
         <xpath expr="//div[contains(@t-attf-class, 'mb-3')][contains(@t-attf-class, 'div_street2')]" position="attributes">
             <attribute name="t-attf-style">display: none;</attribute>
         </xpath>
@@ -8,13 +9,7 @@
         <xpath expr="//div[contains(@t-attf-class, 'mb-3')][contains(@t-attf-class, 'div_state')]" position="replace">
         </xpath>
 
-        <xpath expr="//div[contains(@t-attf-class, 'mb-3')][contains(@t-attf-class, 'div_street')]" position="after">
-            <div t-attf-class="mb-3 #{error.get('street2') and 'o_has_error' or ''} col-lg-12 div_street2">
-                <label class="col-form-label label-optional" for="street2">Calle 2</label>
-                <input type="text" name="street2" t-attf-class="form-control #{error.get('street2') and 'is-invalid' or ''}" t-att-value="'street2' in checkout and checkout['street2']" />
-            </div>
-        </xpath>
-
+        <!-- Campos a mover de posición -->
         <xpath expr="//div[contains(@t-attf-class, 'mb-3')][contains(@t-attf-class, 'div_country')]" position="before">
             <div t-attf-class="mb-3 #{error.get('state_id') and 'o_has_error' or ''} col-lg-6 div_state">
                 <label class="col-form-label" for="state_id">Región</label>
@@ -31,11 +26,12 @@
             </div>
         </xpath>
 
-        <xpath expr="//div[contains(@t-attf-class, 'mb-3')][contains(@t-attf-class, 'div_city')]" position="replace">
+        <!-- Mover el campo Ciudad después de Región -->
+        <xpath expr="//div[contains(@t-attf-class, 'mb-3')][contains(@t-attf-class, 'div_state')]" position="after">
             <div t-attf-class="mb-3 #{error.get('city') and 'o_has_error' or ''} col-md-8 div_city">
-                <label class="col-form-label" for="city">Ciudad</label>
+                <label class="col-form-label" for="city">Comuna</label>
                 <select name="city" class="form-select" t-attf-class="form-control #{error.get('city') and 'is-invalid' or ''}" t-att-mode="mode[1]">
-                    <option value="">Ciudad...</option>
+                    <option value="">Comuna...</option>
                     <t t-foreach="cities" t-as="city">
                         <option t-att-value="city.id" t-att-selected="('city' in checkout and checkout['city'] == city.id) or -1">
                             <t t-esc="city.name" />
@@ -43,29 +39,6 @@
                     </t>
                 </select>
             </div>
-            <div id="cities-data" style="display: none;" data-cities="{{ cities|safe }}"></div>
-            <script type="text/javascript">
-                document.addEventListener('DOMContentLoaded', function() {
-                    var stateSelect = document.querySelector('select[name="state_id"]');
-                    var citySelect = document.querySelector('select[name="city"]');
-                    var citiesDataElement = document.getElementById('cities-data');
-                    var cities = JSON.parse(citiesDataElement.dataset.cities);
-                    console.log('HOLA');
-
-                    stateSelect.addEventListener('change', function() {
-                        var stateId = stateSelect.value;
-                        citySelect.innerHTML = '<option value="">Ciudad...</option>';
-                        cities.forEach(function(city) {
-                            if (city.state_id === stateId) {
-                                var option = document.createElement('option');
-                                option.value = city.id;
-                                option.text = city.name;
-                                citySelect.appendChild(option);
-                            }
-                        });
-                    });
-                });
-            </script>
         </xpath>
 
     </template>
