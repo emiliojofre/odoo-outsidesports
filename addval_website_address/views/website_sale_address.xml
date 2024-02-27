@@ -48,7 +48,7 @@
             <div t-attf-class="mb-3 #{error.get('city') and 'o_has_error' or ''} col-xl-6">
                 <label class="col-form-label" for="city">Comuna</label>
                 <!-- <input type="text" name="city" t-attf-class="form-control #{error.get('city') and 'is-invalid' or ''}" t-att-value="city or partner.city" /> -->
-                <select name="city" class="form-select" t-attf-class="form-control #{error.get('city') and 'is-invalid' or ''}" t-att-mode="mode[1]">
+                <select name="city" class="form-select" t-attf-class="form-control #{error.get('city') and 'is-invalid' or ''}">
                     <option value="">Comuna...</option>
                     <t t-foreach="cities" t-as="ciudad">
                         <option t-att-value="city or partner.city" t-att-selected="ciudad.id == int(city.id) if city else city.id == partner.city.id">
