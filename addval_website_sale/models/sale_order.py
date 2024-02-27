@@ -19,8 +19,7 @@ class SaleOrder(models.Model):
     def create(self, vals_list):
         for vals in vals_list:
             if vals.get('website_id'):
-                if 'company_id' in vals:
-                    company = self.env['res.company'].browse(vals['company_id'])
-                    analytic = company.website_analytic_id.id
-                    vals['analytic_account_id'] = analytic
+                website = self.env['website'].browse(vals['website_id'])
+                analytic = website.website_analytic_id.id
+                vals['analytic_account_id'] = analytic
         return super().create(vals_list)

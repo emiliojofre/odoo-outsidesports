@@ -12,6 +12,13 @@ _logger = logging.getLogger(__name__)
 class Website(models.Model):
     _inherit = 'website'
 
+    website_analytic_id = fields.Many2one(
+        'account.analytic.account',
+        string = 'Cuenta analítica Website',
+        store = True,
+        readonly=False,
+    )
+
     def sale_get_order(self, force_create=False, update_pricelist=False):
         sale_order_sudo = super(Website, self).sale_get_order(force_create=force_create, update_pricelist=update_pricelist)
         
