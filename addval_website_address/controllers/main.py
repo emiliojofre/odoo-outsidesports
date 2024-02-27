@@ -148,10 +148,12 @@ class PortalAddressInfo(CustomerPortal):
 
         countries = request.env['res.country'].sudo().search([])
         states = request.env['res.country.state'].sudo().search([])
+        cities = request.env['res.city'].search([])
 
         values.update({
             'partner': partner,
             'countries': countries,
+            'cities': cities,
             'states': states,
             'has_check_vat': hasattr(request.env['res.partner'], 'check_vat'),
             'partner_can_edit_vat': partner.can_edit_vat(),
