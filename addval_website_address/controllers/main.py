@@ -148,7 +148,7 @@ class PortalAddressInfo(CustomerPortal):
 
         countries = request.env['res.country'].sudo().search([])
         states = request.env['res.country.state'].sudo().search([])
-        cities = request.env['res.city'].search([])
+        cities = request.env['res.city'].sudo().search([])
 
         values.update({
             'partner': partner,
