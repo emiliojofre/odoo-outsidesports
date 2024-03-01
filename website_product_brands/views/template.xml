@@ -8,7 +8,7 @@
       <xpath expr="//div[hasclass('js_main_product')]" position="after">
                 <t t-if="product.product_brand_id">
                     <hr/>
-                    <b>Brand :<span t-field="product.product_brand_id" class="text-muted"/></b>
+                    <b>Marcas :<span t-field="product.product_brand_id" class="text-muted"/></b>
                 </t>
       </xpath>
     </template>
@@ -23,7 +23,7 @@
                             data-bs-target="#o_wsale_offcanvas_brands"
                             aria-expanded="false"
                             aria-controls="o_wsale_offcanvas_brands">
-                            <b>Brands</b>
+                            <b>Marcas</b>
                     </button>
                 </h2>
                 <div id="o_wsale_offcanvas_brands"
@@ -85,7 +85,7 @@
                          <t t-foreach="brands or []" t-as="b">
                           <t t-set="filter_brand" t-value="filter_brand+str(b.id)"/>
                         </t>
-                          <div><b>Brands</b></div >
+                          <div><b>Marcas</b></div >
                            <div t-att-data-brand_set='brand_set' class="products_brands_filter" t-attf-data-brands="#{filter_brand}">
                           <ul class="nav nav-pills nav-stacked flex-column">
                              <t t-foreach="brand_rec" t-as="b">
@@ -109,7 +109,7 @@
 
     <template id="inherited_products_description_website_product_brands" inherit_id="website_sale.products_description"  active="True"  >
       <xpath expr="//div[hasclass('oe_subdescription')]" position="inside">
-            <b t-if='product.product_brand_id'>Brand:<span t-field="product.product_brand_id" class="text-muted"/></b>
+            <b t-if='product.product_brand_id'>Marcas:<span t-field="product.product_brand_id" class="text-muted"/></b>
       </xpath>
     </template>
 
@@ -117,14 +117,14 @@
         <xpath expr="//t[@t-foreach='website.menu_id.child_id']" position="after">
                 <li class="nav-item oe_sale_brands">
                     <a href="/shop/brands" class="nav-link">
-                        Brands 
+                        Marcas 
                     </a>
                 </li>
         </xpath>
     </template>
     <template id="wk_brands_page" name="Brands Page">
       <t t-call="website.layout">
-            <t t-set="additional_title">Product Brands</t>
+            <t t-set="additional_title">Marcas</t>
             <div id="wrap" class="js_sale">
                 <div class="oe_structure" id="oe_structure_website_sale_products_1"/>
                 <div class="container oe_website_sale">
@@ -171,8 +171,8 @@
                             <t t-else="">
                                 <div class="text-center text-muted">
                                     <t t-if="not search">
-                                        <h3 class="mt8">No Brand defined</h3>
-                                        <p t-if="category">No Brand defined in category "<strong t-esc="category.display_name"/>".</p>
+                                        <h3 class="mt8">Marca no definida</h3>
+                                        <p t-if="category">Marca no definida en categoria "<strong t-esc="category.display_name"/>".</p>
                                     </t>
                                     <t t-else="">
                                         <h3 class="mt8">No results</h3>
@@ -264,7 +264,7 @@
                         <div class="modal-dialog modal-lg container">
                             <div class="modal-content" >
                                 <div class="modal-header">
-                                    <h1 style="color:#8B8B8B;">Brand Information</h1>
+                                    <h1 style="color:#8B8B8B;">Información Marca</h1>
                                 </div>
                                 <div class="description col-md-12">
                                     <span t-if="wk_brand.description" t-raw="wk_brand.description" />
@@ -484,7 +484,7 @@
                         <div class="modal-dialog modal-lg container">
                             <div class="modal-content" >
                                 <div class="modal-header">
-                                    <span class="display-4" style="color:#8B8B8B;">Brand Information</span>
+                                    <span class="display-4" style="color:#8B8B8B;">Información Marca</span>
                                 </div>
                                 <div class="description col-md-12">
                                     <span t-if="wk_brand.description" t-esc="wk_brand.description" />

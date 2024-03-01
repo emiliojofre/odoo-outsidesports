@@ -17,11 +17,14 @@
 
     'depends': [
         'base',
-        'sale'
+        'sale',
+        'website',
+        'website_sale',
+        'website_sale_delivery'
     ],
 
     'data': [
-        'views/settings.xml',
+        'views/website.xml',
     ],
 
     'installable': True,
