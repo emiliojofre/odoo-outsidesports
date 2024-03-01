@@ -18,6 +18,7 @@
     'depends': [
         'base',
         'sale',
+        'portal',
         'website',
         'website_sale',
         'website_sale_delivery'
