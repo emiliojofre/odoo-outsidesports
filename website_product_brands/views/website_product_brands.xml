@@ -200,7 +200,7 @@
 
 
    <menuitem id="menu_product_brand_root_menu"
-     parent="website.menu_website_configuration" sequence="13"  name="Product Brands" />
-   <menuitem id="menu_product_brand_config"  parent="menu_product_brand_root_menu" sequence="2"  name="All Brands"
+     parent="website.menu_website_configuration" sequence="13"  name="Marcas de Productos" />
+   <menuitem id="menu_product_brand_config"  parent="menu_product_brand_root_menu" sequence="2"  name="Todas las marcas"
      action="wk_website_product_brand_action"/>
 </odoo>
