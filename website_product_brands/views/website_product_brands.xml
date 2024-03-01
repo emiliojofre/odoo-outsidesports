@@ -124,7 +124,7 @@
         </field>
     </record>
     <record id= "wk_website_product_brand_action" model= "ir.actions.act_window">
-        <field name= "name">Product Brands Configuration</field>
+        <field name= "name">Configuración Marcas</field>
         <field name= "type">ir.actions.act_window</field>
         <field name= "res_model">wk.product.brand</field>
         <field name= "view_mode">kanban,tree,form</field>
