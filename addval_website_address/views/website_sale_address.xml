@@ -1,8 +1,19 @@
-<?xml version="1.0" encoding="utf-8"?>
+ <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <template id="inherit_address" inherit_id="website_sale.address" name="Add city in address">
         <!-- Campos a ocultar  -->
-         <xpath expr="//div[contains(@t-attf-class, 'mb-3')][contains(@t-attf-class, 'div_country')]" position="after">
+        <xpath expr="//div[contains(@t-attf-class, 'mb-3')][contains(@t-attf-class, 'div_street2')]" position="attributes">
+            <attribute name="t-attf-style">display: none;</attribute>
+        </xpath>
+
+        <xpath expr="//div[contains(@t-attf-class, 'mb-3')][contains(@t-attf-class, 'div_state')]" position="replace">
+        </xpath>
+        
+        <xpath expr="//div[contains(@t-attf-class, 'mb-3')][contains(@t-attf-class, 'div_city')]" position="replace">
+        </xpath>
+
+        <!-- Campos a mover de posición 
+        <xpath expr="//div[contains(@t-attf-class, 'mb-3')][contains(@t-attf-class, 'div_country')]" position="after">
             <div t-attf-class="mb-3 #{error.get('state_id') and 'o_has_error' or ''} col-lg-6 div_state">
                 <label class="col-form-label" for="state_id">Región</label>
                 <select name="state_id" t-attf-class="form-select #{error.get('state_id') and 'is-invalid' or ''}" data-init="1">
@@ -28,26 +39,10 @@
                     </t>
                 </select>
             </div>
-        </xpath>
-         <xpath expr="//div[select[@name='state_id']]" position="replace">
-            <div t-attf-class="mb-3 #{error.get('state_id') and 'o_has_error' or ''} col-xl-6">
-                <label class="col-form-label label-optional" for="state_id">Región</label>
-                <select name="state_id" t-attf-class="form-select #{error.get('state_id') and 'is-invalid' or ''}">
-                    <option value="">Región...</option>
-                    <t t-foreach="states or []" t-as="state">
-                        <option t-att-value="state.id" style="display:none;" t-att-data-country_id="state.country_id.id" t-att-selected="state.id == int(state_id) if state_id else state.id == partner.state_id.id">
-                            <t t-esc="state.name" />
-                        </option>
-                    </t>
-                </select>
-            </div>
-        </xpath>
-      <xpath expr="//div[contains(@t-attf-class, 'mb-3')][contains(@t-attf-class, 'div_state')]" position="replace">
-        </xpath>
-        
-        <xpath expr="//div[contains(@t-attf-class, 'mb-3')][contains(@t-attf-class, 'div_city')]" position="replace">
-        </xpath>
+        </xpath>-->
+
     </template>
+
     <template id="inherit_address_my_portal" inherit_id="portal.portal_my_details_fields" name="My Portal Address">
         <xpath expr="//div[input[@name='city']]" position="replace">
             <div t-attf-class="mb-3 #{error.get('city') and 'o_has_error' or ''} col-xl-6">
@@ -63,8 +58,20 @@
                 </select>
             </div>
         </xpath>
-         <xpath expr="//div[contains(@t-attf-class, 'mb-3')][contains(@t-attf-class, 'div_street2')]" position="attributes">
-            <attribute name="t-attf-style">display: none;</attribute>
+
+        <xpath expr="//div[select[@name='state_id']]" position="replace">
+            <div t-attf-class="mb-3 #{error.get('state_id') and 'o_has_error' or ''} col-xl-6">
+                <label class="col-form-label label-optional" for="state_id">Región</label>
+                <select name="state_id" t-attf-class="form-select #{error.get('state_id') and 'is-invalid' or ''}">
+                    <option value="">Región...</option>
+                    <t t-foreach="states or []" t-as="state">
+                        <option t-att-value="state.id" style="display:none;" t-att-data-country_id="state.country_id.id" t-att-selected="state.id == int(state_id) if state_id else state.id == partner.state_id.id">
+                            <t t-esc="state.name" />
+                        </option>
+                    </t>
+                </select>
+            </div>
         </xpath>
     </template>
 </odoo>
+
