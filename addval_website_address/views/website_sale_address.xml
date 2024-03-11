@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
  <odoo>
-    <template id="inherit_address" inherit_id="website_sale.address" name="Add city in address" sequence="15">
+    <template id="inherit_address" inherit_id="website_sale.address" name="Add city in address" priority="15">
         <!-- Campos a ocultar  -->
         <xpath expr="//div[contains(@t-attf-class, 'mb-3')][contains(@t-attf-class, 'div_street2')]" position="attributes">
             <attribute name="t-attf-style">display: none;</attribute>
