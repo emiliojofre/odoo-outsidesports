@@ -126,7 +126,7 @@
         </div>
     </xpath>
     </template>
-    <!-- <template id="inherit_address_my_portal" inherit_id="portal.portal_my_details_fields" name="My Portal Address">
+    <template id="inherit_address_my_portal" inherit_id="portal.portal_my_details_fields" name="My Portal Address">
         <xpath expr="//div[input[@name='city']]" position="replace">
             <div t-attf-class="mb-3 #{error.get('city') and 'o_has_error' or ''} col-xl-6">
                 <label class="col-form-label" for="city">Comuna</label>
@@ -154,5 +154,5 @@
                 </select>
             </div>
         </xpath>
-    </template> -->
+    </template>
 </odoo>
