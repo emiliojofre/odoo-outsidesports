@@ -131,7 +131,8 @@
                     </option>
                 </t>
             </select>
-        </div>
+        </div>            
+        </xpath>
     </template>
     <template id="inherit_address_my_portal" inherit_id="portal.portal_my_details_fields" name="My Portal Address">
         <xpath expr="//div[input[@name='city']]" position="replace">
