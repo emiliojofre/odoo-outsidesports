@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <template id="replace_address" inherit_id="website_sale.address">
+    <template id="address" inherit_id="website_sale.address">
         <xpath expr="." position="replace">
-            <template id="new_address" name="Custom Address Management">
+            <template id="address" name="Custom Address Management">
                 <t t-set="no_footer" t-value="1"/>
                 <t t-call="website.layout">
                     <div id="wrap">
