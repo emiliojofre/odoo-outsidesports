@@ -6,8 +6,7 @@
         <field name="inherit_id" ref="project.edit_project"/>
         <field name="model">project.project</field>
         <field name="arch" type="xml">
-          <field name="analytic_account_id" position="attributes">
-              <attribute name="options">{'no_create': True, 'no_create_edit':True}</attribute>
+          <field name="analytic_account_id"   options="{'no_create': True, 'no_create_edit':True}" position="attributes">
           </field>
         </field>
       </record>
