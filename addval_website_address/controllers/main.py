@@ -1,167 +1,54 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-import json
 import logging
-from datetime import datetime
-from werkzeug.exceptions import Forbidden
 
-from odoo import http, _
-from odoo.http import request, route
-from odoo.addons.website_sale.controllers.main import WebsiteSale
+from odoo import http
 from odoo.addons.portal.controllers.portal import CustomerPortal
+from odoo.addons.website_sale.controllers.main import WebsiteSale
+from odoo.http import request, route
 
 _logger = logging.getLogger(__name__)
 
 
 class WebsiteSaleAddressInfo(WebsiteSale):
+    def _get_country_related_render_values(self, kw, render_values):
+        res = super()._get_country_related_render_values(kw, render_values)
+        country_state_cities = request.env["res.city"].search([("code", "!=", False)])
+        res.update({"country_state_cities": country_state_cities})
+        return res
 
-    @http.route(['/shop/address'], type='http', methods=['GET', 'POST'], auth="public", website=True, sitemap=False)
-    def address(self, **kw):
-        Partner = request.env['res.partner'].with_context(show_address=1).sudo()
-        order = request.website.sale_get_order()
+    @http.route(
+        [
+            '/shop/state_infos/<model("res.country"):country>/<model("res.country.state"):state>'
+        ],
+        type="json",
+        auth="public",
+        methods=["POST"],
+        website=True,
+    )
+    def state_infos(self, country, state, **kw):
+        if country.id != state.country_id.id:
+            return dict(in_country=False, use_selector=False, cities=[])
+        cities = request.env["res.city"].search(
+            [
+                ("code", "!=", False),
+                ("country_id", "=", country.id),
+                ("state_id", "=", state.id),
+            ]
+        )
+        use_selector = len(cities) > 0
+        return dict(
+            in_country=True,
+            use_selector=use_selector,
+            cities=cities.read(["id", "name"]),
+        )
 
-        redirection = self.checkout_redirection(order)
-        if redirection:
-            return redirection
-
-        mode = (False, False)
-        can_edit_vat = False
-        values, errors = {}, {}
-
-        partner_id = int(kw.get('partner_id', -1))
-
-        # IF PUBLIC ORDER
-        if order.partner_id.id == request.website.user_id.sudo().partner_id.id:
-            mode = ('new', 'billing')
-            can_edit_vat = True
-        # IF ORDER LINKED TO A PARTNER
-        else:
-            if partner_id > 0:
-                if partner_id == order.partner_id.id:
-                    mode = ('edit', 'billing')
-                    can_edit_vat = order.partner_id.can_edit_vat()
-                else:
-                    shippings = Partner.search([('id', 'child_of', order.partner_id.commercial_partner_id.ids)])
-                    if order.partner_id.commercial_partner_id.id == partner_id:
-                        mode = ('new', 'shipping')
-                        partner_id = -1
-                    elif partner_id in shippings.mapped('id'):
-                        mode = ('edit', 'shipping')
-                    else:
-                        return Forbidden()
-                if mode and partner_id != -1:
-                    values = Partner.browse(partner_id)
-            elif partner_id == -1:
-                mode = ('new', 'shipping')
-            else: # no mode - refresh without post?
-                return request.redirect('/shop/checkout')
-
-        # IF POSTED
-        if 'submitted' in kw and request.httprequest.method == "POST":
-            pre_values = self.values_preprocess(kw)
-            errors, error_msg = self.checkout_form_validate(mode, kw, pre_values)
-            post, errors, error_msg = self.values_postprocess(order, mode, pre_values, errors, error_msg)
-
-            if errors:
-                errors['error_message'] = error_msg
-                values = kw
-            else:
-                partner_id = self._checkout_form_save(mode, post, kw)
-                # We need to validate _checkout_form_save return, because when partner_id not in shippings
-                # it returns Forbidden() instead the partner_id
-                if isinstance(partner_id, Forbidden):
-                    return partner_id
-                fpos_before = order.fiscal_position_id
-                if mode[1] == 'billing':
-                    order.partner_id = partner_id
-                    # This is the *only* thing that the front end user will see/edit anyway when choosing billing address
-                    order.partner_invoice_id = partner_id
-                    if not kw.get('use_same'):
-                        kw['callback'] = kw.get('callback') or \
-                            (not order.only_services and (mode[0] == 'edit' and '/shop/checkout' or '/shop/address'))
-                    # We need to update the pricelist(by the one selected by the customer), because onchange_partner reset it
-                    # We only need to update the pricelist when it is not redirected to /confirm_order
-                    if kw.get('callback', False) != '/shop/confirm_order':
-                        request.website.sale_get_order(update_pricelist=True)
-                elif mode[1] == 'shipping':
-                    order.partner_shipping_id = partner_id
-
-                if order.fiscal_position_id != fpos_before:
-                    order._recompute_taxes()
-
-                # TDE FIXME: don't ever do this
-                # -> TDE: you are the guy that did what we should never do in commit e6f038a
-                order.message_partner_ids = [(4, partner_id), (3, request.website.partner_id.id)]
-                if not errors:
-                    return request.redirect(kw.get('callback') or '/shop/confirm_order')
-
-        render_values = {
-            'website_sale_order': order,
-            'partner_id': partner_id,
-            'mode': mode,
-            'checkout': values,
-            'can_edit_vat': can_edit_vat,
-            'error': errors,
-            'callback': kw.get('callback'),
-            'only_services': order and order.only_services,
-            'account_on_checkout': request.website.account_on_checkout,
-            'is_public_user': request.website.is_public_user()
-        }
-        render_values.update(self._get_country_related_render_values(kw, render_values))
-        _logger.info(render_values)
-
-        cities = request.env['res.city'].search([])
-
-        render_values['cities'] = cities
-        return request.render("website_sale.address", render_values)
-    
 
 class PortalAddressInfo(CustomerPortal):
-    @route(['/my/account'], type='http', auth='user', website=True)
+    @route(["/my/account"], type="http", auth="user", website=True)
     def account(self, redirect=None, **post):
-        values = self._prepare_portal_layout_values()
-        partner = request.env.user.partner_id
-        values.update({
-            'error': {},
-            'error_message': [],
-        })
-
-        if post and request.httprequest.method == 'POST':
-            error, error_message = self.details_form_validate(post)
-            values.update({'error': error, 'error_message': error_message})
-            values.update(post)
-            if not error:
-                values = {key: post[key] for key in self.MANDATORY_BILLING_FIELDS}
-                values.update({key: post[key] for key in self.OPTIONAL_BILLING_FIELDS if key in post})
-                for field in set(['country_id', 'state_id']) & set(values.keys()):
-                    try:
-                        values[field] = int(values[field])
-                    except:
-                        values[field] = False
-                values.update({'zip': values.pop('zipcode', '')})
-                self.on_account_update(values, partner)
-                partner.sudo().write(values)
-                if redirect:
-                    return request.redirect(redirect)
-                return request.redirect('/my/home')
-
-        countries = request.env['res.country'].sudo().search([])
-        states = request.env['res.country.state'].sudo().search([])
-        cities = request.env['res.city'].sudo().search([])
-
-        values.update({
-            'partner': partner,
-            'countries': countries,
-            'cities': cities,
-            'states': states,
-            'has_check_vat': hasattr(request.env['res.partner'], 'check_vat'),
-            'partner_can_edit_vat': partner.can_edit_vat(),
-            'redirect': redirect,
-            'page_name': 'my_details',
-        })
-
-        response = request.render("portal.portal_my_details", values)
-        response.headers['X-Frame-Options'] = 'SAMEORIGIN'
-        response.headers['Content-Security-Policy'] = "frame-ancestors 'self'"
+        response = super().account(redirect, **post)
+        cities = request.env["res.city"].sudo().search([("code", "!=", False)])
+        response.update({"cities": cities})
         return response
