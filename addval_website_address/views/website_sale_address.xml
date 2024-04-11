@@ -63,7 +63,7 @@
                     <t t-set='zip_city' t-value='country and [x for x in country.get_address_fields() if x in ["zip", "city"]] or ["city", "zip"]'/>
                     <t t-if="'zip' in zip_city and zip_city.index('zip') &lt; zip_city.index('city')">
                         <div t-attf-class="mb-3 #{error.get('zip') and 'o_has_error' or ''} col-md-4 div_zip">
-                            <label class="col-form-label label-optional" for="zip">Código Postal</label>
+                            <label class="col-form-label " for="zip">Código Postal</label>
                             <input type="text" name="zip" t-attf-class="form-control #{error.get('zip') and 'is-invalid' or ''}" t-att-value="'zip' in checkout and checkout['zip']" />
                         </div>
                     </t>
@@ -81,7 +81,7 @@
                     </div>
                     <t t-if="'zip' in zip_city and zip_city.index('zip') &gt; zip_city.index('city')">
                         <div t-attf-class="mb-3 #{error.get('zip') and 'o_has_error' or ''} col-md-4 div_zip">
-                            <label class="col-form-label label-optional" for="zip">Código Postal</label>
+                            <label class="col-form-label" for="zip">Código Postal</label>
                             <input type="text" name="zip" t-attf-class="form-control #{error.get('zip') and 'is-invalid' or ''}" t-att-value="'zip' in checkout and checkout['zip']" />
                         </div>
                     </t>
