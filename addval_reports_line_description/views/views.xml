@@ -20,9 +20,9 @@
 
     <!-- Herencia de purchase.report_purchasequotation -->
     <template id="report_purchasequotation_document_inherit" inherit_id="purchase.report_purchasequotation_document">
-        <xpath expr="//td[span[@t-field='line.name']]" position="replace">
+        <xpath expr="//td[span[@t-field='order_line.name']]" position="replace">
             <td>
-                <span t-field="line.product_id.name"/>
+                <span t-field="order_line.product_id.name"/>
             </td>
         </xpath>
     </template>
