@@ -18,5 +18,23 @@
         </xpath>
     </template>
 
+    <!-- Herencia de purchase.report_purchasequotation -->
+    <template id="report_purchasequotation_document_inherit" inherit_id="purchase.report_purchasequotation_document">
+        <xpath expr="//td[span[@t-field='line.name']]" position="replace">
+            <td>
+                <span t-field="line.product_id.name"/>
+            </td>
+        </xpath>
+    </template>
+
+    <!-- Herencia de sale.report_saleorder -->
+    <template id="report_saleorder_document_inherit" inherit_id="sale.report_saleorder_document">
+        <xpath expr="//td[span[@t-field='line.name']]" position="replace">
+            <td>
+                <span t-field="line.product_id.name"/>
+            </td>
+        </xpath>
+    </template>
+
     
 </odoo>
