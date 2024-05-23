@@ -1,0 +1,13 @@
+<!-- report_templates.xml -->
+<odoo>
+    <!-- Herencia de account.report_invoice_document -->
+    <template id="report_invoice_with_payments_inherit" inherit_id="account.report_invoice_document">
+        <xpath expr="//td[span[@t-field='line.name']]" position="replace">
+            <td>
+                <span t-field="line.product_id.name" t-options="{'widget': 'text'}"/>
+            </td>
+        </xpath>
+    </template>
+
+    
+</odoo>
