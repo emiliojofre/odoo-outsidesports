@@ -20,7 +20,7 @@
     <template id="product_default_codes" inherit_id="website_sale.product" active="True" name="Product Internal Reference">
         <xpath expr="//div[@id='product_details']//form//div[@id='product_option_block']" position="after">
             <!-- <t t-if="combination_info['default_code']"> -->
-            <div clas="d-flex flex-wrap align-items-center">
+            <div class="d-flex flex-wrap align-items-center">
                 <hr/>
                 <div>
                     <span style="font-weight: bold;">SKU: </span>
