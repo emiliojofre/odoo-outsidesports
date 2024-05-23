@@ -28,13 +28,13 @@ class ProductTemplate(models.Model):
         pvp = 0
         if combination_info.get('product_id'):
             product_id = self.env['product.product'].browse(combination_info['product_id'])
-            default_code = product_id.default_code
+            default_code = 'Ciao'
             pvp = product_id.product_product_pvp
             if pvp == 1:
                 pvp = product_id.product_tmpl_id.product_tmpl_pvp
         if not default_code and combination_info.get('product_template_id'):
             product_id = self.env['product.template'].browse(combination_info['product_template_id'])
-            default_code = product_id.default_code
+            default_code = 'Hola'
             pvp = product_id.product_tmpl_pvp
         combination_info['default_code'] = default_code
         combination_info['pvp'] = pvp
