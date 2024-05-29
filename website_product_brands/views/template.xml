@@ -9,12 +9,12 @@
                 <t t-if="product.product_brand_id">
                     <hr/>
                     <b>Marca :<span t-field="product.product_brand_id" class="text-muted"/></b>
-                    <b>SKU:<span t-field="product.default_code" class="text-muted"/></b>
-                    <b>PVP: $ <span t-field="product.pvp" class="text-muted"/></b>
+                    <!-- <b>SKU:<span t-field="product.default_code" class="text-muted"/></b>
+                    <b>PVP: $ <span t-field="product.pvp" class="text-muted"/></b> -->
                 </t>
       </xpath>
     </template>
-    <template id="disable_product_default_codes" inherit_id="eq_website_default_code.product_default_codes" active="False"/>
+    <!-- <template id="disable_product_default_codes" inherit_id="eq_website_default_code.product_default_codes" active="False"/> -->
 
     <template id="inherit_website_sale_o_wsale_offcanvas" inherit_id="website_sale.o_wsale_offcanvas">
         <xpath expr="//form[@t-if='opt_wsale_attributes or opt_wsale_attributes_top']/t" position="after">
