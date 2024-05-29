@@ -115,10 +115,9 @@
       </xpath>
     </template>
     <template id="product_default_codes" inherit_id="eq_website_default_code.product_default_codes" active="True" name="Product Internal Reference">
-        <xpath expr="//t[@t-if='combination_info['default_code']']" position="replace">
-        </xpath>
-        <!-- <xpath expr="//div[@id='product_details']//form//div[@id='product_option_block']" position="after">
-            <t t-if="combination_info['default_code']">
+
+        <xpath expr="//div[@id='product_details']//form//div[@id='product_option_block']" position="replace">
+            <!-- <t t-if="combination_info['default_code']">
                 <div clas="d-flex flex-wrap align-items-center">
                     <hr/>
                     <div>
@@ -130,8 +129,8 @@
                         <span style="margin-left:3px;font-weight: bold;" class="pvp" t-esc="combination_info['pvp']" t-options="{'widget': 'monetary', 'display_currency': product.currency_id, 'format': '#,##0.00'}"/>
                     </div>
                 </div>
-            </t>
-        </xpath> -->
+            </t> -->
+        </xpath>
     </template>
 
     <template id="wk_header_brand" inherit_id="website.template_header_default" name="Header Shop Brands Link">
