@@ -9,8 +9,7 @@
                 <t t-if="product.product_brand_id">
                     <hr/>
                     <b>Marca :<span t-field="product.product_brand_id" class="text-muted"/></b>
-                    <b t-if='product.default_code'>SKU:<span t-field="product.default_code" class="text-muted"/></b>
-                    <b t-if='product.pvp'>PVP: $ <span t-field="product.pvp" class="text-muted"/></b>
+                    
                 </t>
       </xpath>
     </template>
