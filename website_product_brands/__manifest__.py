@@ -30,7 +30,7 @@ Filter products with brands
 Add product filter to Odoo website
 Odoo website product filters.""",
   "live_test_url"        :  "http://odoodemo.webkul.com/?module=website_product_brands",
-  "depends"              :  ['website_base_filter_attribute'],
+  "depends"              :  ['website_base_filter_attribute', 'eq_website_default_code'],
   "data"                 :  [
                              'security/ir.model.access.csv',
                              'data/data.xml',
