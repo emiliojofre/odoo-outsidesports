@@ -9,6 +9,8 @@
                 <t t-if="product.product_brand_id">
                     <hr/>
                     <b>Marca :<span t-field="product.product_brand_id" class="text-muted"/></b>
+                    <b t-if='product.default_code'>SKU:<span t-field="product.default_code" class="text-muted"/></b>
+                    <b t-if='product.pvp'>PVP: $ <span t-field="product.pvp" class="text-muted"/></b>
                 </t>
       </xpath>
     </template>
@@ -109,9 +111,7 @@
 
     <template id="inherited_products_description_website_product_brands" inherit_id="website_sale.products_description"  active="True"  >
       <xpath expr="//div[hasclass('oe_subdescription')]" position="inside">
-            <b t-if='product.product_brand_id'>Marcass:<span t-field="product.product_brand_id" class="text-muted"/></b>
-            <b t-if='product.default_code'>SKU:<span t-field="product.default_code" class="text-muted"/></b>
-            <b t-if='product.pvp'>PVP: $ <span t-field="product.pvp" class="text-muted"/></b>
+            <b t-if='product.product_brand_id'>Marca:<span t-field="product.product_brand_id" class="text-muted"/></b>
       </xpath>
     </template>
     <template id="disable_product_default_codes" inherit_id="eq_website_default_code.product_default_codes" active="False"/>
