@@ -12,8 +12,6 @@
                     <br/>
                     <b>PVP: $ <span t-field="product.product_tmpl_pvp" class="text-muted"/></b>
                     <br/>
-                    <br/>
-                    <br/>
                     <b>Marca : <span t-field="product.product_brand_id" class="text-muted"/></b>
                 </t>
       </xpath>
