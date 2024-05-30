@@ -4,5 +4,8 @@
       <function
          model="wk.product.brand"
          name="wk_activate_website_view"/>
+      <record id="eq_website_default_code.product_default_codes" model="ir.ui.view">
+        <field name="active" eval="False"/>
+      </record>
     </data>
 </odoo>
