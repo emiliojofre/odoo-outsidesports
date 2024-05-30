@@ -11,7 +11,7 @@
                     <b>Marca : <span t-field="product.product_brand_id" class="text-muted"/></b>
                     <br/>
                     <b>SKU : <span t-field="product.default_code" class="text-muted"/></b>
-                    <b>PVP: $ <span t-field="product.product_product_pvp" class="text-muted"/></b>
+                    <b>PVP: $ <span t-field="product.product_tmpl_pvp" class="text-muted"/></b>
                 </t>
       </xpath>
     </template>
