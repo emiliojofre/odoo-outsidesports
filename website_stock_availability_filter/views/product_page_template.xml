@@ -27,11 +27,19 @@ See LICENSE file for full copyright and licensing details -->
 		</xpath>
 	</template>
 
-	<template id="avalible_in_stock_offcanvas" name="Availability Filter Offcan" inherit_id="website_sale.o_wsale_offcanvas">
+	<!-- <template id="avalible_in_stock_offcanvas" name="Availability Filter Offcan" inherit_id="website_sale.o_wsale_offcanvas">
 		<xpath expr="//div[@t-if='opt_wsale_categories']" position="before">
 			<t t-call="website_stock_availability_filter.avalible_in_stock"/>
 		</xpath>
+	</template> -->
+
+
+	<template id="avalible_in_stock_offcanvas" name="Availability Filter Offcan" inherit_id="website_sale.products">
+		<xpath expr="//div[@class='products_attributes_filters']" position="before">
+			<t t-call="website_stock_availability_filter.avalible_in_stock"/>
+		</xpath>
 	</template>
+
 
 	<template id="product_items_label" customize_show="True" inherit_id="website_sale.products_item" name="Show Available Label">
 		<xpath expr="//div[hasclass('oe_product_image')]" position="inside">
