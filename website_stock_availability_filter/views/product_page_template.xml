@@ -9,7 +9,7 @@ See LICENSE file for full copyright and licensing details -->
 			<div class="flex-column">
 				<div class="custom-control custom-checkbox mb-1">
 					<input type="checkbox" class="custom-control-input" id="stock_filter" name="show_instock" t-att-value="'on' if show_instock == 'true' else off" t-att-checked="'true' if show_instock == 'on' else false"/>
-					<label class="custom-control-label font-weight-normal" for="stock_filter">In Stock</label>
+					<label class="custom-control-label font-weight-normal" for="stock_filter">En Stock</label>
 				</div>
 			</div>
 		</div>
