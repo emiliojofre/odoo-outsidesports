@@ -21,10 +21,6 @@ class AccountMove(models.Model):
 
         n2growth = 'N2Growth'
 
-        _logger.warning('Nombre logo upper %s', n2growth.upper())
-
-        _logger.warning('Nombre cuenta analitica upper %s', order.analytic_account_id.name.upper())
-
         if order and n2growth.upper() in order.analytic_account_id.name.upper() and self.company_id.id == 4:
             _logger.warning('entro al if')
             header_data['company_logo'] = self.company_id.n2growth_logo
