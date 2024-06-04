@@ -25,6 +25,7 @@
       <xpath expr="//form[1]/sheet[1]/notebook[1]/page[@name='contact_addresses']/field[@name='child_ids']/form[1]/sheet[1]/group[1]/group[1]/div[1]/div[@name='div_address']/field[@name='city_id']" position="attributes">
         <attribute name="attrs">{"invisible": [["country_id","=",False]]}</attribute>
         <attribute name="domain">[('state_id', '=', state_id)]</attribute>
+        <attribute name="placeholder">Comuna</attribute>
       </xpath>
       <xpath expr="//form[1]/sheet[1]/notebook[1]/page[@name='contact_addresses']/field[@name='child_ids']/form[1]/sheet[1]/group[1]/group[1]/div[1]/div[@name='div_address']/field[@name='city']" position="attributes">
         <attribute name="attrs">{"readonly": [["type","=","contact"],["parent_id","!=",False]]}</attribute>
