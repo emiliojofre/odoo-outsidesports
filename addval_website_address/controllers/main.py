@@ -46,14 +46,50 @@ class WebsiteSaleAddressInfo(WebsiteSale):
 
 
 class PortalAddressInfo(CustomerPortal):
-    @route(["/my/account"], type="http", auth="user", website=True)
+    @route(['/my/account'], type='http', auth='user', website=True)
     def account(self, redirect=None, **post):
-        values = super(PortalAddressInfo, self).account(redirect=redirect, **post)
-        
-        # Fetch res.city records
+        values = self._prepare_portal_layout_values()
+        partner = request.env.user.partner_id
+        values.update({
+            'error': {},
+            'error_message': [],
+        })
+
+        if post and request.httprequest.method == 'POST':
+            error, error_message = self.details_form_validate(post)
+            values.update({'error': error, 'error_message': error_message})
+            values.update(post)
+            if not error:
+                values = {key: post[key] for key in self.MANDATORY_BILLING_FIELDS}
+                values.update({key: post[key] for key in self.OPTIONAL_BILLING_FIELDS if key in post})
+                for field in set(['country_id', 'state_id']) & set(values.keys()):
+                    try:
+                        values[field] = int(values[field])
+                    except:
+                        values[field] = False
+                values.update({'zip': values.pop('zipcode', '')})
+                self.on_account_update(values, partner)
+                partner.sudo().write(values)
+                if redirect:
+                    return request.redirect(redirect)
+                return request.redirect('/my/home')
+
+        countries = request.env['res.country'].sudo().search([])
+        states = request.env['res.country.state'].sudo().search([])
         cities = request.env["res.city"].sudo().search([("code", "!=", False)])
-        
-        # Add cities to the values dictionary
-        values.update({'cities': cities})
-        
-        return request.render("portal.portal_my_details", values)
+
+        values.update({
+            'partner': partner,
+            'countries': countries,
+            'states': states,
+            'has_check_vat': hasattr(request.env['res.partner'], 'check_vat'),
+            'partner_can_edit_vat': partner.can_edit_vat(),
+            'redirect': redirect,
+            'page_name': 'my_details',
+            'cities': cities
+        })
+
+        response = request.render("portal.portal_my_details", values)
+        response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+        response.headers['Content-Security-Policy'] = "frame-ancestors 'self'"
+        return response
