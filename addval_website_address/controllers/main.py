@@ -49,6 +49,7 @@ class PortalAddressInfo(CustomerPortal):
     @route(["/my/account"], type="http", auth="user", website=True)
     def account(self, redirect=None, **post):
         response = super().account(redirect, **post)
+        _logger.warning('response: %s', response)
         cities = request.env["res.city"].sudo().search([("code", "!=", False)])
         response.update({"cities": cities})
         return response
