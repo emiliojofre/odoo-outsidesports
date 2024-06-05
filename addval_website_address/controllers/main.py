@@ -48,8 +48,7 @@ class WebsiteSaleAddressInfo(WebsiteSale):
 class PortalAddressInfo(CustomerPortal):
     @route(["/my/account"], type="http", auth="user", website=True)
     def account(self, redirect=None, **post):
-        response = super().account(redirect, **post)
-        _logger.warning('response: %s', response)
+        values = self._prepare_portal_layout_values()
         cities = request.env["res.city"].sudo().search([("code", "!=", False)])
-        response.update({"cities": cities})
-        return response
+        values.update({'cities': cities})
+        super().account(redirect, **post)
