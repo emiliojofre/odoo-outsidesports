@@ -217,7 +217,7 @@
 		<template id="brand_product_listing_page_extended" inherit_id='website_product_brands.wk_product_brand_page'>
 
 			<!-- Add Label on Shop/Product Listing Page -->
-			<xpath expr="//div[@t-set='product']" position="after">
+			<xpath expr="//t[@t-set='product']" position="after">
 				<t t-if="product.select_label">
 					 <div t-att-class="product.select_label.position">
 
