@@ -375,7 +375,7 @@
                                                                         t-att-rowspan="td_product['y'] != 1 and td_product['y']"
                                                                         t-attf-class="oe_product">
                                                                         <div t-attf-class="o_wsale_product_grid_wrapper o_wsale_product_grid_wrapper_#{td_product['x']}_#{td_product['y']}">
-                                                                            <t t-call="website_sale.products_item">
+                                                                            <t t-call="odoo_website_product_label.product_listing_page_extended">
                                                                                 <t t-set="products" t-value="td_product['product'].product_brand_id.products"/>
                                                                                 <t t-set="product_template_id" t-value="td_product['product'].id"/>
                                                                                 <t t-set="product" t-value="td_product['product']"/>
