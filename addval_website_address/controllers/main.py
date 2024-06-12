@@ -95,6 +95,7 @@ class PortalAddressInfo(CustomerPortal):
             'page_name': 'my_details',
             'cities': cities
         })
+        _logger.info(partner.city)
 
         response = request.render("portal.portal_my_details", values)
         response.headers['X-Frame-Options'] = 'SAMEORIGIN'
