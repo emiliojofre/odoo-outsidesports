@@ -19,6 +19,10 @@ class WebsiteSaleAddressInfo(WebsiteSale):
         _logger.info("#################################")
         _logger.info(res)
         _logger.info(render_values)
+        _logger.info(render_values['checkout'])
+        _logger.info(type(render_values['checkout']))
+        _logger.info(render_values['checkout']['state_id'])
+        _logger.info(render_values['checkout'].id)
         return res
 
     @http.route(
