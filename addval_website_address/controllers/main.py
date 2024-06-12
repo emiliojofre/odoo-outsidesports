@@ -18,12 +18,12 @@ class WebsiteSaleAddressInfo(WebsiteSale):
         res.update({"country_state_cities": country_state_cities})
         return res
     
-    @http.route(['/shop/address'], type='http', methods=['GET', 'POST'], auth="public", website=True, sitemap=False)
-    def address(self, **kw):
-        res = super().address(**kw)
+    def _get_country_related_render_values(self, kw, render_values):
+        res = super()._get_country_related_render_values(kw, render_values)
+        _logger.info("#################################")
         _logger.info(res)
         return res
-        
+
     @http.route(
         [
             '/shop/state_infos/<model("res.country"):country>/<model("res.country.state"):state>'
