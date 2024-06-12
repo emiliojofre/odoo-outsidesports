@@ -53,7 +53,7 @@
                         <select id="state_id" name="state_id" t-attf-class="form-select #{error.get('state_id') and 'is-invalid' or ''}" data-init="1">
                             <option value="">Región...</option>
                             <t t-foreach="country_states" t-as="s">
-                                <option t-att-value="s.id" t-att-selected="s.id == int(checkout['state_id'].id or -1">
+                                <option t-att-value="s.id" t-att-selected="s.id == (int(checkout['state_id'].id) or -1)">
                                     <t t-esc="s.name" />
                                 </option>
                             </t>
