@@ -16,10 +16,6 @@ class WebsiteSaleAddressInfo(WebsiteSale):
         res = super()._get_country_related_render_values(kw, render_values)
         country_state_cities = request.env["res.city"].search([("code", "!=", False)])
         res.update({"country_state_cities": country_state_cities})
-        return res
-    
-    def _get_country_related_render_values(self, kw, render_values):
-        res = super()._get_country_related_render_values(kw, render_values)
         _logger.info("#################################")
         _logger.info(res)
         return res
