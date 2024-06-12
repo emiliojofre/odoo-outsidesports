@@ -18,6 +18,7 @@ class WebsiteSaleAddressInfo(WebsiteSale):
         res.update({"country_state_cities": country_state_cities})
         _logger.info("#################################")
         _logger.info(res)
+        _logger.info(render_values)
         return res
 
     @http.route(
