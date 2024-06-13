@@ -5,7 +5,7 @@
             <form t-if="account_on_checkout != 'mandatory' or not is_public_user" action="/shop/address" method="post" class="checkout_autoformat">
                 <div class="row">
                     <div t-attf-class="mb-3 #{error.get('name') and 'o_has_error' or ''} col-lg-12 div_name">
-                        <label class="col-form-label" for="name">Nombre *(Campo obligatorio)</label>
+                        <label class="col-form-label" for="name">Nombre ***(Campo obligatorio)</label>
                         <input type="text" name="name" t-attf-class="form-control #{error.get('name') and 'is-invalid' or ''}" t-att-value="'name' in checkout and checkout['name']" />
                     </div>
                     <div class="w-100"/>
@@ -14,7 +14,7 @@
                         <input type="email" name="email" t-attf-class="form-control #{error.get('email') and 'is-invalid' or ''}" t-att-value="'email' in checkout and checkout['email']" />
                     </div>
                     <div t-attf-class="mb-3 #{error.get('phone') and 'o_has_error' or ''} col-lg-6" id="div_phone">
-                        <label class="col-form-label" for="phone">Teléfono ***(Campo obligatorio)</label>
+                        <label class="col-form-label" for="phone">Teléfono *(Campo obligatorio)</label>
                         <input type="tel" name="phone" t-attf-class="form-control #{error.get('phone') and 'is-invalid' or ''}" t-att-value="'phone' in checkout and checkout['phone']" />
                     </div>
                     <t t-if="website._display_partner_b2b_fields()">
@@ -135,7 +135,7 @@
                 <select name="city" class="form-select" t-attf-class="form-control #{error.get('city') and 'is-invalid' or ''}">
                     <option value="">Comuna...</option>
                     <t t-foreach="cities" t-as="ciudad">
-                        <option t-att-value="ciudad or partner.city" t-att-selected="ciudad.name == partner.city">
+                        <option t-att-value="ciudad or partner.city" t-att-selected="ciudad.name == partner.city)">
                             <t t-esc="ciudad.name" />
                         </option>
                     </t>
