@@ -38,7 +38,7 @@ class WebsiteSale(WebsiteSale):
          '''/shop/brand/<model("wk.product.brand"):wk_brand>''',
           '''/shop/brand/<model("wk.product.brand"):wk_brand>/page/<int:page>'''],
         type='http', auth="public", website=True)
-    def shop(self, page=0, category=None, search='', ppg=False, **post):
+    def shop(self, page=0, category=None, search='', min_price=0.0, max_price=0.0, ppg=False, **post):
         brand_set=[]
         wk_brand = post.get('wk_brand')
         if wk_brand:
@@ -47,8 +47,7 @@ class WebsiteSale(WebsiteSale):
         else:
             request.session['wk_brand'] = False
 
-        response= super(WebsiteSale, self).shop(page=page, category=category,
-        search=search, ppg=ppg, **post
+        response= super(WebsiteSale, self).shop(page=page, category=category, search=search, min_price=min_price, max_price=max_price, ppg=ppg, **post
         )
 
         brand =(post.get('brand')  and post.get('brand')) or False

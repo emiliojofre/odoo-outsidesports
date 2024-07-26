@@ -4,7 +4,7 @@
 <!-- License URL : https://store.webkul.com/license.html/ -->
 <odoo>
     <template id="inherit_address" inherit_id="website_sale.address" name="Add city in address">
-        <xpath expr="//input[@name='city']" position="replace">
+        <!-- <xpath expr="//input[@name='city']" position="replace">
             <select id="country_id" name="country_id" t-attf-class="form-select #{error.get('country_id') and 'is-invalid' or ''}" t-att-mode="mode[1]">
                 <option value="">Pais...</option>
                 <t t-foreach="countries" t-as="c">
@@ -13,10 +13,11 @@
                     </option>
                 </t>
             </select>
-        </xpath>
-        <xpath expr="//label[@for='city']" position="replace">
+        </xpath> -->
+        <!-- <xpath expr="//label[@for='city']" position="replace">
             <label class="col-form-label" for="country_id">Pais</label>
-        </xpath>
+        </xpath> -->
+
 
         <xpath expr="//div[@class='mb-3 #{error.get('street') and 'o_has_error' or ''} col-lg-12 div_street']" position="after">
             <div t-attf-class="mb-3 #{error.get('street2') and 'o_has_error' or ''} col-lg-12 div_street2">
@@ -82,7 +83,7 @@
         </xpath>
     </template>
 
-    <!-- 
+    <!--
         Pais      / Country   (country_id)
         Provincia / State     (state_id)
         Ciudad    / City      (city_id)

@@ -8,10 +8,15 @@
       <xpath expr="//div[hasclass('js_main_product')]" position="after">
                 <t t-if="product.product_brand_id">
                     <hr/>
-                    <b>Marcas :<span t-field="product.product_brand_id" class="text-muted"/></b>
+                    <b>SKU : <span t-field="product.default_code" class="text-muted"/></b>
+                    <br/>
+                    <b>PVP: <span t-field="product.product_tmpl_pvp" class="text-muted"/></b>
+                    <br/>
+                    <b>Marca : <span t-field="product.product_brand_id" class="text-muted"/></b>
                 </t>
       </xpath>
     </template>
+    <template id="disable_product_default_codes" inherit_id="eq_website_default_code.product_default_codes" active="False"/>
 
     <template id="inherit_website_sale_o_wsale_offcanvas" inherit_id="website_sale.o_wsale_offcanvas">
         <xpath expr="//form[@t-if='opt_wsale_attributes or opt_wsale_attributes_top']/t" position="after">
@@ -23,7 +28,7 @@
                             data-bs-target="#o_wsale_offcanvas_brands"
                             aria-expanded="false"
                             aria-controls="o_wsale_offcanvas_brands">
-                            <b>Marcas</b>
+                            <b>Marca</b>
                     </button>
                 </h2>
                 <div id="o_wsale_offcanvas_brands"
@@ -85,7 +90,7 @@
                          <t t-foreach="brands or []" t-as="b">
                           <t t-set="filter_brand" t-value="filter_brand+str(b.id)"/>
                         </t>
-                          <div><b>Marcas</b></div >
+                          <div><b>Marca</b></div >
                            <div t-att-data-brand_set='brand_set' class="products_brands_filter" t-attf-data-brands="#{filter_brand}">
                           <ul class="nav nav-pills nav-stacked flex-column">
                              <t t-foreach="brand_rec" t-as="b">
@@ -109,7 +114,7 @@
 
     <template id="inherited_products_description_website_product_brands" inherit_id="website_sale.products_description"  active="True"  >
       <xpath expr="//div[hasclass('oe_subdescription')]" position="inside">
-            <b t-if='product.product_brand_id'>Marcas:<span t-field="product.product_brand_id" class="text-muted"/></b>
+            <b t-if='product.product_brand_id'>Marca:<span t-field="product.product_brand_id" class="text-muted"/></b>
       </xpath>
     </template>
 
@@ -117,14 +122,14 @@
         <xpath expr="//t[@t-foreach='website.menu_id.child_id']" position="after">
                 <li class="nav-item oe_sale_brands">
                     <a href="/shop/brands" class="nav-link">
-                        Marcas 
+                        Marca
                     </a>
                 </li>
         </xpath>
     </template>
     <template id="wk_brands_page" name="Brands Page">
       <t t-call="website.layout">
-            <t t-set="additional_title">Marcas</t>
+            <t t-set="additional_title"></t>
             <div id="wrap" class="js_sale">
                 <div class="oe_structure" id="oe_structure_website_sale_products_1"/>
                 <div class="container oe_website_sale">
@@ -293,7 +298,7 @@
                 <div class="container d-flex oe_website_sale">
                     <div class="">
                         <!-- <div t-if="enable_left_column" id="products_grid_before" class="col-lg-2 col-12" style="margin-top:15%; margin-left:5%"/> -->
-                        <div class="container" style="margin-top:12%; padding-top:2%; padding-bottom:2%;">
+                        <div class="container" style="margin-top:2%; padding-top:2%; padding-bottom:2%;">
                             <span><h1 class="wk_product_name"><t t-out="wk_brand.name"/></h1></span><br/>
                             <div class="row">
                                 <div class="wk_product_count col-lg-3 col-sm-6" style="">  
