@@ -6,14 +6,21 @@
 
     <template id="inherited_website_sale_cart_website_product_brands_wk" name="website product brand" inherit_id="website_sale.product"  active="True" >
       <xpath expr="//div[hasclass('js_main_product')]" position="after">
-                <t t-if="product.product_brand_id">
+                <t t-if="product.default_code">
                     <hr/>
                     <b>SKU : <span t-field="product.default_code" class="text-muted"/></b>
                     <br/>
                     <b>PVP: <span t-field="product.product_tmpl_pvp" class="text-muted"/></b>
-                    <br/>
-                    <b>Marca : <span t-field="product.product_brand_id" class="text-muted"/></b>
+                    <br/>                    
                 </t>
+                <t t-if="combination_info['default_code']">
+                    <hr/>
+                    <b>SKU : <span style="margin-left:3px;font-weight: bold;" class="default_code" t-esc="combination_info['default_code']" /></b>
+                    <br/>
+                    <b>PVP: $<span style="margin-left:3px;font-weight: bold;" class="pvp" t-esc="combination_info['pvp']" t-options="{'widget': 'monetary', 'display_currency': product.currency_id, 'format': '#,##0.00'}"/></b>
+                    <br/>
+                </t>
+                <b>Marca : <span t-field="product.product_brand_id" class="text-muted"/></b>
       </xpath>
     </template>
     <template id="disable_product_default_codes" inherit_id="eq_website_default_code.product_default_codes" active="False"/>
