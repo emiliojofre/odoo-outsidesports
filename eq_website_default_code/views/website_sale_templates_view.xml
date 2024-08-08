@@ -18,7 +18,7 @@
     </template>
 
     <template id="product_default_codes" inherit_id="website_sale.product" active="True" name="Product Internal Reference">
-        <xpath expr="//div[@id='product_details']//form//div[@id='product_option_block']" position="after">
+        <xpath expr="//div[@id='product_details']//form//div[@id='contact_us_wrapper']" position="after">
            <t t-if="combination_info['default_code']">
                 <div clas="d-flex flex-wrap align-items-center">
                     <hr/>
