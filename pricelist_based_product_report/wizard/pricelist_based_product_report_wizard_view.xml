@@ -27,6 +27,6 @@
             <field name="target">new</field>
         </record>
 
-        <menuitem id="menu_report_pricelist_based_product" name="Pricelist Based Product Report" action="action_report_pricelist_based_product" parent="stock.menu_warehouse_report"/>
+        <!-- <menuitem id="menu_report_pricelist_based_product" name="Pricelist Based Product Report" action="action_report_pricelist_based_product" parent="stock.menu_warehouse_report"/> -->
 
 </odoo>
