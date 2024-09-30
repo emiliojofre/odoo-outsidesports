@@ -1,0 +1,42 @@
+<!-- report_templates.xml -->
+<odoo>
+    <!-- Herencia de account.report_invoice_document -->
+    <template id="report_invoice_with_payments_inherit" inherit_id="account.report_invoice_document">
+        <xpath expr="//td[span[@t-field='line.name']]" position="replace">
+            <td>
+                <span t-field="line.product_id.name" t-options="{'widget': 'text'}" />
+            </td>
+        </xpath>
+    </template>
+
+    <!-- Herencia de purchase.report_purchaseorder -->
+    <template id="report_purchaseorder_document_inherit"
+        inherit_id="purchase.report_purchaseorder_document">
+        <xpath expr="//td[span[@t-field='line.name']]" position="replace">
+            <td>
+                <span t-field="line.product_id.name" />
+            </td>
+        </xpath>
+    </template>
+
+    <!-- Herencia de purchase.report_purchasequotation -->
+    <template id="report_purchasequotation_document_inherit"
+        inherit_id="purchase.report_purchasequotation_document" priority="30">
+        <xpath expr="//td[span[@t-field='order_line.name']]" position="replace">
+            <td>
+                <span t-field="order_line.product_id.name" />
+            </td>
+        </xpath>
+    </template>
+
+    <!-- Herencia de sale.report_saleorder -->
+    <template id="report_saleorder_document_inherit" inherit_id="sale.report_saleorder_document">
+        <xpath expr="//td[span[@t-field='line.name']]" position="replace">
+            <td>
+                <span t-field="line.product_id.name" />
+            </td>
+        </xpath>
+    </template>
+
+
+</odoo>

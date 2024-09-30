@@ -15,6 +15,7 @@ class ProductTemplate(models.Model):
         'PVP', default=1,currency_field='currency_id', compute='_compute_product_pvp'
     )
 
+    @api.depends('list_price')
     def _compute_product_pvp(self):
         for record in self:
             record.product_tmpl_pvp =  record.list_price*1.19
