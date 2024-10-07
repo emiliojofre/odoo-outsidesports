@@ -2,7 +2,7 @@
 <odoo>
     <!-- Herencia de account.report_invoice_document -->
     <template id="report_invoice_with_payments_inherit" inherit_id="account.report_invoice_document">
-        <xpath expr="//th[@name='th_description']" position="befopre">
+        <xpath expr="//th[@name='th_description']" position="before">
             <th name="th_sku">
                 <strong>SKU</strong>
             </th>
