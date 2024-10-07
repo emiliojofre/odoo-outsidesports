@@ -39,7 +39,7 @@
 
     <!-- Herencia de sale.report_saleorder -->
     <template id="report_saleorder_document_inherit" inherit_id="sale.report_saleorder_document">
-        <xpath expr="//th[@name='th_description']]" position="before">
+        <xpath expr="//th[@name='th_description']" position="before">
             <th name="th_default_code" class="text-start">SKU</th>
         </xpath>
         <xpath expr="//td[span[@t-field='line.name']]" position="replace">
