@@ -54,16 +54,16 @@
                 </t>
             </td>
         </xpath>
-        <xpath expr="//td[@name='td_quantity']]" position="replace">
+        <xpath expr="//td[@name='td_quantity']" position="replace">
             <td name="td_quantity" class="text-end">
                 <span t-field="line.product_uom_qty"/>
             </td>
         </xpath>
 
-        <xpath expr="//th[@name='th_taxes']]" position="replace">
+        <xpath expr="//th[@name='th_taxes']" position="replace">
         </xpath>
         
-        <xpath expr="//td[@name='td_taxes']]" position="replace">
+        <xpath expr="//td[@name='td_taxes']" position="replace">
         </xpath>
     </template>
     
