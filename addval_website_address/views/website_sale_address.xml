@@ -67,9 +67,9 @@
                             <input type="text" name="zip" t-attf-class="form-control #{error.get('zip') and 'is-invalid' or ''}" t-att-value="'zip' in checkout and checkout['zip']" />
                         </div>
                     </t>
-                    <div t-attf-class="mb-3 #{error.get('city_id') and 'o_has_error' or ''} col-md-8 div_city">
+                    <div t-attf-class="mb-3 #{error.get('city_id') and 'o_has_error' or ''} col-md-8">
                         <label class="col-form-label" for="city_id">Comuna *(Campo obligatorio)</label>
-                        <select name="city_id" t-attf-class="form-select #{error.get('city_id') and 'is-invalid' or ''}" style="display:none" data-init="1" disabled="disabled">
+                        <select name="city_id" t-attf-class="form-select #{error.get('city_id') and 'is-invalid' or ''}" style="display:none" data-init="1">
                             <option value="">Comuna...</option>
                             <t t-foreach="country_state_cities" t-as="s">
                                 <option t-att-value="s.id" t-att-selected="s.id == ('city_id' in checkout and country and state and checkout['city_id'] != '' and int(checkout['city_id']))">

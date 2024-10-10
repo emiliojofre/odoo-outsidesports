@@ -20,20 +20,20 @@ WebsiteSale.include({
         let state_id = $("#state_id").val();
         if (country_id === undefined || country_id === null || country_id === "") {
             var selector = $("select[name='city_id']");
-            var input = $("input[name='city_id']");
+            //var input = $("input[name='city_id']");
             selector.get(0).setAttribute('style', 'display:none');
             selector.get(0).setAttribute('disabled', 'disabled');
-            input.get(0).setAttribute('style', 'display:block');
-            input.get(0).removeAttribute('disabled');
+            //input.get(0).setAttribute('style', 'display:block');
+            //input.get(0).removeAttribute('disabled');
             return;
         }
         if (state_id === undefined || state_id === null || state_id === "") {
             var selector = $("select[name='city_id']");
-            var input = $("input[name='city_id']");
+            //var input = $("input[name='city_id']");
             selector.get(0).setAttribute('style', 'display:none');
             selector.get(0).setAttribute('disabled', 'disabled');
-            input.get(0).setAttribute('style', 'display:block');
-            input.get(0).removeAttribute('disabled');
+            //input.get(0).setAttribute('style', 'display:block');
+            //input.get(0).removeAttribute('disabled');
             return;
         }
         this._rpc({
@@ -41,20 +41,20 @@ WebsiteSale.include({
         }).then(function (data) {
             if (!data.in_country) {
                 var selector = $("select[name='city_id']");
-                var input = $("input[name='city_id']");
+                //var input = $("input[name='city_id']");
                 selector.get(0).setAttribute('style', 'display:none');
                 selector.get(0).setAttribute('disabled', 'disabled');
-                input.get(0).setAttribute('style', 'display:block');
-                input.get(0).removeAttribute('disabled');
+                //input.get(0).setAttribute('style', 'display:block');
+                //input.get(0).removeAttribute('disabled');
                 return;
             }
             var selector = $("select[name='city_id']");
-            var input = $("input[name='city_id']");
+            //var input = $("input[name='city_id']");
             if (!data.use_selector) {
                 selector.get(0).setAttribute('style', 'display:none');
                 selector.get(0).setAttribute('disabled', 'disabled');
-                input.get(0).setAttribute('style', 'display:block');
-                input.get(0).removeAttribute('disabled');
+                //input.get(0).setAttribute('style', 'display:block');
+                //input.get(0).removeAttribute('disabled');
                 return;
             }
             // populate cities and display
@@ -65,8 +65,8 @@ WebsiteSale.include({
                     .attr('value', x.id);
                 selectCities.append(opt);
             });
-            input.get(0).setAttribute('style', 'display:none');
-            input.get(0).setAttribute('disabled', 'disabled');
+            //input.get(0).setAttribute('style', 'display:none');
+            //input.get(0).setAttribute('disabled', 'disabled');
             selector.get(0).setAttribute('style', 'display:block');
             selector.get(0).removeAttribute('disabled');
         }).catch((error) => {
