@@ -77,7 +77,7 @@
                                 </option>
                             </t>
                         </select>
-                       <input type="text" name="city" t-attf-class="form-control #{error.get('city') and 'is-invalid' or ''}" t-att-value="'city' in checkout and checkout['city']" style="display:block"/>
+                       <input type="text" name="city" t-attf-class="form-control #{error.get('city') and 'is-invalid' or ''}" t-att-value="'city' in checkout and checkout['city']" style="display:block" disabled="disabled"/>
                     </div>
                     <t t-if="'zip' in zip_city and zip_city.index('zip') &gt; zip_city.index('city')">
                         <div t-attf-class="mb-3 #{error.get('zip') and 'o_has_error' or ''} col-md-4 div_zip">
