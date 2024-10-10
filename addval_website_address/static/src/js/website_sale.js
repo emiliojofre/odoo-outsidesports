@@ -19,8 +19,8 @@ WebsiteSale.include({
         let country_id = $("#country_id").val();
         let state_id = $("#state_id").val();
         if (country_id === undefined || country_id === null || country_id === "") {
-            var selector = $("select[name='city']");
-            var input = $("input[name='city']");
+            var selector = $("select[name='city_id']");
+            var input = $("input[name='city_id']");
             selector.get(0).setAttribute('style', 'display:none');
             selector.get(0).setAttribute('disabled', 'disabled');
             input.get(0).setAttribute('style', 'display:block');
@@ -28,8 +28,8 @@ WebsiteSale.include({
             return;
         }
         if (state_id === undefined || state_id === null || state_id === "") {
-            var selector = $("select[name='city']");
-            var input = $("input[name='city']");
+            var selector = $("select[name='city_id']");
+            var input = $("input[name='city_id']");
             selector.get(0).setAttribute('style', 'display:none');
             selector.get(0).setAttribute('disabled', 'disabled');
             input.get(0).setAttribute('style', 'display:block');
@@ -40,16 +40,16 @@ WebsiteSale.include({
             route: "/shop/state_infos/" + country_id + "/" + state_id,
         }).then(function (data) {
             if (!data.in_country) {
-                var selector = $("select[name='city']");
-                var input = $("input[name='city']");
+                var selector = $("select[name='city_id']");
+                var input = $("input[name='city_id']");
                 selector.get(0).setAttribute('style', 'display:none');
                 selector.get(0).setAttribute('disabled', 'disabled');
                 input.get(0).setAttribute('style', 'display:block');
                 input.get(0).removeAttribute('disabled');
                 return;
             }
-            var selector = $("select[name='city']");
-            var input = $("input[name='city']");
+            var selector = $("select[name='city_id']");
+            var input = $("input[name='city_id']");
             if (!data.use_selector) {
                 selector.get(0).setAttribute('style', 'display:none');
                 selector.get(0).setAttribute('disabled', 'disabled');
@@ -58,7 +58,7 @@ WebsiteSale.include({
                 return;
             }
             // populate cities and display
-            var selectCities = $("select[name='city']");
+            var selectCities = $("select[name='city_id']");
             selectCities.html('');
             _.each(data.cities, function (x) {
                 var opt = $('<option>').text(x.name)
