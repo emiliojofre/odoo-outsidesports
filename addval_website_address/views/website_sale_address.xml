@@ -148,7 +148,7 @@
                 <select name="city_id" class="form-select" t-attf-class="form-control #{error.get('city_id') and 'is-invalid' or ''}">
                     <option value="">Comuna...</option>
                     <t t-foreach="cities" t-as="ciudad">
-                        <option t-att-value="ciudad.id"  t-att-data-country_id="ciudad.state_id.id" t-att-selected="ciudad.id == int(city_id) if city_id else ciudad.id == partner.city_id.id">
+                        <option t-att-value="ciudad or partner.city" t-att-selected="(ciudad.name == partner.city)">
                             <t t-esc="ciudad.name" />
                         </option>
                     </t>
