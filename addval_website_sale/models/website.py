@@ -26,5 +26,5 @@ class Website(models.Model):
  
         for line in sale_order_lines:
             if line.is_delivery:
-                line.analytic_distribution = {line.order_id.analytic_account_id.id: 100}
+                line.analytic_distribution = {self.website_analytic_id.id: 100}
         return sale_order_sudo
