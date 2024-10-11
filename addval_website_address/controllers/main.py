@@ -66,21 +66,34 @@ class PortalAddressInfo(CustomerPortal):
             error, error_message = self.details_form_validate(post)
             values.update({'error': error, 'error_message': error_message})
             values.update(post)
+            
             if not error:
+                # Procesar campos obligatorios y opcionales
                 values = {key: post[key] for key in self.MANDATORY_BILLING_FIELDS}
                 values.update({key: post[key] for key in self.OPTIONAL_BILLING_FIELDS if key in post})
-                for field in set(['country_id', 'state_id']) & set(values.keys()):
+                
+                # Convertir IDs de country_id y state_id a enteros
+                for field in set(['country_id', 'state_id', 'city_id']) & set(values.keys()):
                     try:
                         values[field] = int(values[field])
                     except:
                         values[field] = False
+
+                # Actualizar el campo zip
                 values.update({'zip': values.pop('zipcode', '')})
+                
+                # Llamada para procesar la actualización de la cuenta
                 self.on_account_update(values, partner)
+                
+                # Escribir los valores actualizados en el partner
                 partner.sudo().write(values)
+                
+                # Redirigir si es necesario
                 if redirect:
                     return request.redirect(redirect)
                 return request.redirect('/my/home')
 
+        # Cargar países, estados y ciudades
         countries = request.env['res.country'].sudo().search([])
         states = request.env['res.country.state'].sudo().search([])
         cities = request.env["res.city"].sudo().search([("code", "!=", False)])
