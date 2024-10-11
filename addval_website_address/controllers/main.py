@@ -108,6 +108,7 @@ class PortalAddressInfo(CustomerPortal):
             'page_name': 'my_details',
             'cities': cities
         })
+        _logger.info(partner.city_id)
         _logger.info(partner.city)
 
         response = request.render("portal.portal_my_details", values)
