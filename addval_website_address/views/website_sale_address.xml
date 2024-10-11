@@ -143,17 +143,17 @@
     </template>
     <template id="inherit_address_my_portal" inherit_id="portal.portal_my_details_fields" name="My Portal Address">
         <xpath expr="//div[input[@name='city']]" position="replace">
-            <div t-attf-class="mb-3 #{error.get('city_id') and 'o_has_error' or ''} col-xl-6">
-                <label class="col-form-label" for="city_id">Comuna</label>               
-                <select id="city_select_portal" name="city_id" class="form-select" t-attf-class="form-control #{error.get('city_id') and 'is-invalid' or ''}">
+            <div t-attf-class="mb-3 #{error.get('city') and 'o_has_error' or ''} col-xl-6">
+                <label class="col-form-label" for="city">Comuna</label>
+                <!-- <input type="text" name="city" t-attf-class="form-control #{error.get('city') and 'is-invalid' or ''}" t-att-value="city or partner.city" /> -->
+                <select name="city" class="form-select" t-attf-class="form-control #{error.get('city') and 'is-invalid' or ''}">
                     <option value="">Comuna...</option>
                     <t t-foreach="cities" t-as="ciudad">
-                        <option t-att-value="ciudad.id" t-att-selected="(ciudad.id == partner.city_id.id)">
+                        <option t-att-value="ciudad or partner.city" t-att-selected="(ciudad.name == partner.city)">
                             <t t-esc="ciudad.name" />
                         </option>
                     </t>
                 </select>
-                <!--<input id="city_input_portal" type="text" name="city" t-attf-class="form-control #{error.get('city') and 'is-invalid' or ''}" t-att-value="city or partner.city" t-att-required="false" style="display: none"/>-->
             </div>
         </xpath>
         <xpath expr="//div[select[@name='state_id']]" position="replace">
