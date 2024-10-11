@@ -147,27 +147,13 @@
                 <label class="col-form-label" for="city">Comuna</label>               
                 <select id="city_select_portal" name="city" class="form-select" t-attf-class="form-control #{error.get('city') and 'is-invalid' or ''}">
                     <option value="">Comuna...</option>
-                    <t t-foreach="partner.city_id" t-as="ciudad">
-                        <option t-att-value="ciudad or partner.city_id.name" t-att-selected="(ciudad.name == partner.city_id.name)">
+                    <t t-foreach="cities" t-as="ciudad">
+                        <option t-att-value="ciudad.id" t-att-selected="(ciudad.id == partner.city_id.id)">
                             <t t-esc="ciudad.name" />
                         </option>
                     </t>
                 </select>
-                <input id="city_input_portal" type="text" name="city" t-attf-class="form-control #{error.get('city') and 'is-invalid' or ''}" t-att-value="city or partner.city" t-att-required="false" style="display: none"/>
-                <script>
-                    document.addEventListener('DOMContentLoaded', function() {
-                        var citySelectPortal = document.getElementById('city_select_portal');
-                        var cityInputPortal = document.getElementById('city_input_portal');
-                        
-                        citySelectPortal.addEventListener('change', function() {
-                            // Get the selected option's text (city name)
-                            var selectedCityText = citySelectPortal.options[citySelectPortal.selectedIndex].text;
-                            
-                            // Update the hidden input's value with the selected city name
-                            cityInputPortal.value = selectedCityText;
-                        });
-                    });
-                </script> 
+                <!--<input id="city_input_portal" type="text" name="city" t-attf-class="form-control #{error.get('city') and 'is-invalid' or ''}" t-att-value="city or partner.city" t-att-required="false" style="display: none"/>-->
             </div>
         </xpath>
         <xpath expr="//div[select[@name='state_id']]" position="replace">
