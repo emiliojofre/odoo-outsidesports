@@ -145,15 +145,16 @@
         <xpath expr="//div[input[@name='city']]" position="replace">
             <div t-attf-class="mb-3 #{error.get('city_id') and 'o_has_error' or ''} col-xl-6">
                 <label class="col-form-label" for="city">Comuna</label>
-                <!-- <input type="text" name="city" t-attf-class="form-control #{error.get('city') and 'is-invalid' or ''}" t-att-value="city or partner.city" /> -->
+                
                 <select name="city_id" class="form-select" t-attf-class="form-control #{error.get('city_id') and 'is-invalid' or ''}">
                     <option value="">Comuna...</option>
                     <t t-foreach="cities" t-as="ciudad">
-                        <option t-att-value="ciudad or partner.city_id" t-att-selected="(ciudad.name == partner.city_id.name)">
+                        <option t-att-value="ciudad.id" t-att-selected="ciudad.id == partner.city_id.id">
                             <t t-esc="ciudad.name" />
                         </option>
                     </t>
                 </select>
+                <!-- <input type="text" name="city" t-attf-class="form-control #{error.get('city') and 'is-invalid' or ''}" t-att-value="city or partner.city" /> -->
             </div>
         </xpath>
         <xpath expr="//div[select[@name='state_id']]" position="replace">
