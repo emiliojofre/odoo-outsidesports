@@ -144,12 +144,11 @@
     <template id="inherit_address_my_portal" inherit_id="portal.portal_my_details_fields" name="My Portal Address">
         <xpath expr="//div[input[@name='city']]" position="replace">
             <div t-attf-class="mb-3 #{error.get('city_id') and 'o_has_error' or ''} col-xl-6">
-                <label class="col-form-label" for="city_id">Comuna</label>
-                
+                <label class="col-form-label" for="city_id">Comuna</label>               
                 <select name="city_id" class="form-select" t-attf-class="form-control #{error.get('city_id') and 'is-invalid' or ''}">
                     <option value="">Comuna...</option>
                     <t t-foreach="cities" t-as="ciudad">
-                        <option t-att-value="ciudad.id" t-att-selected="ciudad.id == partner.city_id.id">
+                        <option t-att-value="ciudad.id"  t-att-data-country_id="ciudad.state_id.id" t-att-selected="ciudad.id == int(city_id) if city_id else ciudad.id == partner.city_id.id">
                             <t t-esc="ciudad.name" />
                         </option>
                     </t>
