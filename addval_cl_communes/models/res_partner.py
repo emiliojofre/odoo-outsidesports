@@ -6,14 +6,15 @@ from odoo.tools.translate import _
 class ResPartner(models.Model):
     _inherit = 'res.partner'
 
-    @api.onchange('city_id')
-    def _onchange_city_id(self):
-        if self.city_id:
-            self.zip = self.city_id.zipcode
-            self.state_id = self.city_id.state_id
-            self.city = self.city_id.name
-        else:
-            self.zip = False
-            self.state_id = False
-            self.city = ""
+    @api.depends('city_id')
+    def _give_city_name(self):
+        for record in self:
+            if record.city_id:
+                record.zip = self.city_id.zipcode
+                record.state_id = self.city_id.state_id
+                record.city = self.city_id.name
+            else:
+                record.zip = False
+                record.state_id = False
+                record.city = ""
 
