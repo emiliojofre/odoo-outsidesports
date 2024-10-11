@@ -147,7 +147,7 @@
                 <label class="col-form-label" for="city">Comuna</label>               
                 <select id="city_select_portal" name="city" class="form-select" t-attf-class="form-control #{error.get('city') and 'is-invalid' or ''}">
                     <option value="">Comuna...</option>
-                    <t t-foreach="cities" t-as="ciudad">
+                    <t t-foreach="partner.city_id" t-as="ciudad">
                         <option t-att-value="ciudad or partner.city_id.name" t-att-selected="(ciudad.name == partner.city_id.name)">
                             <t t-esc="ciudad.name" />
                         </option>
@@ -159,12 +159,12 @@
                         var citySelectPortal = document.getElementById('city_select_portal');
                         var cityInputPortal = document.getElementById('city_input_portal');
                         
-                        citySelect.addEventListener('change', function() {
+                        citySelectPortal.addEventListener('change', function() {
                             // Get the selected option's text (city name)
-                            var selectedCityText = citySelect.options[citySelect.selectedIndex].text;
+                            var selectedCityText = citySelectPortal.options[citySelectPortal.selectedIndex].text;
                             
                             // Update the hidden input's value with the selected city name
-                            cityInput.value = selectedCityText;
+                            cityInputPortal.value = selectedCityText;
                         });
                     });
                 </script> 
