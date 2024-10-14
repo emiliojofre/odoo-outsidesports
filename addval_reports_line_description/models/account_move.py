@@ -21,6 +21,7 @@ class AccountMove(models.Model):
         #  This method creates the graphic representation of the barcode
         barcode_file = BytesIO()
         if pdf417gen is None:
+            _logger.warning('pdf417gen is none: %s', barcode_data)
             return False
         bc = pdf417gen.encode(barcode_data, security_level=5, columns=13)
         image = pdf417gen.render_image(bc, padding=15, scale=1)
