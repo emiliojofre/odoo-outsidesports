@@ -36,6 +36,5 @@ class AccountMove(models.Model):
         self.ensure_one()
         _logger.warning('l10n_latam_use_documents: %s', self.l10n_latam_use_documents)
         _logger.warning('account_fiscal_country_id: %s', self.company_id.account_fiscal_country_id.code)
-        if self.l10n_latam_use_documents and self.company_id.account_fiscal_country_id.code == 'CL':
-            return 'l10n_cl.report_invoice_document'
+
         return super()._get_name_invoice_report()
