@@ -1,7 +1,7 @@
 <!-- report_templates.xml -->
 <odoo>
     <!-- Herencia de account.report_invoice_document -->
-    <template id="report_invoice_with_payments_inherit" inherit_id="account.report_invoice_document">
+    <template id="l10n_cl_invoice_document_inherit" inherit_id="l10n_cl.report_invoice_document" priority="30">
         <xpath expr="//th[@name='th_description']" position="before">
             <th name="th_sku">
                 <strong>SKU</strong>
