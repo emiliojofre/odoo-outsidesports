@@ -12,7 +12,7 @@ VariantMixin._onChangeProductDefaultcode = function(ev, $parent, combination) {
 	var $pvp = $parent.find('.pvp');
 
 	$default_code.text(combination.default_code || '');
-	var formattedPvp = combination.pvp.toLocaleString();
+	var formattedPvp = combination.pvp.toString();
 	$pvp.text(formattedPvp || '');
 };
 
