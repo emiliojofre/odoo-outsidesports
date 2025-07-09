@@ -32,13 +32,9 @@ class VexSolucionesAction(models.TransientModel):
 
     vex_actions = fields.Selection([
         ('product', 'Products, Categories and Pricelist'),
-        #('category', 'Category'),
-        #('customer', 'Customer'),
         ('order', 'Orders and Customers'),
-        #('pricelist', 'Pricelist'),
         ('questions', 'Questions'),
         ('excel_data', 'Cost Data')    
-        #('pruebas', 'Pruebas') 
     ], string='Action', required=True)
     import_unit = fields.Boolean('Import Unit')
     meli_code_unit = fields.Char('Meli Code')

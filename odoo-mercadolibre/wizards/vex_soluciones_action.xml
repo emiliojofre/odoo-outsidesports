@@ -18,8 +18,8 @@
                             <field name="import_images" invisible = "vex_actions != 'product'"/>
                             <field name="import_images_website" invisible = "vex_actions != 'product'"/>
                             <!-- <field name="import_excel_data" invisible = "vex_actions != 'excel_data'"/> -->
-                            <field name="date_from" invisible = "vex_actions not in ['customer','order']" required = "vex_actions in ['customer','order']"/>
-                            <field name="date_to" invisible = "vex_actions not in ['customer','order']" required = "vex_actions in ['customer','order']"/>
+                            <field name="date_from" invisible = "vex_actions not in ['order']" required = "vex_actions in ['order']"/>
+                            <field name="date_to" invisible = "vex_actions not in ['order']" required = "vex_actions in ['order']"/>
                         </group>
                     </group>
                 </sheet>
