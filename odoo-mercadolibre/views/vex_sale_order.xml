@@ -12,6 +12,37 @@
             </xpath>
         </field>
     </record>
+
+    <record id="view_order_tree_meli_info" model="ir.ui.view">
+        <field name="name">sale.order.tree.meli.info</field>
+        <field name="model">sale.order</field>
+        <field name="arch" type="xml">
+            <tree string="Mercadolibre orders">
+                <field name="meli_date_created"/>
+                <field name="meli_date_create_without_time"/>
+                <field name="name"/>
+                <field name="meli_order_id"/>
+                <!-- <field name="marketplace_ids" string="Marketplace" widget="many2many_tags"/> -->
+                <field name="marketplace_ids" widget="many2many_tags" options="{'color_field': 'color'}">
+                </field>
+                <field name="meli_buyer_nickname"/>
+                <!-- <field name="product_sold_ids" widget="many2many_tags"/> -->
+                <field name="meli_shipping_tracking_number"/>
+                <field name="meli_shipping_logistic_type" string="Logistic Type"/>
+                <field name="meli_status" string="Status Order"/>
+                <field name="meli_item_cost" />
+                <field name="meli_shipping_cost" string="Shipping Cost"/> 
+                <field name='meli_sale_fee' string="ML Fee"/>
+                <!-- <field name="meli_paid_amount" string="Total Paid Amount"/> -->
+                <field name="meli_total_amount"/>
+                <field name="meli_net_gain" />
+                <field name="state" widget="badge" decoration-info="state=='draft'" decoration-success="state=='sale'"/>
+                <!-- <field name="net_profit" string="Net Gain"/>
+                <field name="meli_listing_type_id" decoration-warning="listing_type_id=='gold_special'" decoration-success="listing_type_id=='gold_pro'"/> -->
+                <!-- <field name="invoice_status"/> -->
+                </tree>
+        </field>
+    </record>
     
     <record id="action_order_tree_meli_today" model="ir.actions.act_window">
         <field name="name">Órdenes MercadoLibre de Hoy</field>
@@ -245,37 +276,5 @@
             </xpath>
         </field>
     </record>
-    <record id="view_order_tree_meli_info" model="ir.ui.view">
-        <field name="name">sale.order.tree.meli.info</field>
-        <field name="model">sale.order</field>
-        <field name="arch" type="xml">
-            <tree string="Mercadolibre orders">
-                <field name="meli_date_created"/>
-                <field name="meli_date_create_without_time"/>
-                <field name="name"/>
-                <field name="meli_order_id"/>
-                <!-- <field name="marketplace_ids" string="Marketplace" widget="many2many_tags"/> -->
-                <field name="marketplace_ids" widget="many2many_tags" options="{'color_field': 'color'}">
-                </field>
-                <field name="meli_buyer_nickname"/>
-                <!-- <field name="product_sold_ids" widget="many2many_tags"/> -->
-                <field name="meli_shipping_tracking_number"/>
-                <field name="meli_shipping_logistic_type" string="Logistic Type"/>
-                <field name="meli_status" string="Status Order"/>
-                <field name="meli_item_cost" />
-                <field name="meli_shipping_cost" string="Shipping Cost"/> 
-                <field name='meli_sale_fee' string="ML Fee"/>
-                <!-- <field name="meli_paid_amount" string="Total Paid Amount"/> -->
-                <field name="meli_total_amount"/>
-                <field name="meli_net_gain" />
-                <field name="state" widget="badge" decoration-info="state=='draft'" decoration-success="state=='sale'"/>
-                <!-- <field name="net_profit" string="Net Gain"/>
-                <field name="meli_listing_type_id" decoration-warning="listing_type_id=='gold_special'" decoration-success="listing_type_id=='gold_pro'"/> -->
-                <!-- <field name="invoice_status"/> -->
-                </tree>
-        </field>
-    </record>
-
-
-
+    
 </odoo>
