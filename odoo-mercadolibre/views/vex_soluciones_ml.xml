@@ -101,8 +101,8 @@
                                         </button>
                                     </div>
 
-                                    <separator string="Products to Compare" invisible="not products_compared_current"/>
-                                    <field name="products_compared_current" invisible="not products_compared_current">
+                                    <separator string="Products to Compare" attrs="{'invisible': [('products_compared_current','=',False)]}"/>
+                                    <field name="products_compared_current" attrs="{'invisible': [('products_compared_current','=',False)]}">
                                         <tree  editable="bottom" create="0" edit="0" delete="1">
                                             <field name="name" colspan="3"/>
                                             <field name="price" widget="monetary" colspan="1"/>
@@ -174,19 +174,28 @@
 
                                     <div class="col-6">
                                         <div class="card-body">
-                                            <p class="form-label fw-bold mb-2" style="font-size: 0.9rem; color: #333;" 
-                                                invisible="not (precio_opcion == 'porcentaje')">
+                                            <!-- Usamos clases dinámicas para ocultar los <p> -->
+                                            <p class="form-label fw-bold mb-2"
+                                            t-attf-class="form-label fw-bold mb-2 #{precio_opcion != 'porcentaje' and 'd-none'}"
+                                            style="font-size: 0.9rem; color: #333;">
                                                 Enter a percentage value
                                             </p>
-                                            <p class="form-label fw-bold mb-2" style="font-size: 0.9rem; color: #333;" 
-                                                invisible="not (precio_opcion == 'valor_fijo')">
+
+                                            <p class="form-label fw-bold mb-2"
+                                            t-attf-class="form-label fw-bold mb-2 #{precio_opcion != 'valor_fijo' and 'd-none'}"
+                                            style="font-size: 0.9rem; color: #333;">
                                                 Enter a flat value
                                             </p>
+
                                             <div class="input-group">
+                                                <!-- Aquí sí puedes usar attrs -->
                                                 <field name="rule_price_exact" style="flex: 1;" class="form-control"
-                                                    invisible="not (precio_opcion == 'valor_fijo')" widget="monetary"/>
+                                                    widget="monetary"
+                                                    attrs="{'invisible': [('precio_opcion', '!=', 'valor_fijo')]}"/>
+
                                                 <field name="incremento_precio_input" style="flex: 1;" class="form-control"
-                                                    invisible="not (precio_opcion == 'porcentaje')" widget="percentage"/>
+                                                    widget="percentage"
+                                                    attrs="{'invisible': [('precio_opcion', '!=', 'porcentaje')]}"/>
                                             </div>
                                         </div>
                                     </div>
