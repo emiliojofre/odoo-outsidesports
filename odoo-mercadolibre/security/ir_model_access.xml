@@ -150,7 +150,7 @@
         <field name="perm_read" eval="1"/>
     </record>
     
-    <record id="model_access_product_template_units" model="ir.model.access">
+    <!-- <record id="model_access_product_template_units" model="ir.model.access">
         <field name="name">model.access.product.template.units</field>
         <field name="model_id" ref="odoo-mercadolibre.model_product_template_units"/>
         <field name="group_id" ref="base.group_system"/>
@@ -158,7 +158,7 @@
         <field name="perm_write" eval="1"/>
         <field name="perm_unlink" eval="1"/>
         <field name="perm_read" eval="1"/>
-    </record>    
+    </record>    --> 
 
     <record id="access_vex_meli_questions_manager" model="ir.model.access">
     <field name="name">vex.meli.questions manager</field>
