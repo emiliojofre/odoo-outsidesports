@@ -306,19 +306,26 @@
 
                                         <div class="col-6">
                                             <div class="card-body">
-                                                <p class="form-label fw-bold mb-2" style="font-size: 0.9rem; color: #333;" 
-                                                    invisible="not (ganancia_opcion == 'porcentaje')">
+                                                <!-- Usamos clases condicionales para los <p> -->
+                                                <p t-attf-class="form-label fw-bold mb-2 #{ganancia_opcion != 'porcentaje' and 'd-none'}"
+                                                style="font-size: 0.9rem; color: #333;">
                                                     Enter a percentage gain value
                                                 </p>
-                                                <p class="form-label fw-bold mb-2" style="font-size: 0.9rem; color: #333;" 
-                                                    invisible="not (ganancia_opcion == 'valor_fijo')">
+
+                                                <p t-attf-class="form-label fw-bold mb-2 #{ganancia_opcion != 'valor_fijo' and 'd-none'}"
+                                                style="font-size: 0.9rem; color: #333;">
                                                     Enter a flat gain value
                                                 </p>
+
                                                 <div class="input-group">
+                                                    <!-- Campos <field> sí pueden usar attrs -->
                                                     <field name="gain_flat_value" style="flex: 1;" class="form-control"
-                                                        invisible="not (ganancia_opcion == 'valor_fijo')" widget="monetary"/>
+                                                        widget="monetary"
+                                                        attrs="{'invisible': [('ganancia_opcion', '!=', 'valor_fijo')]}"/>
+
                                                     <field name="gain_percentage_value" style="flex: 1;" class="form-control"
-                                                        invisible="not (ganancia_opcion == 'porcentaje')" widget="percentage"/>
+                                                        widget="percentage"
+                                                        attrs="{'invisible': [('ganancia_opcion', '!=', 'porcentaje')]}"/>
                                                 </div>
                                             </div>
                                         </div>
