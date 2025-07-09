@@ -56,11 +56,11 @@
                     <group>
                         <!-- Columna 1: Credenciales -->
                         <group string="Credenciales de la App" >
-                            <field name="meli_app_id" required="status == 'initial_settings' and store_type == 'mercadolibre'"/>
-                            <field name="meli_secret_key" required="status == 'initial_settings' and store_type == 'mercadolibre'"/>
-                            <field name="meli_redirect_uri" required="status == 'initial_settings' and store_type == 'mercadolibre'"/>
-                            <field name="meli_country" required="status == 'initial_settings' and store_type == 'mercadolibre'"/>
-                            <field name="meli_default_currency" required="status == 'initial_settings' and store_type == 'mercadolibre'"/>
+                            <field name="meli_app_id" attrs="{'required': [('status', '=', 'initial_settings'), ('store_type', '=', 'mercadolibre')]}"/>
+                            <field name="meli_secret_key" attrs="{'required': [('status', '=', 'initial_settings'), ('store_type', '=', 'mercadolibre')]}"/>
+                            <field name="meli_redirect_uri" attrs="{'required': [('status', '=', 'initial_settings'), ('store_type', '=', 'mercadolibre')]}"/>
+                            <field name="meli_country" attrs="{'required': [('status', '=', 'initial_settings'), ('store_type', '=', 'mercadolibre')]}"/>
+                            <field name="meli_default_currency" attrs="{'required': [('status', '=', 'initial_settings'), ('store_type', '=', 'mercadolibre')]}"/>
                         </group>
 
                         <!-- Columna 2: Usuario -->
