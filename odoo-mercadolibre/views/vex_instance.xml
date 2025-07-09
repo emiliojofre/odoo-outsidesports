@@ -52,7 +52,7 @@
 
             </xpath>
             <xpath expr="//notebook/page[@name='introduction']" position="after">
-                <page name="initial_settings_mercadolibre" string="Initial Settings ML" invisible="not (status == 'initial_settings' and store_type == 'mercadolibre')">
+                <page name="initial_settings_mercadolibre" string="Initial Settings ML" attrs="{'invisible': [('status', '=', 'initial_settings'), ('store_type', '=', 'mercadolibre')]}">
                     <group>
                         <!-- Columna 1: Credenciales -->
                         <group string="Credenciales de la App" >
