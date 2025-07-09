@@ -100,6 +100,14 @@ class ProductTemplate(models.Model):
         default='not_fulfillment',
         compute='_compute_meli_type_item_logistc'
         )
+
+    competitor_price_history_ids = fields.One2many(
+        'mercado.libre.product.compared',
+        compute='_compute_competitor_price_history',
+        string="Historial de Precios de la Competencia",
+        store=False  # Solo visualización
+    )
+
     def _compute_meli_type_item_logistc(self):
         """
         Compute the type of logistic used for the item based on the logistic type.
@@ -121,7 +129,15 @@ class ProductTemplate(models.Model):
     # headers button for this product
 
 
-
+    def _compute_competitor_price_history(self):
+        for product in self:
+            ml_products = self.env['mercado.libre.product'].search([
+                ('product', '=', product.id)
+            ])
+            compared = self.env['mercado.libre.product.compared'].search([
+                ('parent_id', 'in', ml_products.ids)
+            ])
+            product.competitor_price_history_ids = compared
 
     def action_update_stock(self):
         self.ensure_one()

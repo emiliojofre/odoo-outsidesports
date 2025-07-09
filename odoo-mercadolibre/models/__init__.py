@@ -5,7 +5,7 @@ from . import vex_soluciones_meli_config
 from . import vex_state_orders
 from . import vex_soluciones_restapi_list
 from . import vex_soluciones_category
-from . import vex_soluciones_product
+#from . import vex_soluciones_product
 from . import vex_soluciones_res_partner
 #from . import vex_soluciones_sale_order
 from . import vex_soluciones_product_attributes
