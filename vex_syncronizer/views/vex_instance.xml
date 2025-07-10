@@ -52,16 +52,16 @@
                                 </div>
                             </div>
                             <div id="register_license_section" class="alert alert-info d-flex align-items-center" role="alert" style="margin-bottom:0px;">
-                                <!-- <div style="flex: 1;">
+                                <div style="flex: 1;">
                                     <button name="register_licence" type="object" string="Register License" class="oe_highlight"/>
-                                </div> -->
+                                </div>
                                 <div style="flex-shrink: 0;">
-                                    <img src="/vex_sync_store/static/src/img/logo.png" alt="Logo" style="height: 50px; margin-left: 10px;" />
+                                    <img src="/vex_syncronizer/static/src/img/logo.png" alt="Logo" style="height: 50px; margin-left: 10px;" />
                                 </div>
                             </div>
                         </page>
-                        <page name="orders_state" string="Orders State" attrs="{'invisible': [('status', '!=', 'settings')]}">
-                        </page>   
+                        <!-- <page name="orders_state" string="Orders State" attrs="{'invisible': [('status', '!=', 'settings')]}">
+                        </page>    -->
                         <page name="import_lines" string="Import Lines" attrs="{'invisible': [('status', '!=', 'settings')]}">
 
                             <button name="stop_sync" type="object"

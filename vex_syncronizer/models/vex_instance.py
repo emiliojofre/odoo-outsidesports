@@ -47,6 +47,88 @@ class VexInstace(models.Model):
     filtered_import_line_ids = fields.One2many('vex.import_line', string="Filtered Import Lines", compute="_compute_filtered_lines", store=False)
     import_line_ids = fields.One2many('vex.import_line', 'instance_id', string='import_line')
     sync_queue_ids = fields.One2many('vex.sync.queue', 'instance_id', string='Sync Queue')
+    
+    def register_licence(self):
+        for provider in self:
+            if provider.license_key:
+                domain = self.env['ir.config_parameter'].sudo().get_param('web.base.url')\
+                    .replace('http://', '').replace('https://', '')
+
+                key = provider.license_key
+                secret = provider.license_secret_key #'587423b988e403.69821411'
+                reference = provider.store_type
+
+                urls = {
+                    'activate': f"https://www.pasarelasdepagos.com/?slm_action=slm_activate&license_key={key}"
+                                f"&registered_domain={domain}&secret_key={secret}&item_reference={reference}_odoo",
+                    'check': f"https://www.pasarelasdepagos.com/?slm_action=slm_check&license_key={key}"
+                            f"&secret_key={secret}",
+                }
+
+                headers = {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+
+                self._log([domain, urls['activate'], urls['check'], json.dumps(headers)], 'info')
+
+                def update_from_check():
+                    try:
+                        check_response = requests.get(urls['check'], headers=headers, timeout=15)
+                        if check_response.status_code == 200:
+                            data = check_response.json()
+                            if data.get('result') == 'success':
+                                provider.license_valid_str = 'active'
+                                provider.license_date_created = data.get('date_created')
+                                provider.license_renewed = data.get('date_renewed')
+                                provider.license_expiry = data.get('date_expiry')
+                                full_name = f"{data.get('first_name', '')} {data.get('last_name', '')}".strip()
+                                company = data.get('company_name', '')
+                                expiry = data.get('date_expiry', '')
+                                message = ""
+
+                                if data.get('status') == "active":
+                                    message = "The license is active"
+                                    msg = f"Licencia válida. Nombre: {full_name}, Empresa: {company}, Fecha de Expiración: {expiry}"
+                                    self._log(f"CHECK - {msg}", 'info')
+                                elif data.get('status') == "expired":
+                                    message = "The license has expired"
+                                    msg = f"Licencia inválida. Nombre: {full_name}, Empresa: {company}, Fecha de Expiración: {expiry}"
+                                    self._log(f"CHECK - {msg}", 'info')
+
+                                provider.license_message = message
+
+                                return self._notify_user('Validation Result', message, 'info', reload=True)
+                            else:
+                                return self._notify_user('Check Error', data.get('message', 'Error en verificación.'), 'danger', reload=True)
+                        else:
+                            return self._notify_user('Check Error', f'HTTP Error {check_response.status_code}', 'danger', reload=True)
+                    except Exception as e:
+                        _logger.exception("Exception during check after activation")
+                        return self._notify_user('Check Error', str(e), 'danger', reload=True)
+
+                try:
+                    response = requests.get(urls['activate'], headers=headers, timeout=15)
+                    if response.status_code == 200:
+                        data = response.json()
+                        if data.get('result') == 'success':
+                            # Llamar a check si la activación fue exitosa
+                            return update_from_check()
+                        else:
+                            return self._notify_user(
+                                'Activation Error',
+                                data.get('message', 'Error desconocido al activar la licencia.'),
+                                'danger',
+                                reload=True
+                            )
+                    else:
+                        return self._notify_user('Activation Error', f'HTTP Error {response.status_code}', 'danger', reload=True)
+                except Exception as e:
+                    _logger.exception("Exception during licence activation")
+                    return self._notify_user('Activation Error', str(e), 'danger', reload=True)
+
+        return self._notify_user('Validation Error', 'Debe ingresar una clave de licencia válida.', 'danger')
+        
     def check_licence(self):
         for provider in self:
             if provider.license_key:
