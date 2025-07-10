@@ -128,7 +128,7 @@ class VexInstace(models.Model):
                     return self._notify_user('Activation Error', str(e), 'danger', reload=True)
 
         return self._notify_user('Validation Error', 'Debe ingresar una clave de licencia válida.', 'danger')
-        
+
     def check_licence(self):
         for provider in self:
             if provider.license_key:
@@ -165,6 +165,36 @@ class VexInstace(models.Model):
 
         return False
 
+    def _log(self, message, level='info'):
+        if isinstance(message, list):
+            message = ' - '.join(message)
+        log_method = getattr(_logger, level, _logger.info)
+        log_method(message)
+        try:
+            print(message)
+        except UnicodeEncodeError:
+            print(message.encode('utf-8', errors='replace').decode('utf-8'))
+    
+    def _notify_user(self, title, message, message_type='info', reload=False):
+        params = {
+            'title': _(title),
+            'message': _(message),
+            'type': message_type,
+            'sticky': False
+        }
+
+        if reload:
+            params['next'] = {
+                'type': 'ir.actions.client',
+                'tag': 'reload'
+            }
+
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': params
+        }
+        
     def test_connection(self):
         self.check_licence()
 
