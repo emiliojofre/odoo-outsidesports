@@ -87,7 +87,7 @@ class Welcome extends Component {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             //const jsonData = await response.json();  // <-- Aquí es donde lo transformas
-            const jsonData = await jsonrpc("/web/dataset/call_kw", {
+            const jsonData = await this.rpc("/web/dataset/call_kw", {
                 model: "vex.dashboard.record",
                 method: "generate_json_dashboard",
                 args: [[]],
@@ -116,13 +116,9 @@ class Welcome extends Component {
             this.state.get_sales_by_channel_last_5_months_data = jsonData.sales_distribution_by_channel || [];
             this.state.question_count_by_category_data = jsonData.questions || [];
 
-            console.log("Dashboard actualizado con éxito");
-        });
-
-        // Inicializar los "segmentos" (partners) al montar el componente
-        onWillStart(async () => {            
-            
             this.addBackground()
+
+            console.log("Dashboard actualizado con éxito");
         });
 
         onMounted(async () => {
