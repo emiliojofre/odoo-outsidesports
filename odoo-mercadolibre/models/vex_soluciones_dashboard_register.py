@@ -33,7 +33,7 @@ class VexDashboardRecord(models.Model):
 
     @api.model
     def generate_json_dashboard(self, *args, **kwargs):
-        record = self.search([], order="date desc", limit=1)
+        record = self.search([('instance_id','=',self.env.user.meli_instance_id)], order="date desc", limit=1)
         if not record:
             return {}        
         return {
