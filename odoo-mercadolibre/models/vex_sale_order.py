@@ -598,6 +598,25 @@ class SaleOrder(models.Model):
             'total_sales': round(total_sales, 2),
             'currency_symbol': currency_symbol
         }
+    
+    @api.model
+    def mes_pasado_ventas_mercadolibre(self):
+        today = fields.Date.today()
+        first_day_current_month = today.replace(day=1)
+        first_day_last_month = first_day_current_month - relativedelta(months=1)
+        last_day_last_month = first_day_current_month - relativedelta(days=1)
+
+        orders = self.search([
+            #('store_type', '=', 'mercadolibre'),
+            ('date_order', '>=', first_day_last_month),
+            ('date_order', '<=', last_day_last_month)
+        ])
+
+        total_sales = sum(orders.mapped('amount_total'))
+
+        return {
+            'total_sales': round(total_sales, 2)
+        }
 
 class MeliOrderMediation(models.Model):
     _name = 'meli.order.mediation'

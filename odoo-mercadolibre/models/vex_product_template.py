@@ -640,6 +640,37 @@ class ProductTemplate(models.Model):
 
         return result
 
+    @api.model
+    def get_market_opportunity_products(self, offset=0, limit=10):
+        current_user = self.env.user 
+        meli_instance = current_user.meli_instance_id
+        meli_instance.get_access_token()
+        access = meli_instance.meli_access_token
+
+        linked_product_ids = self.env['mercado.libre.product'].search([('instance_id','=',meli_instance.id),('state_publi', '!=', None)]).mapped('product.id')
+        candidates = self.search([
+            ('id', 'not in', linked_product_ids),
+            ('recommended_price', '!=', 0),
+            ('recommended_price', '!=', False),
+            ('recommended_price', '!=', self.list_price),
+        ], offset=offset, limit=limit)
+
+        resultados = []
+        for prod in candidates:
+            if round(prod.recommended_price, 2) == round(prod.list_price, 2):
+                continue
+            competitiveness = (
+                "Más competitivo" if prod.recommended_price < prod.list_price else "Menos competitivo"
+            )
+            resultados.append({
+                "product_tmpl_id": prod.id,
+                "product_name": prod.name,
+                "current_price": round(prod.list_price, 2),
+                "recommended_price": round(prod.recommended_price, 2),
+                "competitiveness": competitiveness,
+            })
+        return resultados
+        
     def format_dates(self,date_range):
         # Formatear las fechas para que solo contengan el día
         return [date.strftime('%Y-%m-%d') for date in date_range]
