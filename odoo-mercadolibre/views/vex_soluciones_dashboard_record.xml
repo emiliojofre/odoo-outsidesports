@@ -23,6 +23,7 @@
             <form string="Dashboard Record">
                 <sheet>
                     <group>
+                        <field name="instance_id"/>
                         <field name="date"/>
                         <field name="orders_synced_today"/>
                         <field name="total_orders"/>
@@ -48,16 +49,31 @@
         </field>
     </record>
 
-    <record id="action_vex_dashboard_record" model="ir.actions.act_window">
+    <!-- <record id="action_vex_dashboard_record" model="ir.actions.act_window">
         <field name="name">Dashboard Records</field>
         <field name="res_model">vex.dashboard.record</field>
         <field name="view_mode">tree,form</field>
-    </record>
+    </record> -->
 
+    <record id="action_vex_dashboard_record_server" model="ir.actions.server">
+        <field name="name">Dashboard Records</field>
+        <field name="model_id" ref="odoo-mercadolibre.model_vex_dashboard_record"/> 
+        <field name="state">code</field>
+        <field name="code">
+            action = {'type': 'ir.actions.act_window',
+                    'name': 'Dashboard Records',
+                    'res_model': 'vex.dashboard.record',
+                    'view_mode': 'tree,form',
+                    #'domain': [('marketplace_ids', 'in', [env.ref('odoo-mercadolibre.vex_marketplace_mercadolibre').id])],
+                    'context': {'default_instance_id': env.user.meli_instance_id.id if env.user.meli_instance_id else False,
+                        'search_default_instance_filter': True}
+                    }
+        </field>
+    </record>
 
     <menuitem id="menu_vex_dashboard_record"
               name="Dashboard Records"
               parent="menu_main_odoo-mercadolibre"
-              action="action_vex_dashboard_record"
+              action="action_vex_dashboard_record_server"
               sequence="20"/>
 </odoo>
