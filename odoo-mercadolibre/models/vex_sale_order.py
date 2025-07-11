@@ -575,7 +575,28 @@ class SaleOrder(models.Model):
         merger.close()
 
         return output_stream.getvalue()
+    
+    @api.model
+    def total_ventas_mercadolibre(self):
+        today = fields.Date.today()
+        first_day = today.replace(day=1)
+        last_day = (first_day + relativedelta(months=1)) - relativedelta(days=1)
 
+        orders = self.search([
+            ('store_type', '=', 'mercadolibre'),
+            ('date_order', '>=', first_day),
+            ('date_order', '<=', last_day)
+        ])
+
+        total_sales = sum(orders.mapped('amount_total'))
+
+        currency = orders[:1].currency_id  # Toma la moneda del primer pedido
+        currency_symbol = currency.symbol if currency else '$'
+        return {
+            'total_sales': round(total_sales, 2),
+            'currency_symbol': currency_symbol
+        }
+        
 class MeliOrderMediation(models.Model):
     _name = 'meli.order.mediation'
     _description = 'Meli Order Mediation'

@@ -71,7 +71,7 @@
                             </div>
                         </div>
                         <!-- 🔹 SEGUNDA COLUMNA -->
-                        <div class="col-md-4" invisible="is_automatic_type">
+                        <div class="col-md-4" attrs="{'invisible': [('is_automatic_type', '=', True)]}">
                             <div class="card shadow-sm p-4 mb-4 bg-white rounded">
                                 <div class="card-body">
                                     <h4 class="fw-bold text-dark mb-3">
@@ -122,17 +122,17 @@
                             <!-- 🔹 Sección: Configuración de Precio Automático -->
                             <div class="card shadow-sm p-3 mb-4 bg-white rounded" id="hiddenDivs">
                                 <div class="card-body">
-                                    <h4 class="fw-bold text-dark mb-3" invisible="is_automatic_type">
+                                    <h4 class="fw-bold text-dark mb-3" attrs="{'invisible': [('is_automatic_type', '=', True)]}">
                                         4. Configure your automatic price
                                     </h4>
-                                    <h4 class="fw-bold text-dark mb-3" invisible="not is_automatic_type">
+                                    <h4 class="fw-bold text-dark mb-3" attrs="{'invisible': [('is_automatic_type', '!=', True)]}">
                                         3. Configure your automatic price
                                     </h4>
                                 </div>
-                                <div class="row" invisible="is_automatic_type">
+                                <div class="row" attrs="{'invisible': [('is_automatic_type', '=', True)]}">
                                     <div class="col-6">
                                         <div class="card-body">
-                                            <p class="form-label fw-bold mb-2" style="font-size: 0.9rem; color: #333;" title="Select the comparison of your automatic price with the references" invisible="is_automatic_type">
+                                            <p class="form-label fw-bold mb-2" style="font-size: 0.9rem; color: #333;" title="Select the comparison of your automatic price with the references" attrs="{'invisible': [('is_automatic_type', '=', True)]}">
                                                 4.1. Select Price Comparison (?)
                                             </p>
                                             <div class="input-group">
@@ -142,7 +142,7 @@
                                     </div>
                                     <div class="col-6">
                                         <div class="card-body">
-                                            <p class="form-label fw-bold mb-2" style="font-size: 0.9rem; color: #333;" title="Choose whether you want your price to be cheaper or more expensive than the compared one" invisible="is_automatic_type">
+                                            <p class="form-label fw-bold mb-2" style="font-size: 0.9rem; color: #333;" title="Choose whether you want your price to be cheaper or more expensive than the compared one" attrs="{'invisible': [('is_automatic_type', '=', True)]}">
                                                 4.2. Price Comparison Preference (?)
                                             </p>
                                             <div class="input-group">
@@ -151,7 +151,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="card-body" style="margin-bottom: -25px;" invisible="is_automatic_type">
+                                <div class="card-body" style="margin-bottom: -25px;" attrs="{'invisible': [('is_automatic_type', '=', True)]}">
                                     <p class="form-label fw-bold mb-2" style="font-size: 0.9rem; color: #333;" title="Define price difference">
                                         4.3. Price Adjustment (?)
                                     </p>
@@ -160,7 +160,7 @@
                                     </p> -->
                                 </div>
 
-                                <div class="row" invisible="is_automatic_type">
+                                <div class="row" attrs="{'invisible': [('is_automatic_type', '=', True)]}">
                                     <div class="col-6">
                                         <div class="card-body">
                                             <p class="form-label fw-bold mb-2" style="font-size: 0.9rem; color: #333;">
@@ -239,7 +239,7 @@
                                     </div>
                                 </div> -->
 
-                                <div class="card-body" style="margin-bottom: -15px;"  invisible="not is_automatic_type">
+                                <div class="card-body" style="margin-bottom: -15px;"  attrs="{'invisible': [('is_automatic_type', '!=', True)]}">
                                     <!-- <p class="form-label fw-bold mb-2" style="font-size: 0.9rem; color: #333;">
                                         Price Limits
                                     </p> -->
@@ -251,7 +251,7 @@
                                     </p>
                                 </div>
 
-                                <div class="row" invisible="not is_automatic_type">
+                                <div class="row" attrs="{'invisible': [('is_automatic_type', '!=', True)]}">
                                     <div class="col-6">
                                         <div class="card-body">
                                             <p class="form-label fw-bold mb-2" style="font-size: 0.9rem; color: #333;">
@@ -283,7 +283,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="card-body" style="margin-bottom: -25px;  display: flex; align-items: center;" invisible="not is_automatic_type">
+                                <div class="card-body" style="margin-bottom: -25px;  display: flex; align-items: center;" attrs="{'invisible': [('is_automatic_type', '!=', True)]}">
                                     <p class="form-label fw-bold mb-2" style="font-size: 0.9rem; color: #333; margin-right: 10px;">
                                         As minimum price will not generate gain, do you want to add gain value? (optional)
                                     </p>
@@ -291,7 +291,7 @@
                                         <field name="want_profit" widget="boolean_toggle"/>
                                     </div>
                                 </div>
-                                <div invisible="not is_automatic_type">
+                                <div attrs="{'invisible': [('is_automatic_type', '!=', True)]}">
                                     <div class="row" invisible="not want_profit">
                                         <div class="col-6">
                                             <div class="card-body">
@@ -331,7 +331,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="card-body" invisible="is_automatic_type">
+                                <div class="card-body" attrs="{'invisible': [('is_automatic_type', '=', True)]}">
                                     <p class="text-bold" style="font-size: 12px; font-weight: 600;" invisible="not texto_resumen">
                                         While the rule is active, your price will be <field name="texto_resumen" readonly="1" widget="char"/> from the group you chose.
                                     </p>
