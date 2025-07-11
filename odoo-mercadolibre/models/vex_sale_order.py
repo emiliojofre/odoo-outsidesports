@@ -3,7 +3,6 @@ from odoo import models, fields, api
 from odoo.exceptions import UserError
 import requests
 import json
-from datetime import datetime
 import logging
 _logger = logging.getLogger(__name__)
 import base64
@@ -11,6 +10,9 @@ from PyPDF2 import PdfMerger
 import io
 import pytz
 from pytz import timezone, UTC
+from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
+
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
     meli_order_id = fields.Char(string="Meli Order ID", help="Unique identifier of the order in MercadoLibre.")
@@ -596,7 +598,7 @@ class SaleOrder(models.Model):
             'total_sales': round(total_sales, 2),
             'currency_symbol': currency_symbol
         }
-        
+
 class MeliOrderMediation(models.Model):
     _name = 'meli.order.mediation'
     _description = 'Meli Order Mediation'

@@ -274,10 +274,10 @@
                                             <div class="input-group">
                                                 <field name="precio_max" style="flex: 1;" class="form-control" widget="monetary" force_save="1"/>
                                             </div>
-                                            <p class="text-muted" style="font-size: 0.7rem; font-weight: 600;" invisible="not exist_max_price">
+                                            <p class="text-muted" style="font-size: 0.7rem; font-weight: 600;" attrs="{'invisible': [('exist_max_price', '!=', True)]}">
                                                 Suggested price by Mercado Libre.
                                             </p>
-                                            <p class="text-muted" style="font-size: 0.7rem; font-weight: 600;" invisible="exist_max_price" >
+                                            <p class="text-muted" style="font-size: 0.7rem; font-weight: 600;" attrs="{'invisible': [('exist_max_price', '=', True)]}">
                                                 There is no suggested price for Mercado Libre, enter a value.
                                             </p>
                                         </div>
@@ -292,7 +292,7 @@
                                     </div>
                                 </div>
                                 <div attrs="{'invisible': [('is_automatic_type', '!=', True)]}">
-                                    <div class="row" invisible="not want_profit">
+                                    <div class="row" attrs="{'invisible': [('want_profit', '!=', True)]}">
                                         <div class="col-6">
                                             <div class="card-body">
                                                 <p class="form-label fw-bold mb-2" style="font-size: 0.9rem; color: #333;">
@@ -332,14 +332,14 @@
                                     </div>
                                 </div>
                                 <div class="card-body" attrs="{'invisible': [('is_automatic_type', '=', True)]}">
-                                    <p class="text-bold" style="font-size: 12px; font-weight: 600;" invisible="not texto_resumen">
+                                    <p class="text-bold" style="font-size: 12px; font-weight: 600;" attrs="{'invisible': [('texto_resumen', '!=', True)]}">
                                         While the rule is active, your price will be <field name="texto_resumen" readonly="1" widget="char"/> from the group you chose.
                                     </p>
                                     <field name="exist_gain" invisible="1"/>
-                                    <p class="text-bold" style="font-size: 1rem; font-weight: 600; color:red" invisible="exist_gain">
+                                    <p class="text-bold" style="font-size: 1rem; font-weight: 600; color:red" attrs="{'invisible': [('exist_gain', '=', True)]}">
                                         <field name="texto_precio" readonly="1" widget="char"/>
                                     </p>
-                                    <p class="text-bold" style="font-size: 1rem; font-weight: 600; color:green" invisible="not exist_gain">
+                                    <p class="text-bold" style="font-size: 1rem; font-weight: 600; color:green" attrs="{'invisible': [('exist_gain', '!=', True)]}">
                                         <field name="texto_precio" readonly="1" widget="char"/>
                                     </p>
                                 </div>

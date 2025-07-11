@@ -10,6 +10,10 @@ _logger = logging.getLogger(__name__)
 import datetime
 from datetime import datetime, timedelta
 
+from prophet import Prophet
+import pandas as pd
+import numpy as np
+
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
 
@@ -594,7 +598,52 @@ class ProductTemplate(models.Model):
         product_info['forecast_data'] = self.action_prediccion(sales_last_70_days)
             
         return product_info
-         
+
+    def action_prediccion(self, dataset):
+        sales_last_days = dataset
+        num_days = len(sales_last_days)
+
+        end_date = pd.to_datetime('today').normalize()
+        start_date = end_date - pd.DateOffset(days=num_days - 1)
+        date_range = pd.date_range(start=start_date, end=end_date, freq='D')
+
+        # Crear el DataFrame en el formato que Prophet necesita
+        data = pd.DataFrame({
+            'ds': date_range,
+            'y': [sales_last_days[i] if i < len(sales_last_days) else 0 for i in range(num_days)]
+        })
+
+        # Instanciar el modelo Prophet
+        model = Prophet(daily_seasonality=True, weekly_seasonality=True, yearly_seasonality=False)
+        model.fit(data)
+
+        # Crear el DataFrame para los próximos 7 días
+        future = model.make_future_dataframe(periods=7)
+        forecast = model.predict(future)
+
+        # Extraer las predicciones para los próximos 7 días y asegurarse de que no haya valores negativos
+        forecast_values = forecast[['ds', 'yhat']].tail(7)
+        forecast_values['yhat'] = np.maximum(forecast_values['yhat'], 0)  # Ajustar a cero si es negativo
+
+        # Preparar los datos para la salida
+        formated_dates = self.format_dates(date_range.tolist())
+        formated_forecast_dates = self.format_dates(forecast_values['ds'].tolist())
+        stock_necessary = int(forecast_values['yhat'].sum())
+
+        result = {
+            'dates': formated_dates,
+            'sales': [sale for sale in dataset],  # Usar la lista original para ventas
+            'forecast_dates': formated_forecast_dates,
+            'forecast_sales': forecast_values['yhat'].tolist(),
+            'stock_necessary': stock_necessary,
+        }
+
+        return result
+
+    def format_dates(self,date_range):
+        # Formatear las fechas para que solo contengan el día
+        return [date.strftime('%Y-%m-%d') for date in date_range]
+
     def _create_or_update_stock(self, product_id, stock_qty, stock_location_id, debug=False):
         """
         Crea o actualiza el stock de un producto en una ubicación específica usando su ID.
