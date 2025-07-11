@@ -532,6 +532,18 @@ class ProductTemplate(models.Model):
             _logger.info(response.text)
         return market_fee
 
+    @api.model
+    def calculate_table_data(self ,products_dict):    
+        for product in products_dict:
+            product_info = self.get_product_info(product['product_id'])
+            
+            product['stock_necessary'] = product_info['forecast_data']['stock_necessary']
+            product['current_stock'] = product_info['stock_available']
+            product['default_code'] = product_info['default_code']
+
+        
+        return products_dict
+        
     def _create_or_update_stock(self, product_id, stock_qty, stock_location_id, debug=False):
         """
         Crea o actualiza el stock de un producto en una ubicación específica usando su ID.
