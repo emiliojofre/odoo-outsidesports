@@ -112,6 +112,8 @@ class ProductTemplate(models.Model):
         store=False  # Solo visualización
     )
 
+    recommended_price = fields.Float(string='Recommended Price')
+
     def _compute_meli_type_item_logistc(self):
         """
         Compute the type of logistic used for the item based on the logistic type.
@@ -670,7 +672,7 @@ class ProductTemplate(models.Model):
                 "competitiveness": competitiveness,
             })
         return resultados
-        
+
     def format_dates(self,date_range):
         # Formatear las fechas para que solo contengan el día
         return [date.strftime('%Y-%m-%d') for date in date_range]
