@@ -486,7 +486,7 @@ class MercadoLibreProduct(models.Model):
         year = today.year
 
         orders = SaleOrder.search([
-            ('store_type', '=', 'mercadolibre'),
+            #('store_type', '=', 'mercadolibre'),
             ('date_order', '>=', first_day),
             ('date_order', '<', today.replace(month=month % 12 + 1, day=1) if month < 12 else today.replace(year=year+1, month=1, day=1)),
             ('state', 'in', ['sale', 'done']),
@@ -528,13 +528,13 @@ class MercadoLibreProduct(models.Model):
         orders_last_month = SaleOrder.search([
             ('date_order', '>=', first_day_last_month),
             ('date_order', '<', first_day_next_month_last),
-            ('store_type', '=', 'mercadolibre'),
+            #('store_type', '=', 'mercadolibre'),
             ('instance_id','=',meli_instance.id)
         ])
         orders_this_month = SaleOrder.search([
             ('date_order', '>=', first_day_this_month),
             ('date_order', '<', first_day_next_month_current),
-            ('store_type', '=', 'mercadolibre'),
+            #('store_type', '=', 'mercadolibre'),
             ('instance_id','=',meli_instance.id)
         ])
 
@@ -1095,7 +1095,7 @@ class MercadoLibreProduct(models.Model):
     
     @api.onchange('product', 'products_compared')
     def set_price_text(self):
-        current_price = self.product.mercado_libre_price
+        current_price = self.product.meli_price
         if self.precio_min == 0.0 and self.new_price == 0.0:
             return ''
         diff_price = self.new_price - self.precio_min

@@ -585,7 +585,7 @@ class SaleOrder(models.Model):
         last_day = (first_day + relativedelta(months=1)) - relativedelta(days=1)
 
         orders = self.search([
-            ('store_type', '=', 'mercadolibre'),
+            #('store_type', '=', 'mercadolibre'),
             ('date_order', '>=', first_day),
             ('date_order', '<=', last_day)
         ])
