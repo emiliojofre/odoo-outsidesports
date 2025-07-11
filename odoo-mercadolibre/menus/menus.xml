@@ -298,8 +298,8 @@
         <field name="name">Returned Orders</field>
         <field name="res_model">sale.order</field>
         <field name="view_mode">tree,form</field>
-        <field name="context">{'group_by': ['instance_id',  'order_status']}</field>
-        <field name="domain">[('order_status', 'in', ['Canceled', 'No Pagada', 'Partially Refunded', 'Reimbursed'])]</field>
+        <field name="context">{'group_by': ['instance_id',  'meli_status']}</field>
+        <field name="domain">[('meli_status', 'in', ['Canceled', 'No Pagada', 'Partially Refunded', 'Reimbursed'])]</field>
         <field name="help"/>
     </record>
 

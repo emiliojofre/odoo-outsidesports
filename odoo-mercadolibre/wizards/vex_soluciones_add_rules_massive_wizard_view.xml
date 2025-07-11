@@ -9,7 +9,11 @@
         </group>
         <footer>
           <button name="download_template" type="object" string="Download Template" class="btn-primary"/>
-          <button name="action_import_template" type="object" string="Import Rules" class="btn-success" invisible="file == False"/>
+          <button name="action_import_template"
+            type="object"
+            string="Import Rules"
+            class="btn-success"
+            attrs="{'invisible': [('file', '=', False)]}"/>
           <button string="Cancelar" class="btn-secondary" special="cancel"/>
         </footer>
       </form>
