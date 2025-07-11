@@ -56,76 +56,72 @@ class VexDashboardRecord(models.Model):
         }
 
     @api.model
-    def generate_dashboard_record_daily(self, instance_id=None):
-    user_tz = self.env.user.tz or 'UTC'
-    today = datetime.now(timezone(user_tz)).date()
-    
-    # Si no se pasa instance_id explícitamente, usar el del usuario actual
-    if not instance_id:
-        if not self.env.user.meli_instance_id:
-            raise UserError("El usuario actual no tiene una instancia asignada.")
-        instances = self.env['vex.instance'].browse([self.env.user.meli_instance_id.id])
-    else:
-        instances = self.env['vex.instance'].browse([instance_id])
-
-    for instance in instances:
-        _logger.info(f"Generando dashboard para {today} - Instancia: {instance.name}")
+    def generate_dashboard_record_daily(self):
+        user_tz = self.env.user.tz or 'UTC'
+        today = datetime.now(timezone(user_tz)).date()
         
-        mercado_libre_marketplace = self.env.ref('odoo-mercadolibre.vex_marketplace_mercadolibre')
-        existing_record = self.search([
-            ('date', '=', today),
-            ('instance_id', '=', instance.id)
-        ], limit=1)
-
-        primer_dia_mes = today.replace(day=1)
-        values = {
-            'date': today,
-            'instance_id': instance.id,
-            'orders_synced_today': self.env['sale.order'].search_count([
-                ('meli_date_create_without_time', '=', today),
-                ('meli_order_id', '!=', ''),
-                ('instance_id', '=', instance.id)
-            ]),
-            'total_orders': self.env['sale.order'].search_count([
-                ('marketplace_ids', 'in', [mercado_libre_marketplace.id]),
-                ('instance_id', '=', instance.id)
-            ]),
-            'new_customers_this_month': self.env['res.partner'].search_count([
-                ('create_date', '>=', primer_dia_mes),
-                ('marketplace_ids', 'in', [mercado_libre_marketplace.id]),
-                ('instance_id', '=', instance.id)
-            ]),
-            'total_customers': self.env['res.partner'].search_count([
-                ('marketplace_ids', 'in', [mercado_libre_marketplace.id]),
-                ('instance_id', '=', instance.id)
-            ]),
-            'total_products': self.env['product.template'].search_count([
-                ('marketplace_ids', 'in', [mercado_libre_marketplace.id]),
-                ('meli_status', '=', 'active'),
-                ('instance_id', '=', instance.id)
-            ]),
-            'total_questions': self.env['vex.meli.questions'].search_count([
-                ('meli_instance_id', '=', instance.id)
-            ]),
-
-            'top_clients_json': json.dumps(self._get_top_clients(instance)),
-            'top_products_json': json.dumps(self._get_top_products(instance)),
-            'recent_orders_json': json.dumps(self._get_recent_orders(instance)),
-            'customers_evolution_json': json.dumps(self._get_customers_evolution(instance)),
-            'total_earnings_json': json.dumps(self._get_total_earnings(instance)),
-            'average_customer_order_json': json.dumps(self._get_avg_order(instance)),
-            'top_categories_json': json.dumps(self._get_top_categories(instance)),
-            'completed_and_canceled_json': json.dumps(self._get_completed_and_canceled(instance)),
-            'sales_by_channel_json': json.dumps(self._get_sales_by_channel(instance)),
-            'questions_by_category_json': json.dumps(self._get_questions_by_category(instance)),
-        }
-
-        if existing_record:
-            existing_record.write(values)
+        # Si no se pasa instance_id explícitamente, usar el del usuario actual
+        if self.env.user.meli_instance_id:
+            instances = self.env['vex.instance'].browse([self.env.user.meli_instance_id.id])
         else:
-            self.create(values)
+            instances = self.env['vex.instance'].search([('store_type', '=', 'mercadolibre')])
 
+        for instance in instances:
+            _logger.info(f"Generando dashboard para {today} - Instancia: {instance.name}")
+            
+            mercado_libre_marketplace = self.env.ref('odoo-mercadolibre.vex_marketplace_mercadolibre')
+            existing_record = self.search([
+                ('date', '=', today),
+                ('instance_id', '=', instance.id)
+            ], limit=1)
 
+            primer_dia_mes = today.replace(day=1)
+            values = {
+                'date': today,
+                'instance_id': instance.id,
+                'orders_synced_today': self.env['sale.order'].search_count([
+                    ('meli_date_create_without_time', '=', today),
+                    ('meli_order_id', '!=', ''),
+                    ('instance_id', '=', instance.id)
+                ]),
+                'total_orders': self.env['sale.order'].search_count([
+                    ('marketplace_ids', 'in', [mercado_libre_marketplace.id]),
+                    ('instance_id', '=', instance.id)
+                ]),
+                'new_customers_this_month': self.env['res.partner'].search_count([
+                    ('create_date', '>=', primer_dia_mes),
+                    ('marketplace_ids', 'in', [mercado_libre_marketplace.id]),
+                    ('instance_id', '=', instance.id)
+                ]),
+                'total_customers': self.env['res.partner'].search_count([
+                    ('marketplace_ids', 'in', [mercado_libre_marketplace.id]),
+                    ('instance_id', '=', instance.id)
+                ]),
+                'total_products': self.env['product.template'].search_count([
+                    ('marketplace_ids', 'in', [mercado_libre_marketplace.id]),
+                    ('meli_status', '=', 'active'),
+                    ('instance_id', '=', instance.id)
+                ]),
+                'total_questions': self.env['vex.meli.questions'].search_count([
+                    ('meli_instance_id', '=', instance.id)
+                ]),
+
+                'top_clients_json': json.dumps(self._get_top_clients(instance)),
+                'top_products_json': json.dumps(self._get_top_products(instance)),
+                'recent_orders_json': json.dumps(self._get_recent_orders(instance)),
+                'customers_evolution_json': json.dumps(self._get_customers_evolution(instance)),
+                'total_earnings_json': json.dumps(self._get_total_earnings(instance)),
+                'average_customer_order_json': json.dumps(self._get_avg_order(instance)),
+                'top_categories_json': json.dumps(self._get_top_categories(instance)),
+                'completed_and_canceled_json': json.dumps(self._get_completed_and_canceled(instance)),
+                'sales_by_channel_json': json.dumps(self._get_sales_by_channel(instance)),
+                'questions_by_category_json': json.dumps(self._get_questions_by_category(instance)),
+            }
+
+            if existing_record:
+                existing_record.write(values)
+            else:
+                self.create(values)
 
     def _get_top_clients(self, instance):
         query = """
