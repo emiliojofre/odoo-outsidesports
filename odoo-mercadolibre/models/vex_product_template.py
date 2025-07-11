@@ -543,7 +543,58 @@ class ProductTemplate(models.Model):
 
         
         return products_dict
+
+    @api.model
+    def get_product_info(self, product_id):
+        # Buscar el producto por ID
+        product = self.env['product.product'].browse(product_id)
         
+        # Verificar si el producto existe
+        if not product.exists():
+            return {
+                'error': 'Product not found'
+            }
+        
+        # Preparar la información genérica del producto
+        product_info = {
+            'product_id': product.id,
+            'product_name': product.name,
+            'default_code': product.default_code,
+            'list_price': product.list_price,
+            'description': product.description,
+            'stock_available': product.qty_available,
+        }
+
+         # Calcular la fecha de hace 70 días
+        date_from = datetime.now() - timedelta(days=70)
+        date_from_str = date_from.strftime('%Y-%m-%d')
+
+         # Buscar las líneas de pedido de venta para el producto en los últimos 70 días
+        sale_order_lines = self.env['sale.order.line'].search([
+            ('order_id.state', 'in', ['sale', 'done']),
+            ('order_id.date_order', '>=', date_from_str),
+            ('product_id', '=', product.id),
+        ])
+        
+        # Crear un diccionario para contar las ventas diarias en los últimos 70 días
+        daily_sales = {}
+        for line in sale_order_lines:
+            date_str = line.order_id.date_order.strftime('%Y-%m-%d')
+            daily_sales[date_str] = daily_sales.get(date_str, 0) + line.product_uom_qty
+        
+        # Generar una lista de ventas diarias en los últimos 70 días
+        sales_last_70_days = []
+        for i in range(70):
+            date_check = (date_from + timedelta(days=i)).strftime('%Y-%m-%d')
+            sales_last_70_days.append(daily_sales.get(date_check, 0))
+        
+        # Añadir las ventas diarias al resultado final
+        product_info['sales_last_70_days'] = sales_last_70_days
+        
+        product_info['forecast_data'] = self.action_prediccion(sales_last_70_days)
+            
+        return product_info
+         
     def _create_or_update_stock(self, product_id, stock_qty, stock_location_id, debug=False):
         """
         Crea o actualiza el stock de un producto en una ubicación específica usando su ID.

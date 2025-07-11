@@ -1364,7 +1364,7 @@ class VexSolucionesAction(models.TransientModel):
 
                     data = response.json()
                     orders = data.get("results", [])
-                    scroll_id = data.get("scroll_id")
+                    scroll_id = data.get("paging").get("scroll_id")
 
                     # Filtrar por nickname SUPLEFIT.MX2
                     for order in orders:
