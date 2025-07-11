@@ -223,7 +223,7 @@ async openCreateProductForm(product_tmpl_id) {
 
 async fetchPriceScoreLetter (){
     try {
-        let number = await jsonrpc('/web/dataset/call_kw', {
+        let number = await this.rpc('/web/dataset/call_kw', {
             model: 'mercado.libre.product',
             method: 'get_score_letter',
             args: [],
@@ -237,7 +237,7 @@ async fetchPriceScoreLetter (){
   }
 
 async fetchTotalSales (){
-  let result = await jsonrpc('/web/dataset/call_kw', {
+  let result = await this.rpc('/web/dataset/call_kw', {
       model: 'sale.order',
       method: 'total_ventas_mercadolibre',
       args: [],
@@ -250,7 +250,7 @@ async fetchTotalSales (){
 }
 
 async fetchLastMonthSales (){
-    let result = await jsonrpc('/web/dataset/call_kw', {
+    let result = await this.rpc('/web/dataset/call_kw', {
         model: 'sale.order',
         method: 'mes_pasado_ventas_mercadolibre',
         args: [],
@@ -261,7 +261,7 @@ async fetchLastMonthSales (){
   }
 
 async fetchProductPrices (){
-    let datos = await jsonrpc('/web/dataset/call_kw', {
+    let datos = await this.rpc('/web/dataset/call_kw', {
         model: 'product.template',
         method: 'get_market_opportunity_products',
         args: [],
@@ -274,7 +274,7 @@ async fetchProductPrices (){
 }
 
 async fetchAvgProfitMargin (){
-    let datos = await jsonrpc('/web/dataset/call_kw', {
+    let datos = await this.rpc('/web/dataset/call_kw', {
         model: 'mercado.libre.product',
         method: 'get_average_profit_margin',
         args: [],
@@ -286,7 +286,7 @@ async fetchAvgProfitMargin (){
 }
 
 async fetchBelowAvgPrice (){
-    let datos = await jsonrpc('/web/dataset/call_kw', {
+    let datos = await this.rpc('/web/dataset/call_kw', {
         model: 'mercado.libre.product',
         method: 'get_percentage_below_average',
         args: [],
@@ -298,7 +298,7 @@ async fetchBelowAvgPrice (){
 }
 
 async fetchInAvgPrice (){
-    let datos = await jsonrpc('/web/dataset/call_kw', {
+    let datos = await this.rpc('/web/dataset/call_kw', {
         model: 'mercado.libre.product',
         method: 'get_percentage_in_average',
         args: [],
@@ -310,7 +310,7 @@ async fetchInAvgPrice (){
 }
 
 async fetchAboveAvgPrice (){
-    let datos = await jsonrpc('/web/dataset/call_kw', {
+    let datos = await this.rpc('/web/dataset/call_kw', {
         model: 'mercado.libre.product',
         method: 'get_percentage_above_average',
         args: [],
@@ -322,7 +322,7 @@ async fetchAboveAvgPrice (){
 }
 
 async fetchProfitMarginEvolution (){
-    let datos = await jsonrpc('/web/dataset/call_kw', {
+    let datos = await this.rpc('/web/dataset/call_kw', {
         model: 'mercado.libre.product',
         method: 'get_profit_margin_evolution',
         args: [],
@@ -334,7 +334,7 @@ async fetchProfitMarginEvolution (){
 }
 
 async fetchPriceEvolutionGrouped (){
-    let datos = await jsonrpc('/web/dataset/call_kw', {
+    let datos = await this.rpc('/web/dataset/call_kw', {
         model: 'mercado.libre.product',
         method: 'get_price_evolution_grouped',
         args: [],
@@ -346,7 +346,7 @@ async fetchPriceEvolutionGrouped (){
 }
 
 async fetchDailySalesEvolution (){
-    let datos = await jsonrpc('/web/dataset/call_kw', {
+    let datos = await this.rpc('/web/dataset/call_kw', {
         model: 'mercado.libre.product',
         method: 'get_daily_sales_evolution',
         args: [],
@@ -358,7 +358,7 @@ async fetchDailySalesEvolution (){
 }
 
 async fetchProfitGrowth (){
-    let datos = await jsonrpc('/web/dataset/call_kw', {
+    let datos = await this.rpc('/web/dataset/call_kw', {
         model: 'mercado.libre.product',
         method: 'get_monthly_profit_growth',
         args: [],
@@ -431,7 +431,7 @@ async products_view(){
 }
 
 async fetchTotalProductsCount (){
-  let number = await jsonrpc('/web/dataset/call_kw', {
+  let number = await this.rpc('/web/dataset/call_kw', {
       model: 'mercado.libre.product',
       method: 'get_total_products',
       args: [],
@@ -441,7 +441,7 @@ async fetchTotalProductsCount (){
 }
 
 async fetchTotalCompetitorsCount (){
-  let number = await jsonrpc('/web/dataset/call_kw', {
+  let number = await this.rpc('/web/dataset/call_kw', {
       model: 'mercado.libre.product.compared',
       method: 'get_total_competitors',
       args: [],
@@ -506,7 +506,7 @@ async deleteRule(ev) {
   const itemId = ev.target.id; 
   
   // Aquí puedes agregar la lógica para eliminar la regla
-  let updateRule = await jsonrpc('/web/dataset/call_kw', {
+  let updateRule = await this.rpc('/web/dataset/call_kw', {
     model: 'vex.auto.response',
     method: 'deleteRule',
     args: [],  
@@ -557,7 +557,7 @@ async open_pricing_rules_view() {
   const itemId = ev.target.id; 
   
   // Aquí puedes agregar la lógica para eliminar la regla
-  let rule_data = await jsonrpc('/web/dataset/call_kw', {
+  let rule_data = await this.rpc('/web/dataset/call_kw', {
     model: 'vex.auto.response',
     method: 'get_rule_by_id',
     args: [],  
@@ -598,7 +598,7 @@ async udpateRuleData(event){
   //console.log(NewanswerText,NewautoResponse,NewruleType, Id);
   
 
-  let rule_data = await jsonrpc('/web/dataset/call_kw', {
+  let rule_data = await this.rpc('/web/dataset/call_kw', {
     model: 'vex.auto.response',
     method: 'update_rule',
     args: [],  

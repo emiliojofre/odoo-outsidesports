@@ -119,7 +119,6 @@ class VexSolucionesAction(models.TransientModel):
     def synchronize(self):
         self.validate_licence()
         
-        headers = {'Content-Type': 'application/x-www-form-urlencoded', 'Authorization': f'Bearer {self.vex_instance_id.meli_access_token}'}
 
         store_type = self.env.context.get('store_type')
         
@@ -128,6 +127,7 @@ class VexSolucionesAction(models.TransientModel):
 
         if store_type == 'mercadolibre':   
             self.vex_instance_id.get_access_token()
+            headers = {'Content-Type': 'application/x-www-form-urlencoded', 'Authorization': f'Bearer {self.vex_instance_id.meli_access_token}'}
             if self.vex_actions == 'category':
                 if not self.import_unit:
                     self.synchronize_category(headers)

@@ -3,6 +3,7 @@
 import { Component, useState } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { _t } from "@web/core/l10n/translation";
+import { useService } from "@web/core/utils/hooks";
 
 import { useBus } from "@web/core/utils/hooks";
 import { jsonrpc } from "@web/core/network/rpc_service";
@@ -15,6 +16,7 @@ class ChatbotTemplate extends Component {
 
   setup() {
 
+    this.rpc = useService("rpc");  // Using the RPC service
 
    //const ajax = require('web.ajax');
     console.log('Component setup executed');
@@ -170,7 +172,7 @@ class ChatbotTemplate extends Component {
 
   async getSessionInfo() {
     try {
-        const session_info = await jsonrpc('/web/session/get_session_info', {});
+        const session_info = await this.rpc('/web/session/get_session_info', {});
 
         if (session_info) {
             current_user = session_info.name;
@@ -185,7 +187,7 @@ class ChatbotTemplate extends Component {
   async loadData() {
     try {
       // Obtener productos con meli_id válido
-      let products = await jsonrpc('/web/dataset/call_kw', {
+      let products = await this.rpc('/web/dataset/call_kw', {
         model: 'product.template',
         method: 'search_read',
         args: [[], ['meli_code', 'name', 'thumbnail', 'list_price']],
@@ -195,7 +197,7 @@ class ChatbotTemplate extends Component {
   
       // Obtener todas las preguntas en una sola consulta, filtrando por meli_answer en el servidor
       let productIds = products.map(p => p.meli_code);
-      let questions = await jsonrpc('/web/dataset/call_kw', {
+      let questions = await this.rpc('/web/dataset/call_kw', {
         model: 'vex.meli.questions',
         method: 'search_read',
         args: [[['meli_item_id', 'in', productIds], ['meli_answer', '=', false]], ['meli_item_id', 'meli_text', 'meli_answer', 'meli_created_at', 'meli_id']],
@@ -251,7 +253,7 @@ class ChatbotTemplate extends Component {
   async loadhistory(cargar_historia) {
     try {
       // Obtener productos con meli_id válido
-      let products = await jsonrpc('/web/dataset/call_kw', {
+      let products = await this.rpc('/web/dataset/call_kw', {
         model: 'product.template',
         method: 'search_read',
         args: [[], ['meli_code', 'name', 'thumbnail', 'list_price']],
@@ -260,7 +262,7 @@ class ChatbotTemplate extends Component {
   
       // Obtener todas las preguntas filtradas por meli_id y meli_answer en una sola consulta
       let productIds = products.map(p => p.meli_code);
-      let questions = await jsonrpc('/web/dataset/call_kw', {
+      let questions = await this.rpc('/web/dataset/call_kw', {
         model: 'vex.meli.questions',
         method: 'search_read',
         args: [[['meli_item_id', 'in', productIds], ['meli_answer', '!=', false]], ['meli_item_id', 'meli_text', 'meli_answer', 'meli_created_at', 'meli_from_id', 'meli_id', 'meli_from_nickname', 'meli_answered_at', 'meli_answered_from_odoo', 'meli_odoo_answerer']],
@@ -364,7 +366,7 @@ class ChatbotTemplate extends Component {
   async UpdateGptBool(bool_value) {
     try {
         // Realizar la llamada al servidor
-        let updateRule = await jsonrpc('/web/dataset/call_kw', {
+        let updateRule = await this.rpc('/web/dataset/call_kw', {
             model: 'vex.gpt.config',
             method: 'update_gpt_config',
             args: [],
@@ -392,7 +394,7 @@ class ChatbotTemplate extends Component {
 
     try {
         // Obtener el access token de Mercado Libre
-        let instanceResult = await jsonrpc('/web/dataset/call_kw', {
+        let instanceResult = await this.rpc('/web/dataset/call_kw', {
             model: 'vex.instance',
             method: 'search_read',
             args: [],
@@ -411,7 +413,7 @@ class ChatbotTemplate extends Component {
         console.log(accessToken);
 
         // Enviar la respuesta a la pregunta llamando a la funcion de python
-        let answerResult = await jsonrpc('/web/dataset/call_kw', {
+        let answerResult = await this.rpc('/web/dataset/call_kw', {
             model: 'vex.import.wizard',
             method: 'answer_question',
             args: [itemId, responseText, accessToken],
@@ -422,7 +424,7 @@ class ChatbotTemplate extends Component {
             console.log('Respuesta enviada correctamente.');
 
             // Actualizar el campo `meli_answer` en `vex.meli.questions` con la respuesta
-            let questions = await jsonrpc('/web/dataset/call_kw', {
+            let questions = await this.rpc('/web/dataset/call_kw', {
                 model: 'vex.meli.questions',
                 method: 'search_read',
                 args: [[['meli_id', '=', itemId]], ['id', 'meli_answer']], // Obtener el id para poder hacer el write
@@ -443,7 +445,7 @@ class ChatbotTemplate extends Component {
                 console.log(formattedDate);
 
                 // Actualizar el valor de `meli_answer` en la base de datos
-                await jsonrpc('/web/dataset/call_kw', {
+                await this.rpc('/web/dataset/call_kw', {
                     model: 'vex.meli.questions',
                     method: 'write',
                     args: [[questionId], { 'meli_answer': responseText, 'meli_odoo_answerer': current_user, 'meli_answered_at': formattedDate , 'meli_status' : "ANSWERED"}],
@@ -475,7 +477,7 @@ async deleteButtonClick(questionid) {
 
       try {
           // Obtener el access token de Mercado Libre
-          let instanceResult = await jsonrpc('/web/dataset/call_kw', {
+          let instanceResult = await this.rpc('/web/dataset/call_kw', {
               model: 'vex.instance',
               method: 'search_read',
               args: [],
@@ -488,7 +490,7 @@ async deleteButtonClick(questionid) {
           console.log(accessToken);
 
           // Llamar al método para eliminar la pregunta en Mercado Libre
-          let deleteResult = await jsonrpc('/web/dataset/call_kw', {
+          let deleteResult = await this.rpc('/web/dataset/call_kw', {
               model: 'vex.import.wizard',
               method: 'delete_question',
               args: [questionid, accessToken],
@@ -499,7 +501,7 @@ async deleteButtonClick(questionid) {
               console.log('Respuesta eliminada correctamente de Mercado Libre');
 
               // Si la respuesta fue eliminada, buscar el ID de la pregunta en Odoo
-              let questions = await jsonrpc('/web/dataset/call_kw', {
+              let questions = await this.rpc('/web/dataset/call_kw', {
                   model: 'vex.meli.questions',
                   method: 'search_read',
                   args: [[['meli_id', '=', questionid]], ['id', 'meli_answer']], // Obtener el id para hacer el delete
@@ -510,7 +512,7 @@ async deleteButtonClick(questionid) {
                   let questionId = questions[0].id; // Obtener el ID de la pregunta
 
                   // Eliminar la pregunta de la base de datos
-                  await jsonrpc('/web/dataset/call_kw', {
+                  await this.rpc('/web/dataset/call_kw', {
                       model: 'vex.meli.questions',
                       method: 'unlink',
                       args: [[questionId]],
@@ -540,7 +542,7 @@ async deleteButtonClick(questionid) {
 
 async loadRules() {
   // Llamada JSON-RPC con los parámetros en kwargs
-  let rules = await jsonrpc('/web/dataset/call_kw', {
+  let rules = await this.rpc('/web/dataset/call_kw', {
       model: 'vex.auto.response',
       method: 'get_auto_responses',
       args: [],  
@@ -553,7 +555,7 @@ async loadRules() {
 
 async loadGptConfig() {
   // Llamada JSON-RPC con los parámetros en kwargs
-  let gpt_config = await jsonrpc('/web/dataset/call_kw', {
+  let gpt_config = await this.rpc('/web/dataset/call_kw', {
       model: 'vex.gpt.config',
       method: 'get_gpt_config',
       args: [],  
@@ -574,7 +576,7 @@ async loadGptConfig() {
 
 async createNewRule(answerText, autoResponse, ruleType) {
   // Llamada JSON-RPC con los parámetros en kwargs
-  let number = await jsonrpc('/web/dataset/call_kw', {
+  let number = await this.rpc('/web/dataset/call_kw', {
       model: 'vex.auto.response',
       method: 'create_auto_response_entry',
       args: [],  // Deja args vacío si estás usando kwargs
@@ -627,7 +629,7 @@ onCheckboxChange(event) {
 }
 
 async updateRuleIsActive(id,newStatus){
-  let updateRule = await jsonrpc('/web/dataset/call_kw', {
+  let updateRule = await this.rpc('/web/dataset/call_kw', {
     model: 'vex.auto.response',
     method: 'set_rule_active_status',
     args: [],  
@@ -645,7 +647,7 @@ async deleteRule(ev) {
   const itemId = ev.target.id; 
   
   // Aquí puedes agregar la lógica para eliminar la regla
-  let updateRule = await jsonrpc('/web/dataset/call_kw', {
+  let updateRule = await this.rpc('/web/dataset/call_kw', {
     model: 'vex.auto.response',
     method: 'deleteRule',
     args: [],  
@@ -663,7 +665,7 @@ async deleteRule(ev) {
   const itemId = ev.target.id; 
   
   // Aquí puedes agregar la lógica para eliminar la regla
-  let rule_data = await jsonrpc('/web/dataset/call_kw', {
+  let rule_data = await this.rpc('/web/dataset/call_kw', {
     model: 'vex.auto.response',
     method: 'get_rule_by_id',
     args: [],  
@@ -704,7 +706,7 @@ async udpateRuleData(event){
   //console.log(NewanswerText,NewautoResponse,NewruleType, Id);
   
 
-  let rule_data = await jsonrpc('/web/dataset/call_kw', {
+  let rule_data = await this.rpc('/web/dataset/call_kw', {
     model: 'vex.auto.response',
     method: 'update_rule',
     args: [],  
@@ -741,7 +743,7 @@ async updateGptData(){
 
   
 
-  let gpt_update = await jsonrpc('/web/dataset/call_kw', {
+  let gpt_update = await this.rpc('/web/dataset/call_kw', {
     model: 'vex.gpt.config',
     method: 'update_gpt_config',
     args: [],  

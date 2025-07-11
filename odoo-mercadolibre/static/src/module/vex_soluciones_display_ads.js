@@ -232,7 +232,7 @@ class DisplayADS extends Component {
     }
 
     async fetchLatestCampaigns (option){
-        let datos = await jsonrpc('/web/dataset/call_kw', {
+        let datos = await this.rpc('/web/dataset/call_kw', {
             model: 'vex.meli.display',
             method: 'get_latest_campaigns',
             args: [option],
@@ -245,7 +245,7 @@ class DisplayADS extends Component {
     }
 
     async fetchLatestItems (option){
-        let datos = await jsonrpc('/web/dataset/call_kw', {
+        let datos = await this.rpc('/web/dataset/call_kw', {
             model: 'vex.meli.display',
             method: 'get_latest_lineitems',
             args: [this.state.selectedRecord, option],
@@ -259,7 +259,7 @@ class DisplayADS extends Component {
     
     /* async test(){
 
-        let datos = await jsonrpc('/web/dataset/call_kw', {
+        let datos = await this.rpc('/web/dataset/call_kw', {
             model: 'vex.meli.display',
             method: 'get_latest_lineitems',
             args: ['83398', '90'],

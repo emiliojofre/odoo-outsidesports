@@ -82,10 +82,10 @@ class Welcome extends Component {
         onWillStart(async () => {           
             await loadBundle("web.chartjs_lib");
             await loadJS("https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js")
-            const response = await fetch('/odoo-mercadolibre/static/src/module/data2.json');
+            /* const response = await fetch('/odoo-mercadolibre/static/src/module/data2.json');
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
-            }
+            } */
             //const jsonData = await response.json();  // <-- Aquí es donde lo transformas
             const jsonData = await this.rpc("/web/dataset/call_kw", {
                 model: "vex.dashboard.record",
@@ -205,7 +205,7 @@ class Welcome extends Component {
     }
 
     async fetchOrdersSyncedToday(){
-        let number = await jsonrpc('/web/dataset/call_kw', {
+        let number = await this.rpc('/web/dataset/call_kw', {
             model: 'sale.order',
             method: 'orders_synced_today',
             args: [],
@@ -215,7 +215,7 @@ class Welcome extends Component {
     }
 
     async fetchTotalOrders (){
-        let number = await jsonrpc('/web/dataset/call_kw', {
+        let number = await this.rpc('/web/dataset/call_kw', {
             model: 'sale.order',
             method: 'get_total_orders_count',
             args: [],
@@ -225,7 +225,7 @@ class Welcome extends Component {
     }
 
     async fetchNewCustomersLastMonth (){
-        let number = await jsonrpc('/web/dataset/call_kw', {
+        let number = await this.rpc('/web/dataset/call_kw', {
             model: 'sale.order',
             method: 'get_new_customers_first_purchase_this_month',
             args: [],
@@ -236,7 +236,7 @@ class Welcome extends Component {
     }
 
     async fetchTotalCustomersCount (){
-        let number = await jsonrpc('/web/dataset/call_kw', {
+        let number = await this.rpc('/web/dataset/call_kw', {
             model: 'sale.order',
             method: 'count_customers_with_server_meli',
             args: [],
@@ -246,7 +246,7 @@ class Welcome extends Component {
     }
 
     async fetchTotalProductsCount (){
-        let number = await jsonrpc('/web/dataset/call_kw', {
+        let number = await this.rpc('/web/dataset/call_kw', {
             model: 'sale.order',
             method: 'get_total_products',
             args: [],
@@ -256,7 +256,7 @@ class Welcome extends Component {
     }
 
     async fectNewCustomerLastSixMonths (){
-        let datos = await jsonrpc('/web/dataset/call_kw', {
+        let datos = await this.rpc('/web/dataset/call_kw', {
             model: 'sale.order',
             method: 'get_or_update_new_customers_data',
             args: [],
@@ -273,7 +273,7 @@ class Welcome extends Component {
     }
 
     async fetchMonthlyProfitLastSixMonths (){
-        let datos = await jsonrpc('/web/dataset/call_kw', {
+        let datos = await this.rpc('/web/dataset/call_kw', {
             model: 'sale.order',
             method: 'get_monthly_profit_last_6_months',
             args: [],
@@ -289,7 +289,7 @@ class Welcome extends Component {
     
 
     async fetchTopClients (){
-        let datos = await jsonrpc('/web/dataset/call_kw', {
+        let datos = await this.rpc('/web/dataset/call_kw', {
             model: 'sale.order',
             method: 'get_top_clients_all_time',
             args: [],
@@ -301,7 +301,7 @@ class Welcome extends Component {
     }
 
     async fetchTopProducts (){
-        let datos = await jsonrpc('/web/dataset/call_kw', {
+        let datos = await this.rpc('/web/dataset/call_kw', {
             model: 'sale.order',
             method: 'get_top_products_all_time',
             args: [],
@@ -325,7 +325,7 @@ class Welcome extends Component {
     }
 
     async fetchLatestOrders (){
-        let datos = await jsonrpc('/web/dataset/call_kw', {
+        let datos = await this.rpc('/web/dataset/call_kw', {
             model: 'sale.order',
             method: 'get_latest_orders',
             args: [],
@@ -337,7 +337,7 @@ class Welcome extends Component {
     }
 
     async get_average_custom_order_last_6_months(){
-        let datos = await jsonrpc('/web/dataset/call_kw', {
+        let datos = await this.rpc('/web/dataset/call_kw', {
             model: 'sale.order',
             method: 'get_average_custom_order_last_6_months',
             args: [],
@@ -356,7 +356,7 @@ class Welcome extends Component {
     async top_5_categories(){
         console.log("top_categories") ;
         
-        let datos = await jsonrpc('/web/dataset/call_kw', {
+        let datos = await this.rpc('/web/dataset/call_kw', {
             model: 'sale.order',
             method: 'get_top_categories',
             args: [],
@@ -378,7 +378,7 @@ class Welcome extends Component {
     async CompletedAndCanceled4months(){
         console.log("counts_last_4_months") ;
         
-        let datos = await jsonrpc('/web/dataset/call_kw', {
+        let datos = await this.rpc('/web/dataset/call_kw', {
             model: 'sale.order',
             method: 'get_monthly_order_status_counts_last_4_months',
             args: [],
@@ -402,7 +402,7 @@ class Welcome extends Component {
 
         console.log("get_sales_by_channel_last_5_months") ;
         
-        let datos = await jsonrpc('/web/dataset/call_kw', {
+        let datos = await this.rpc('/web/dataset/call_kw', {
             model: 'sale.order',
             method: 'get_sales_by_channel_last_5_months',
             args: [],
@@ -421,7 +421,7 @@ class Welcome extends Component {
 
     async get_questions_count(){
 
-        let datos = await jsonrpc('/web/dataset/call_kw', {
+        let datos = await this.rpc('/web/dataset/call_kw', {
             model: 'vex.meli.questions',
             method: 'get_question_count',
             args: [],
@@ -438,7 +438,7 @@ class Welcome extends Component {
 
     async question_count_by_category(){
 
-        let datos = await jsonrpc('/web/dataset/call_kw', {
+        let datos = await this.rpc('/web/dataset/call_kw', {
             model: 'vex.meli.questions',
             method: 'get_questions_count_by_category',
             args: [],

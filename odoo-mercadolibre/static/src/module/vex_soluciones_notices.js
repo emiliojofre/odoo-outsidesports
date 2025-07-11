@@ -40,7 +40,7 @@ class NoticesTemplate extends Component {
 
     async test(){
 
-        let datos = await jsonrpc('/web/dataset/call_kw', {
+        let datos = await this.rpc('/web/dataset/call_kw', {
             model: 'vex.meli.notices',
             method: 'get_data_from_meli',
             args: [],

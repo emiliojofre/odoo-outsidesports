@@ -152,7 +152,7 @@ class MercadoTemplate extends Component {
     }
 
     async fetchOrdersSyncedToday(){
-        let number = await jsonrpc('/web/dataset/call_kw', {
+        let number = await this.rpc('/web/dataset/call_kw', {
             model: 'sale.order',
             method: 'orders_synced_today',
             args: [],
@@ -162,7 +162,7 @@ class MercadoTemplate extends Component {
     }
 
     async fetchTotalOrders (){
-        let number = await jsonrpc('/web/dataset/call_kw', {
+        let number = await this.rpc('/web/dataset/call_kw', {
             model: 'sale.order',
             method: 'get_total_orders_count',
             args: [],
@@ -172,7 +172,7 @@ class MercadoTemplate extends Component {
     }
 
     async fetchNewCustomersLastMonth (){
-        let number = await jsonrpc('/web/dataset/call_kw', {
+        let number = await this.rpc('/web/dataset/call_kw', {
             model: 'sale.order',
             method: 'get_new_customers_first_purchase_this_month',
             args: [],
@@ -183,7 +183,7 @@ class MercadoTemplate extends Component {
     }
 
     async fetchTotalCustomersCount (){
-        let number = await jsonrpc('/web/dataset/call_kw', {
+        let number = await this.rpc('/web/dataset/call_kw', {
             model: 'sale.order',
             method: 'count_customers_with_server_meli',
             args: [],
@@ -193,7 +193,7 @@ class MercadoTemplate extends Component {
     }
 
     async fetchTotalProductsCount (){
-        let number = await jsonrpc('/web/dataset/call_kw', {
+        let number = await this.rpc('/web/dataset/call_kw', {
             model: 'sale.order',
             method: 'get_total_products',
             args: [],
@@ -203,7 +203,7 @@ class MercadoTemplate extends Component {
     }
 
     async fectNewCustomerLastSixMonths (){
-        let datos = await jsonrpc('/web/dataset/call_kw', {
+        let datos = await this.rpc('/web/dataset/call_kw', {
             model: 'sale.order',
             method: 'get_or_update_new_customers_data',
             args: [],
@@ -220,7 +220,7 @@ class MercadoTemplate extends Component {
     }
 
     async fetchMonthlyProfitLastSixMonths (){
-        let datos = await jsonrpc('/web/dataset/call_kw', {
+        let datos = await this.rpc('/web/dataset/call_kw', {
             model: 'sale.order',
             method: 'get_monthly_profit_last_6_months',
             args: [],
@@ -236,7 +236,7 @@ class MercadoTemplate extends Component {
     
 
     async fetchTopClients (){
-        let datos = await jsonrpc('/web/dataset/call_kw', {
+        let datos = await this.rpc('/web/dataset/call_kw', {
             model: 'sale.order',
             method: 'get_top_clients_all_time',
             args: [],
@@ -248,7 +248,7 @@ class MercadoTemplate extends Component {
     }
 
     async fetchTopProducts (){
-        let datos = await jsonrpc('/web/dataset/call_kw', {
+        let datos = await this.rpc('/web/dataset/call_kw', {
             model: 'sale.order',
             method: 'get_top_products_all_time',
             args: [],
@@ -272,7 +272,7 @@ class MercadoTemplate extends Component {
     }
 
     async fetchLatestOrders (){
-        let datos = await jsonrpc('/web/dataset/call_kw', {
+        let datos = await this.rpc('/web/dataset/call_kw', {
             model: 'sale.order',
             method: 'get_latest_orders',
             args: [],
@@ -288,7 +288,7 @@ class MercadoTemplate extends Component {
     async top_5_categories(){
         console.log("top_categories") ;
         
-        let datos = await jsonrpc('/web/dataset/call_kw', {
+        let datos = await this.rpc('/web/dataset/call_kw', {
             model: 'sale.order',
             method: 'get_top_categories',
             args: [],
@@ -315,7 +315,7 @@ class MercadoTemplate extends Component {
 
         console.log("get_sales_by_channel_last_5_months") ;
         
-        let datos = await jsonrpc('/web/dataset/call_kw', {
+        let datos = await this.rpc('/web/dataset/call_kw', {
             model: 'sale.order',
             method: 'get_sales_by_channel_last_5_months',
             args: [],
@@ -334,7 +334,7 @@ class MercadoTemplate extends Component {
 
     async get_questions_count(){
 
-        let datos = await jsonrpc('/web/dataset/call_kw', {
+        let datos = await this.rpc('/web/dataset/call_kw', {
             model: 'vex.meli.questions',
             method: 'get_question_count',
             args: [],

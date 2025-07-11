@@ -266,7 +266,7 @@ class BrandADS extends Component {
     }
 
     async fetchLatestCampaigns (option){
-        let datos = await jsonrpc('/web/dataset/call_kw', {
+        let datos = await this.rpc('/web/dataset/call_kw', {
             model: 'vex.meli.bads',
             method: 'get_latest_campaigns',
             args: [option],
@@ -279,7 +279,7 @@ class BrandADS extends Component {
     }
 
     async fetchLatestKeywords (option){
-        let datos = await jsonrpc('/web/dataset/call_kw', {
+        let datos = await this.rpc('/web/dataset/call_kw', {
             model: 'vex.meli.bads',
             method: 'get_latest_keywords',
             args: [this.state.selectedRecord, option],
@@ -293,7 +293,7 @@ class BrandADS extends Component {
     
     /* async test(){
 
-        let datos = await jsonrpc('/web/dataset/call_kw', {
+        let datos = await this.rpc('/web/dataset/call_kw', {
             model: 'vex.meli.bads',
             method: 'get_latest_keywords',
             args: ['32943', '90'],

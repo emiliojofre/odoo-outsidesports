@@ -18,7 +18,7 @@ class InstanceSelector extends Component {
     }
     
     async getVexInstances (){
-        let datos = await jsonrpc('/web/dataset/call_kw', {
+        let datos = await this.rpc('/web/dataset/call_kw', {
             model: 'vex.instance',
             method: 'get_instances',
             args: [],

@@ -420,7 +420,7 @@ class ForecastTemplate extends Component {
 
     async forecast_product(id_product) {
 
-        let info = await jsonrpc('/web/dataset/call_kw', {
+        let info = await this.rpc('/web/dataset/call_kw', {
             model: 'product.template',
             method: 'get_product_info',
             args: [id_product],
@@ -466,7 +466,7 @@ class ForecastTemplate extends Component {
 
     async get_initial_data() {
         var limit = 20;  // Example limit value
-        let topSellingProducts = await jsonrpc('/web/dataset/call_kw', {
+        let topSellingProducts = await this.rpc('/web/dataset/call_kw', {
             model: 'product.template',
             method: 'get_top_selling_products',
             args: [limit],
@@ -498,7 +498,7 @@ class ForecastTemplate extends Component {
 
     async calculateTableData() {
         console.log("this.products");
-        let table_data = await jsonrpc('/web/dataset/call_kw', {
+        let table_data = await this.rpc('/web/dataset/call_kw', {
             model: 'product.template',
             method: 'calculate_table_data',
             args: [this.products],
