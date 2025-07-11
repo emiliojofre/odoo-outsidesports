@@ -732,6 +732,41 @@ class ProductTemplate(models.Model):
 
         log("Proceso de actualización/creación de stock completado con éxito.")
 
+    @api.model
+    def cron_update_recommended_prices(self):
+        """Llenar campo recommended_price consumiendo la API de MercadoLibre."""
+        for instance in self.env['vex.instance'].search([('store_type','=','mercadolibre')]):
+            _logger.info(f"START CRON cron_update_recommended_prices for instance: {instance.name}")
+
+            instance.get_access_token()
+            access_token = instance.meli_access_token
+            products = self.search([
+                ('store_type','=','mercadolibre'),
+                ('instance_id', '=', instance.id),
+                ('ml_publication_code', '!=', False),
+            ])
+            _logger.info(f"Productos encontrados: {len(products)}")
+            for product in products:
+                try:
+                    url = f'https://api.mercadolibre.com/suggestions/items/{product.ml_publication_code}/details'
+                    _logger.info(f"URL: {url}")
+                    headers = {
+                        "Authorization": f"Bearer {access_token}"
+                    }
+                    response = requests.get(url, headers=headers)
+                    
+                    if response.status_code == 200:
+                        data = response.json()
+                        suggested_price = data.get("suggested_price").get("amount")
+                        
+                        if suggested_price:
+                            product.recommended_price = suggested_price
+                            _logger.info(f"Update recommended_price {product.ml_publication_code}: {suggested_price}")
+                    else:
+                        _logger.warning(f"API error for {product.ml_publication_code}: {response.status_code}: {response.text}")
+                except Exception as e:
+                    _logger.error(f"Error fetching price for {product.ml_publication_code}: {str(e)}")
+            _logger.info(f"END CRON cron_update_recommended_prices for instance: {instance.name}")
 
 class ProductTemplateMeliImage(models.Model):
     _name = 'product.template.meli.image'
