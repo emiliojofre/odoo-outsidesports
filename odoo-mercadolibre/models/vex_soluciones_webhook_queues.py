@@ -56,7 +56,8 @@ class VexSolucionesWebhookQueues(models.Model):
         ('pending', 'Pendiente'),
         ('processing', 'Procesando'),
         ('completed', 'Completado'),
-        ('failed', 'Fallido')
+        ('failed', 'Fallido'),
+        ('error', 'Error'),
     ], string='Estado', default='pending', help="Estado actual del webhook en la cola")
     response = fields.Text(string='Respuesta', help="Respuesta del procesamiento del webhook, si aplica")
 
