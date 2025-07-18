@@ -267,7 +267,7 @@ class SaleOrder(models.Model):
                         'detailed_type': 'product',
                         'instance_id': record.instance_id.id,
                         'marketplace_ids': [(4, ml_marketplace.id)],
-                        'taxes_id': [(6, 0, [14])],
+                        'taxes_id': [(6, 0, [20])],
                     })
                     product.action_get_details()
                     product.set_image_from_meli()
@@ -285,7 +285,7 @@ class SaleOrder(models.Model):
                 item_line['price_unit'] = i["unit_price"]
                 item_line['product_uom'] = uom.id if uom else False
                 item_line['display_type'] = False
-                item_line['tax_id'] = [(6, 0, [14])] 
+                item_line['tax_id'] = [(6, 0, [20])] 
                 order_lines.append((0, 0, item_line))
                 
                 # order_lines.append((0, 0, {
