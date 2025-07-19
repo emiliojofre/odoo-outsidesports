@@ -557,7 +557,7 @@ class SaleOrder(models.Model):
                 'city': city_record.name if city_record else order.meli_receiver_city,
                 'city_id': city_record.id if city_record else False,
                 'zip': zip_code,
-                'l10n_latam_identification_type_id': self.env.ref('l10n_latam_base.it_type_dni').id,
+                #'l10n_latam_identification_type_id': self.env.ref('l10n_latam_base.it_type_dni').id,
                 'vat': '',  # aún no lo tienes
                 'instance_id': order.instance_id.id
             }
