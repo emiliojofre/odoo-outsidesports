@@ -490,17 +490,19 @@ class SaleOrder(models.Model):
             })
         return True
 
-    def normalize_string(text):
-        if not text:
-            return ''
-        return unicodedata.normalize('NFKD', text).encode('ASCII', 'ignore').decode('utf-8').lower().strip()
+    def find_city_record(city_name):
+        # Buscar ignorando tildes y mayúsculas
+        def normalize(text):
+            import unicodedata
+            return ''.join(
+                c for c in unicodedata.normalize('NFD', text)
+                if unicodedata.category(c) != 'Mn'
+            ).lower().strip()
 
-    def find_city_record(self, raw_city_name):
-        normalized_target = normalize_string(raw_city_name)
-        all_cities = self.env['res.city'].search([])
-
+        normalized_input = normalize(city_name)
+        all_cities = request.env['res.city'].sudo().search([])
         for city in all_cities:
-            if normalize_string(city.name) == normalized_target:
+            if normalize(city.name) == normalized_input:
                 return city
         return False
         
