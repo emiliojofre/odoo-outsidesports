@@ -74,7 +74,9 @@
                                     class="btn-primary" icon="fa-info-circle" style="margin-right:10px;"/>
                             <button name="action_get_shipping_details" type="object" string="Sync Shipping Details"
                                     class="btn-primary" icon="fa-truck" style="margin-right:10px;"/>
-                        </div>            
+                            <button name="action_get_customer_details" type="object" string="Sync Customer Details"
+                                    class="btn-primary" icon="fa-user" style="margin-right:10px;"/>
+                        </div>
                     <notebook>
                         <page name="general_info" string="General Information">
                             <group string="Order Details">

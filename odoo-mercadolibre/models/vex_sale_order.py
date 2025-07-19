@@ -12,6 +12,7 @@ import pytz
 from pytz import timezone, UTC
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
+import unicodedata
 
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
@@ -487,6 +488,92 @@ class SaleOrder(models.Model):
                 'meli_sender_latitude': sender.get('latitude'),
                 'meli_sender_longitude': sender.get('longitude'),                
             })
+        return True
+
+    def normalize_string(text):
+        if not text:
+            return ''
+        return unicodedata.normalize('NFKD', text).encode('ASCII', 'ignore').decode('utf-8').lower().strip()
+
+    def find_city_record(env, raw_city_name):
+        normalized_target = normalize_string(raw_city_name)
+        all_cities = env['res.city'].search([])
+
+        for city in all_cities:
+            if normalize_string(city.name) == normalized_target:
+                return city
+        return False
+        
+    def action_get_customer_details(self):
+        for order in self:
+            if not order.meli_shipping_id or not order.instance_id:
+                continue
+
+            # Si no hay datos de dirección, obtenerlos desde la API
+            if not order.meli_receiver_street_name:
+                shipment_url = f"https://api.mercadolibre.com/shipments/{order.meli_shipping_id}"
+                headers = {
+                    'Authorization': f'Bearer {order.instance_id.meli_access_token}'
+                }
+                try:
+                    response = requests.get(shipment_url, headers=headers)
+                    if response.status_code == 200:
+                        shipment = response.json()
+                        receiver = shipment.get('receiver_address', {})
+                        order.write({
+                            'meli_receiver_street_name': receiver.get('street_name', ''),
+                            'meli_receiver_street_number': receiver.get('street_number', ''),
+                            'meli_receiver_city': receiver.get('city', {}).get('name', ''),
+                            'meli_receiver_state': receiver.get('state', {}).get('name', ''),
+                            'meli_receiver_country': receiver.get('country', {}).get('name', ''),
+                            'meli_receiver_zip_code': receiver.get('zip_code', ''),
+                        })
+                    else:
+                        _logger.warning(f"No se pudo obtener el envío {order.meli_shipping_id}: {response.text}")
+                except Exception as e:
+                    _logger.exception(f"Error al consultar el shipment de MercadoLibre: {e}")
+                    continue
+
+            # Buscar ciudad normalizada
+            city_record = find_city_record(self.env, order.meli_receiver_city)
+
+            # Extraer campos desde city
+            country_id = city_record.state_id.country_id.id if city_record and city_record.state_id and city_record.state_id.country_id else False
+            state_id = city_record.state_id.id if city_record and city_record.state_id else False
+            zip_code = city_record.zipcode if city_record and city_record.zipcode else order.meli_receiver_zip_code
+
+            # Buscar o crear partner
+            partner = self.env['res.partner'].search([
+                ('nickname', '=', order.meli_buyer_nickname),
+                ('instance_id', '=', order.instance_id.id)
+            ], limit=1)
+
+            partner_vals = {
+                'name': f"{order.meli_buyer_first_name or ''} {order.meli_buyer_last_name or ''}".strip(),
+                'nickname': order.meli_buyer_nickname,
+                'street': order.meli_receiver_street_name,
+                'street2': order.meli_receiver_street_number,
+                'country_id': country_id,
+                'state_id': state_id,
+                'city': city_record.name if city_record else order.meli_receiver_city,
+                'city_id': city_record.id if city_record else False,
+                'zip': zip_code,
+                'l10n_latam_identification_type_id': self.env.ref('l10n_latam_base.it_type_dni').id,
+                'vat': '',  # aún no lo tienes
+                'instance_id': order.instance_id.id
+            }
+
+            if partner:
+                partner.write(partner_vals)
+                _logger.info(f"Partner actualizado: {partner.name} ({order.meli_buyer_nickname})")
+            else:
+                partner = self.env['res.partner'].create(partner_vals)
+                _logger.info(f"Partner creado: {partner.name} ({order.meli_buyer_nickname})")
+
+            # Asignar el partner a la orden
+            if not order.partner_id:
+                order.partner_id = partner
+
         return True
 
     @api.model
