@@ -489,24 +489,21 @@ class SaleOrder(models.Model):
                 'meli_sender_longitude': sender.get('longitude'),                
             })
         return True
-
-    def find_city_record(city_name):
-        # Buscar ignorando tildes y mayúsculas
-        def normalize(text):
-            import unicodedata
-            return ''.join(
-                c for c in unicodedata.normalize('NFD', text)
-                if unicodedata.category(c) != 'Mn'
-            ).lower().strip()
-
-        normalized_input = normalize(city_name)
-        all_cities = request.env['res.city'].sudo().search([])
-        for city in all_cities:
-            if normalize(city.name) == normalized_input:
-                return city
-        return False
         
     def action_get_customer_details(self):
+        def find_city_record(city_name):
+            def normalize(text):
+                return ''.join(
+                    c for c in unicodedata.normalize('NFD', text)
+                    if unicodedata.category(c) != 'Mn'
+                ).lower().strip()
+
+            normalized_input = normalize(city_name)
+            all_cities = self.env['res.city'].search([])
+            for city in all_cities:
+                if normalize(city.name) == normalized_input:
+                    return city
+            return False
         for order in self:
             if not order.meli_shipping_id or not order.instance_id:
                 continue
