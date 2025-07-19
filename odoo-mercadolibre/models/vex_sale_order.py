@@ -495,9 +495,9 @@ class SaleOrder(models.Model):
             return ''
         return unicodedata.normalize('NFKD', text).encode('ASCII', 'ignore').decode('utf-8').lower().strip()
 
-    def find_city_record(env, raw_city_name):
+    def find_city_record(self, raw_city_name):
         normalized_target = normalize_string(raw_city_name)
-        all_cities = env['res.city'].search([])
+        all_cities = self.env['res.city'].search([])
 
         for city in all_cities:
             if normalize_string(city.name) == normalized_target:
@@ -535,7 +535,7 @@ class SaleOrder(models.Model):
                     continue
 
             # Buscar ciudad normalizada
-            city_record = find_city_record(self.env, order.meli_receiver_city)
+            city_record = find_city_record(order.meli_receiver_city)
 
             # Extraer campos desde city
             country_id = city_record.state_id.country_id.id if city_record and city_record.state_id and city_record.state_id.country_id else False
