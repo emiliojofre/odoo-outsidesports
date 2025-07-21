@@ -46,7 +46,7 @@ class NoticesTemplate extends Component {
             args: [],
             kwargs: {}
         });
-        this.state.dataPublications = datos
+        this.state.dataPublications = datos['results']
         console.log("get_data_from_meli",datos) ;
 
     }
