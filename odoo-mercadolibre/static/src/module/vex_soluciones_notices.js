@@ -47,10 +47,10 @@ class NoticesTemplate extends Component {
             kwargs: {}
         });
         //this.state.dataPublications = datos['results']
-        state.dataPublications = datos.results.map(item => ({
-        ...item,
-        formatted_date: this.formatDate(item.from_date), // nueva propiedad formateada
-    }));
+        this.state.dataPublications = datos.results.map(item => ({
+            ...item,
+            formatted_date: this.formatDate(item.from_date), // nueva propiedad formateada
+        }));
         console.log("get_data_from_meli",datos.results) ;
 
     }
