@@ -1,7 +1,7 @@
 /** @odoo-module **/
 
 import { loadBundle, loadJS } from "@web/core/assets";
-import { Component, onMounted, onWillUnmount, useRef, useState, onWillStart } from "@odoo/owl";
+import { Component, onMounted, onWillUnmount, useRef, useState, onWillStart, nextTick  } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 import { _t } from "@web/core/l10n/translation";
@@ -50,8 +50,17 @@ class NoticesTemplate extends Component {
         this.state.dataPublications = datos.results.map(item => ({
             ...item,
             formatted_date: this.formatDate(item.from_date), // nueva propiedad formateada
-            description: this.Markup(item.description),
+            description: item.description,
         }));
+
+        nextTick(() => {
+            for (const row of this.state.dataPublications) {
+                const el = this.refs[`desc_${row.id}`];
+                if (el && row.description) {
+                    el.innerHTML = row.description;
+                }
+            }
+        });
         console.log("get_data_from_meli",datos.results) ;
 
     }
