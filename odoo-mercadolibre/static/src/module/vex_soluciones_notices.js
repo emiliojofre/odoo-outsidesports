@@ -50,7 +50,7 @@ class NoticesTemplate extends Component {
         this.state.dataPublications = datos.results.map(item => ({
             ...item,
             formatted_date: this.formatDate(item.from_date), // nueva propiedad formateada
-            description: this.toTrustedHTML(item.description),
+            description: this.Markup(item.description),
         }));
         console.log("get_data_from_meli",datos.results) ;
 
@@ -69,6 +69,10 @@ class NoticesTemplate extends Component {
         const parser = new DOMParser();
         const doc = parser.parseFromString(htmlString, "text/html");
         return doc.body.innerHTML;
+    }
+
+    Markup(html) {
+        return { __owl_markup__: true, value: html };
     }
 
     async applyDateFilter(){
