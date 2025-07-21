@@ -32,7 +32,7 @@ class NoticesTemplate extends Component {
         });
 
         onWillStart(async () => {
-            
+            this.test();
         });
 
         //onWillUnmount(() => { this.onWillUnmount() });
@@ -46,7 +46,7 @@ class NoticesTemplate extends Component {
             args: [],
             kwargs: {}
         });
-        
+        dataPublications = datos
         console.log("get_data_from_meli",datos) ;
 
     }
