@@ -53,11 +53,11 @@
                     </t>
                     <t t-else="state.dataPublications.length != 0">
                         <t t-foreach="state.dataPublications" t-as="row" t-key="row.id">
-                            <div class="card" style="width: 18rem; margin: 0.5%;">
+                            <div class="card shadow-sm" style="width: 20rem; margin: 0.5%;">
                                 <div class="card-body">
                                     <h5 class="card-title"><t t-esc="row.label"/></h5>
-                                    <h6 class="card-subtitle mb-2 text-muted">published on <t t-esc="row.from_date"/></h6>
-                                    <p class="card-text"><t t-esc="row.description"/></p>
+                                    <h6 class="card-subtitle mb-2 text-muted">published on <t t-esc="row.formatted_date"/></h6>
+                                    <p class="card-text" t-out="row.description"/>
                                     <!-- <a href="#" class="card-link">Card link</a>
                                     <a href="#" class="card-link">Another link</a> -->
                                 </div>

@@ -46,9 +46,22 @@ class NoticesTemplate extends Component {
             args: [],
             kwargs: {}
         });
-        this.state.dataPublications = datos['results']
-        console.log("get_data_from_meli",datos) ;
+        //this.state.dataPublications = datos['results']
+        state.dataPublications = datos.results.map(item => ({
+        ...item,
+        formatted_date: this.formatDate(item.from_date), // nueva propiedad formateada
+    }));
+        console.log("get_data_from_meli",datos.results) ;
 
+    }
+
+    async formatDate(dateStr) {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('es-PE', {
+            year: 'numeric',
+            month: 'long',
+            day: '2-digit',
+        });
     }
 
     async applyDateFilter(){
