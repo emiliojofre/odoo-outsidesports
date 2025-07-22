@@ -153,6 +153,7 @@ class VexSyncQueueInherit(models.Model):
                     })
                     sale_order.action_get_details()
                     sale_order.action_get_shipping_details()
+                    sale_order.action_get_customer_details
                     sale_order.action_copy_datetime_to_date()
                 # Por ejemplo, crear un registro de venta o actualizar uno existente
 

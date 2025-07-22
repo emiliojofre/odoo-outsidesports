@@ -144,79 +144,70 @@ class VexMarketCompetition(models.Model):
     def consumir_api_detail_items(self):
         current_user = self.env.user 
         meli_instance = current_user.meli_instance_id
-        
-        ACCESS_TOKEN = meli_instance.meli_access_token
-        #ACCESS_TOKEN = "APP_USR-2822929086258615-020718-9e3d709f839f91c2e7c71f953f82ea96-2205765982"
 
-        product_ids = self.env['vex.market_competition'].search([('instance_id','=', meli_instance.id)])
-    
+        if not meli_instance:
+            _logger.warning("No se encontró instancia de MercadoLibre para el usuario actual.")
+            return
+
+        ACCESS_TOKEN = meli_instance.meli_access_token
+
+        product_ids = self.env['vex.market_competition'].search([('instance_id', '=', meli_instance.id)])
+
         for product in product_ids:
 
             if product.tipo == 'item':
-
-                # Obtener el valor del campo mercado_id directamente
-                ITEM_ID = product.mercado_id 
-
+                ITEM_ID = product.mercado_id
                 url = f"https://api.mercadolibre.com/items/{ITEM_ID}"
-            
                 headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
-
                 response = requests.get(url, headers=headers)
 
-                # Si el token está vencido
+                # Token vencido
                 if response.status_code == 401 and response.json().get('message') == 'invalid_token':
                     _logger.warning("Token vencido. Actualizando token...")
                     meli_instance.get_access_token()
-                    # Usamos el nuevo token
                     ACCESS_TOKEN = meli_instance.meli_access_token
                     headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
                     response = requests.get(url, headers=headers)
 
                 if response.status_code == 200:
                     data = response.json()
-                    print(data['price'])
-                    imagen_url = data['thumbnail'] if data else False
-                    image_response = requests.get(imagen_url) if imagen_url else False
-                    image_product = base64.b64encode(image_response.content).decode('utf-8') if image_response else False    
+                    imagen_url = data.get('thumbnail')
+                    image_response = requests.get(imagen_url) if imagen_url else None
+                    image_product = base64.b64encode(image_response.content).decode('utf-8') if image_response else False
                     obj = {
-                        'price': data['price'],
-                        'title': data['title'],
-                        'mercado_libre_url': data['permalink'],
-                        'image_product': image_product
+                        'price': data.get('price', 0),
+                        'title': data.get('title', ''),
+                        'mercado_libre_url': data.get('permalink', ''),
+                        'image_product': image_product,
                     }
-                    write_register = product.write(obj)
-                    if write_register:
-                        _logger.info("Producto actualizado con éxito: %s", data['id'])
-                    else:
-                        _logger.info("No se pudo actualizar el registro: %s", data['id'])
+                    product.write(obj)
+                    _logger.info("Producto (ITEM) actualizado con éxito: %s", data.get('id'))
                 else:
-                    print(f"Error {response.status_code}: {response.text}")
+                    _logger.error(f"Error {response.status_code}: {response.text}")
 
-            elif product.tipo  == 'product':
-                # Obtener el valor del campo mercado_id directamente
-                PRODUCT_ID = product.mercado_id 
-
+            elif product.tipo == 'product':
+                PRODUCT_ID = product.mercado_id
                 url = f"https://api.mercadolibre.com/products/{PRODUCT_ID}"
-
                 headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
-
                 response = requests.get(url, headers=headers)
 
                 if response.status_code == 200:
                     data = response.json()
-                    imagen_url = data['pickers'][0]['products'][0]['thumbnail'] if data['pickers'] else False
-                    image_response = requests.get(imagen_url) if imagen_url else False
+                    pickers = data.get('pickers', [])
+                    imagen_url = pickers[0]['products'][0]['thumbnail'] if pickers and pickers[0].get('products') else None
+                    image_response = requests.get(imagen_url) if imagen_url else None
                     image_product = base64.b64encode(image_response.content).decode('utf-8') if image_response else False
+
+                    buy_box = data.get('buy_box_winner')
+                    price = buy_box['price'] if buy_box and 'price' in buy_box else 0.0
+
                     obj = {
-                        'title': data['name'],
-                        'price': data['buy_box_winner']['price'],
+                        'title': data.get('name', ''),
+                        'price': price,
                         'image_product': image_product,
-                        'mercado_libre_url': data['permalink']
+                        'mercado_libre_url': data.get('permalink', ''),
                     }
-                    write_register = product.write(obj)
-                    if write_register:
-                        _logger.info("Producto actualizado con éxito: %s", data['id'])
-                    else:
-                        _logger.info("No se pudo actualizar el registro: %s", data['id'])
+                    product.write(obj)
+                    _logger.info("Producto (PRODUCT) actualizado con éxito: %s", data.get('id'))
                 else:
-                    print(f"Error {response.status_code}: {response.text}")
+                    _logger.error(f"Error {response.status_code}: {response.text}")
