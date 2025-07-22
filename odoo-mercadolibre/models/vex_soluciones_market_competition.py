@@ -30,16 +30,19 @@ class VexMarketCompetition(models.Model):
     def consumir_api_mercado_libre(self):
         current_user = self.env.user 
         meli_instance = current_user.meli_instance_id
-        
-        ACCESS_TOKEN = meli_instance.meli_access_token
-        #ACCESS_TOKEN = "APP_USR-2822929086258615-020718-9e3d709f839f91c2e7c71f953f82ea96-2205765982"
-        SITE_ID = meli_instance.meli_country  # Cambia según tu país
 
-        category_ids = self.env['vex.category'].search(['instance_id','=',meli_instance.id])
+        if not meli_instance:
+            _logger.warning("No se encontró instancia de MercadoLibre para el usuario actual.")
+            return
+
+        ACCESS_TOKEN = meli_instance.meli_access_token
+        SITE_ID = meli_instance.meli_country
+
+        # ✅ CORREGIDO: domain debe ser una lista de tuplas
+        category_ids = self.env['vex.category'].search([('instance_id', '=', meli_instance.id)])
 
         for category in category_ids:
-
-            CATEGORY_ID = category.codigo_ml  # Cambia según la categoría
+            CATEGORY_ID = category.codigo_ml
 
             url = f"https://api.mercadolibre.com/highlights/{SITE_ID}/category/{CATEGORY_ID}"
             headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
@@ -51,41 +54,36 @@ class VexMarketCompetition(models.Model):
                 if response.status_code == 401 and response.json().get('message') == 'invalid_token':
                     _logger.warning("Token vencido. Actualizando token...")
                     meli_instance.get_access_token()
-                    # Usamos el nuevo token
                     ACCESS_TOKEN = meli_instance.meli_access_token
                     headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
                     response = requests.get(url, headers=headers)
 
                 if response.status_code == 200:
                     data = response.json()
-
                     _logger.info("Datos de Mercado Libre: %s", data)
-                    site = ''
-                    if SITE_ID=='MLM':
-                        site = 'México'
-                    elif SITE_ID=='MLA':
-                        site = 'Argentina'
-                    elif SITE_ID=='MPE':
-                        site = 'Perú'
-                    for item in data["content"]:
+
+                    site = {
+                        'MLM': 'México',
+                        'MLA': 'Argentina',
+                        'MPE': 'Perú'
+                    }.get(SITE_ID, '')
+
+                    for item in data.get("content", []):
                         _logger.info("Item: %s", item)
                         obj = {
-                            # 'name': item['id'].replace("MLA", ""),  
-                            'mercado_id': item['id'],  
-                            'posicion': item['position'], 
-                            'tipo': item['type'].lower(),  
-
-                            #se pueden traer de otro consumo de api
-                            'categoria': category.description,  
+                            'mercado_id': item['id'],
+                            'posicion': item['position'],
+                            'tipo': item['type'].lower(),
+                            'categoria': category.description,
                             'site_id': site,
                             'instance_id': meli_instance.id
                         }
-                        
                         new_register = self.env['vex.market_competition'].create(obj)
                         if new_register:
-                            _logger.info("Se creo con exito: %s", item['id'])
+                            _logger.info("Se creó con éxito: %s", item['id'])
                         else:
                             _logger.info("No se pudo crear el registro: %s", item['id'])
+
                 else:
                     _logger.error("Error %s: %s", response.status_code, response.text)
 
