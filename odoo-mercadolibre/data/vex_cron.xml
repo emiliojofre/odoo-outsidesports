@@ -31,7 +31,7 @@
             <field name="interval_number">10</field> 
             <field name="interval_type">minutes</field> 
             <field name="numbercall">-1</field>
-            <field name="active">True</field> 
+            <field name="active">False</field> 
         </record>
 
         <record id="vex_soluciones_ir_cron_category_search_products" model="ir.cron">
