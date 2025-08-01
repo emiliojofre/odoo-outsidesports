@@ -5,7 +5,6 @@ import { Component, onWillUnmount, useEffect, useRef, useState, onWillStart, onM
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 import { _t } from "@web/core/l10n/translation";
-import { jsonrpc } from "@web/core/network/rpc_service";
 
 
 class ForecastTemplate extends Component {
@@ -86,7 +85,7 @@ class ForecastTemplate extends Component {
     }
     async get_initial_data() {
         var limit = 20;  // Example limit value
-        let topSellingProducts = await jsonrpc('/web/dataset/call_kw', {
+        let topSellingProducts = await this.rpc('/web/dataset/call_kw', {
             model: 'product.template',
             method: 'get_top_selling_products',
             args: [limit],
@@ -161,7 +160,7 @@ class ForecastTemplate extends Component {
             
         
             console.log('Renderizando Grafico de Forecast Sale')
-            const result = await jsonrpc('/web/dataset/call_kw', {
+            const result = await this.rpc('/web/dataset/call_kw', {
                 model: 'product.template',
                 method: 'get_sales_forecast_data',
                 args: [[parseInt(productId)]],
@@ -218,7 +217,7 @@ class ForecastTemplate extends Component {
     async renderStockChart(productId) {
         if (productId) {
             console.log('Renderizando Grafico de Forecast Stock')
-            const result = await jsonrpc('/web/dataset/call_kw', {
+            const result = await this.rpc('/web/dataset/call_kw', {
                 model: 'product.template',
                 method: 'get_stock_forecast_data',
                 args: [[parseInt(productId)]],
@@ -275,7 +274,7 @@ class ForecastTemplate extends Component {
     async renderCustomerChart(productId) {
         if (productId) {
             console.log('Renderizando Grafico de Forecast Customer')
-            const result = await jsonrpc('/web/dataset/call_kw', {
+            const result = await this.rpc('/web/dataset/call_kw', {
                 model: 'sale.order',
                 method: 'get_customer_forecast_data',
                 args: [[parseInt(productId)]],
