@@ -408,3 +408,67 @@ class VexSolucionesWebhookQueues(models.Model):
                     'retry_count': line.retry_count,
                     'response': str(e)
                 })
+    
+    def process_queue_questions(self):
+        """Procesa los registros de la cola de webhooks relacionados con órdenes."""
+        questions = self.search([('event_type', '=', 'questions'), ('processed', '=', False)], limit=50)
+        for line in questions:
+            try:
+                if not line.meli_id:
+                    line.write({'status': 'error', 'result': 'Falta descripción'})
+                    continue
+                _logger.info(f"Procesando question: {line.meli_id}")
+                instance = line.instance_id
+                instance.get_access_token()
+                access_token = instance.meli_access_token
+                meli_question_id = line.meli_id
+                if not meli_question_id:
+                    line.write({'status': 'error', 'result': 'ID de orden no encontrado en JSON', 'start_date': fields.Datetime.now(), 'end_date': fields.Datetime.now()})
+                    continue
+                
+
+                # Aquí puedes agregar la lógica para procesar la orden
+                question_id = self.env['vex.meli.questions'].search([('meli_id', '=', meli_question_id)], limit=1)
+                if question_id:
+                    product_id = self.env['product.template'].search([('id','=',question_id.product_id.id)])
+                    product_id.action_sync_questions()  # Actualizar detalles de la orden si es necesario
+                    line.write({
+                        'status': 'completed',
+                        'processed': True,
+                        'retry_count': 0,
+                        'response': 'Question creada exitosamente'
+                    })                    
+                else:
+                    url = f"https://api.mercadolibre.com/questions/{meli_question_id}"
+                    headers = {'Authorization': f'Bearer {access_token}'}
+                    response = requests.get(url, headers=headers)
+
+                    if response.status_code != 200:
+
+                        line.write({
+                            'status': 'failed',
+                            'response': f"API ML {response.status_code} - {response.text}",
+
+                        })
+                        continue
+                    data = response.json()
+                    meli_item_id = data.get('item_id')
+                    product_id = self.env['product.template'].search([('meli_product_id','=',meli_item_id)])
+                    product_id.action_sync_questions()  # Actualizar detalles de la orden si es necesario                        
+                    # Por ejemplo, crear un registro de venta o actualizar uno existente
+
+                    line.write({
+                        'status': 'completed',
+                        'processed': True,
+                        'retry_count': 0,
+                        'response': 'Question creada exitosamente'
+                    })
+
+            except Exception as e:
+                _logger.error(f"❌ Error procesando Producto {line.meli_id}: {str(e)}")
+                line.write({
+                    'status': 'failed',
+                    #'processed': True,
+                    'retry_count': line.retry_count,
+                    'response': str(e)
+                })        

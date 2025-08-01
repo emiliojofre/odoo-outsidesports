@@ -17,6 +17,9 @@
                                 help="Press to sync Pricing and Promotions od this product from Mercadolibre"/>
                         <button name="action_update_stock" type="object" string="Update Stock to ML"
                                 class="btn-primary" icon="fa-retweet" style="margin-right:10px;"/>
+                        <button name="action_sync_questions" type="object" string="Sync Questions"
+                                class="btn-primary" icon="fa-comments" style="margin-right:10px;"
+                                help="Press to sync all questions of product from Mercadolibre."/>
                         <button name="action_update_price" type="object" string="Update Price to ML"
                                 class="btn-primary" icon="fa-dollar" style="margin-right:10px;"/>
                         <button name="action_change_status" type="object" string="Change Status in ML"
