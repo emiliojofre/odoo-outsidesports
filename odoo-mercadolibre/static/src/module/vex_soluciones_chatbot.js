@@ -4,9 +4,7 @@ import { Component, useState } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { _t } from "@web/core/l10n/translation";
 import { useService } from "@web/core/utils/hooks";
-
 import { useBus } from "@web/core/utils/hooks";
-import { jsonrpc } from "@web/core/network/rpc_service";
 let current_user = 'User';
 
 
@@ -16,9 +14,9 @@ class ChatbotTemplate extends Component {
 
   setup() {
 
-    this.rpc = useService("rpc");  // Using the RPC service
 
    //const ajax = require('web.ajax');
+    this.rpc = useService("rpc");
     console.log('Component setup executed');
     this.state = useState({
       selectedMenuOption: "pending",
@@ -28,6 +26,7 @@ class ChatbotTemplate extends Component {
       isEditSidebarVisible: false,
       isChatGPTConfigActive: false,
       isChecked: false,
+      expandedItems: {},
       items: [
           {
               ruleActive: true,
@@ -73,72 +72,7 @@ class ChatbotTemplate extends Component {
           }
       ],
     
-      data: [
-        {
-          "id": "1234213",
-          "name": " ",
-          "questions": [
-            {
-              "id": "q1",
-              "text": "Question 1.1",
-              "time": "hace 10 minutos"
-            },
-            {
-              "id": "q2",
-              "text": "Question 1.2",
-              "time": "hace 20 minutos"
-            }
-          ]
-        },
-        {
-          "id": "1234",
-          "name": " ",
-          "questions": [
-            {
-              "id": "q3",
-              "text": "Question 2.1",
-              "time": "hace 30 minutos"
-            },
-            {
-              "id": "q4",
-              "text": "Question 2.2",
-              "time": "hace 40 minutos"
-            }
-          ]
-        },
-        {
-          "id": "123423",
-          "name": " ",
-          "questions": [
-            {
-              "id": "q5",
-              "text": "Question 3.1",
-              "time": "hace 50 minutos"
-            },
-            {
-              "id": "q6",
-              "text": "Question 3.2",
-              "time": "hace 60 minutos"
-            }
-          ]
-        },
-        {
-          "id": "123412312",
-          "name": " ",
-          "questions": [
-            {
-              "id": "q7",
-              "text": "Question 4.1",
-              "time": "hace 70 minutos"
-            },
-            {
-              "id": "q8",
-              "text": "Question 4.2",
-              "time": "hace 80 minutos"
-            }
-          ]
-        }
-      ],
+      data: [],
       
 
     });
@@ -169,6 +103,48 @@ class ChatbotTemplate extends Component {
   }
 
   }
+  toggleQuestions(productId) {
+    this.state.expandedItems[productId] = !this.state.expandedItems[productId];
+  }  
+  quickresponse(option) {
+      console.log('Respuesta rápida seleccionada:', option);
+      const textarea = document.querySelector("textarea[id^='response-']");
+      if (!textarea) return;
+
+      if (option === 'stock') {
+          textarea.value = 'Hola! Sí, tenemos stock disponible para entrega inmediata.';
+          textarea.focus();
+      }
+      if (option === 'ship') {
+          textarea.value = 'Hacemos envíos a todo el país. El tiempo depende de tu ubicación.';
+          textarea.focus();
+      }
+      if (option === 'payment') {
+          textarea.value = 'Aceptamos pagos con tarjetas, Mercado Pago y otros medios habilitados.';
+          textarea.focus();
+      }
+      if (option === 'hours') {
+          textarea.value = 'Nuestro horario de atención es de lunes a sábado de 9 a.m. a 6 p.m.';
+          textarea.focus();
+      }
+      if (option === 'promo') {
+          textarea.value = 'Sí, tenemos promociones activas. ¡Consúltanos para más detalles!';
+          textarea.focus();
+      }
+      if (option === 'warranty') {
+          textarea.value = 'Todos nuestros productos son originales y tienen garantía. Te ayudamos en cualquier caso.';
+          textarea.focus();
+      }
+      if (option === 'thanks') {
+          textarea.value = '¡Gracias por tu interés! Cualquier duda adicional, estamos para ayudarte.';
+          textarea.focus();
+      }
+      if (option === 'hi') {
+          textarea.value = 'Hola. ¿Cómo podemos ayudarte?';
+          textarea.focus();
+      }
+  }
+
 
   async getSessionInfo() {
     try {
@@ -184,71 +160,71 @@ class ChatbotTemplate extends Component {
 }
 
 
-  async loadData() {
-    try {
-      // Obtener productos con meli_id válido
-      let products = await this.rpc('/web/dataset/call_kw', {
-        model: 'product.template',
-        method: 'search_read',
-        args: [[], ['meli_code', 'name', 'thumbnail', 'list_price']],
-        kwargs: {}
-      });
-      console.log(products);
-  
-      // Obtener todas las preguntas en una sola consulta, filtrando por meli_answer en el servidor
-      let productIds = products.map(p => p.meli_code);
-      let questions = await this.rpc('/web/dataset/call_kw', {
-        model: 'vex.meli.questions',
-        method: 'search_read',
-        args: [[['meli_item_id', 'in', productIds], ['meli_answer', '=', false]], ['meli_item_id', 'meli_text', 'meli_answer', 'meli_created_at', 'meli_id']],
-        kwargs: {}
-      });
-      
-      console.log(questions);
-      // Formatear las fechas de creación de las preguntas
-      questions = questions.map(question => {
-        let meliCreatedAt = question.meli_created_at;
-        let createdDate = new Date(meliCreatedAt);
-        let currentDate = new Date();
-        let differenceMs = currentDate - createdDate;
-  
-        // Convertir la diferencia a días, horas y minutos
-        let differenceDays = Math.floor(differenceMs / (1000 * 60 * 60 * 24)); // Convertir a días
-        let differenceHours = Math.floor((differenceMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)); // Horas restantes
-        let differenceMinutes = Math.floor((differenceMs % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0'); // Minutos restantes
-  
-        // Crear el texto con el formato correcto
-        let responseTimeText = '';
-        if (differenceDays > 0) {
-          responseTimeText += `${differenceDays}d `;
-        }
-        responseTimeText += `${differenceHours}hr ${differenceMinutes}min`;
-        responseTimeText = responseTimeText.replace(/-/g, ' ');
-  
-        // Asignar el valor formateado
-        question.meli_created_at = responseTimeText;
-        return question;
+async loadData() {
+  try {
+    // Obtener productos con meli_product_id válido
+    let products = await this.rpc('/web/dataset/call_kw', {
+      model: 'product.template',
+      method: 'search_read',
+      args: [[], ['meli_product_id', 'meli_title', 'meli_thumbnail', 'meli_actual_price']],
+      kwargs: {},
+    });
+    console.log('🧩 Productos MELI', products);
+
+    // Filtrar productos con meli_product_id definido
+    let productIds = products.map(p => p.meli_product_id).filter(Boolean);
+
+    // Obtener preguntas UNANSWERED (evita BANNED)
+    let questions = await this.rpc('/web/dataset/call_kw', {
+      model: 'vex.meli.questions',
+      method: 'search_read',
+      args: [
+        [
+          ['meli_item_id', 'in', productIds],
+          ['meli_status', '=', 'UNANSWERED'],
+          ['meli_answer', '=', false]
+        ],
+        [
+          'meli_item_id', 'meli_text', 'meli_answer', 'meli_created_at',
+          'meli_from_id', 'meli_id', 'meli_from_nickname',
+          'meli_answered_at', 'meli_answered_from_odoo', 'meli_odoo_answerer'
+        ]
+      ],
+      kwargs: {},
+    });
+
+    console.log('📩 Preguntas UNANSWERED', questions);
+
+    // Ordenar preguntas por fecha (más reciente primero)
+    questions.sort((a, b) => new Date(b.meli_created_at) - new Date(a.meli_created_at));
+
+    // Asociar preguntas a productos
+    let productsWithQuestions = products
+      .filter(product => questions.some(q => q.meli_item_id === product.meli_product_id))
+      .map(product => {
+        const qList = questions.filter(q => q.meli_item_id === product.meli_product_id);
+        return {
+          ...product,
+          meli_title: `${product.meli_title} (${qList.length} pregunta${qList.length > 1 ? 's' : ''} sin responder)`,
+          questions: qList,
+          latest_question_date: new Date(qList[0].meli_created_at),
+        };
       });
 
-      console.log("Qustiosn" + questions);
-  
-      // Mapear preguntas a productos
-      let productsWithQuestions = products.map(product => ({
-        ...product,
-        questions: questions.filter(q => q.meli_item_id === product.meli_code)
-      })).filter(product => product.questions.length > 0);
+    // Ordenar productos por la fecha de la última pregunta
+    productsWithQuestions.sort((a, b) => b.latest_question_date - a.latest_question_date);
+    productsWithQuestions.forEach(p => delete p.latest_question_date);
 
+    // Cargar en el estado
+    this.state.data = productsWithQuestions;
+    console.log('✅ Estado final cargado:', this.state.data);
 
-      console.log(productsWithQuestions);
-  
-      // Actualizar el estado con los productos y preguntas
-      this.state.data = productsWithQuestions;
-  
-      console.log('Data loaded:', this.state.data);
-    } catch (error) {
-      console.error('Error loading data:', error);
-    }
+  } catch (error) {
+    console.error('❌ Error al cargar datos:', error);
   }
+}
+
+
 
   async loadhistory(cargar_historia) {
     try {
@@ -256,68 +232,63 @@ class ChatbotTemplate extends Component {
       let products = await this.rpc('/web/dataset/call_kw', {
         model: 'product.template',
         method: 'search_read',
-        args: [[], ['meli_code', 'name', 'thumbnail', 'list_price']],
+        args: [[], ['meli_product_id', 'meli_title', 'meli_thumbnail', 'meli_actual_price']],
         kwargs: {},
       });
-  
-      // Obtener todas las preguntas filtradas por meli_id y meli_answer en una sola consulta
-      let productIds = products.map(p => p.meli_code);
+      console.log('Productos MELI', products);
+
+      // Obtener preguntas filtradas
+      let productIds = products.map(p => p.meli_product_id);
       let questions = await this.rpc('/web/dataset/call_kw', {
         model: 'vex.meli.questions',
         method: 'search_read',
         args: [[['meli_item_id', 'in', productIds], ['meli_answer', '!=', false]], ['meli_item_id', 'meli_text', 'meli_answer', 'meli_created_at', 'meli_from_id', 'meli_id', 'meli_from_nickname', 'meli_answered_at', 'meli_answered_from_odoo', 'meli_odoo_answerer']],
         kwargs: {},
       });
-  
-      // Calcular el tiempo en el que se tardó en responder una pregunta
+
+      console.log('Questions MELI', questions);
+
+      // Procesar preguntas
       questions = questions.map(question => {
-        // Verificar si ambas propiedades existen antes de hacer cálculos
         if (question.meli_created_at && question.meli_answered_at) {
-          let meliCreatedAt = question.meli_created_at;
-          let createdDate = new Date(meliCreatedAt);
-  
-          let meliAnsweredAt = question.meli_answered_at;
-          let currentDate = new Date(meliAnsweredAt);
-  
-          // Calcular la diferencia en milisegundos
-          let differenceMs = currentDate - createdDate;
-  
-          // Convertir la diferencia a días, horas y minutos
-          let differenceDays = Math.floor(differenceMs / (1000 * 60 * 60 * 24)); // Convertir a días
-          let differenceHours = Math.floor((differenceMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)); // Horas restantes
-          let differenceMinutes = Math.floor((differenceMs % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0'); // Minutos restantes
-  
-          // Crear el texto con el formato correcto
-          let responseTimeText = '';
-          if (differenceDays > 0) {
-            responseTimeText += `${differenceDays}d `;
-          }
-          responseTimeText += `${differenceHours}hr ${differenceMinutes}min`;
-          responseTimeText = responseTimeText.replace(/-/g, ' ');
-  
-          // Asignar el valor formateado a meli_answered_at
-          question.meli_answered_at = responseTimeText;
+          let createdDate = new Date(question.meli_created_at);
+          let answeredDate = new Date(question.meli_answered_at);
+          let differenceMs = answeredDate - createdDate;
+          let days = Math.floor(differenceMs / (1000 * 60 * 60 * 24));
+          let hours = Math.floor((differenceMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          let minutes = Math.floor((differenceMs % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
+          question.meli_answered_at = (days > 0 ? `${days}d ` : '') + `${hours}hr ${minutes}min`;
         }
-  
-        // Determinar si fue respondida desde Odoo o Mercado Libre
-        if (!question.meli_odoo_answerer) {
-          question.meli_answered_from_odoo = "Mercado Libre";
-        } else {
-          question.meli_answered_from_odoo = "Odoo : " + question.meli_odoo_answerer;
-        }
-  
+
+        question.meli_answered_from_odoo = question.meli_odoo_answerer
+          ? `Odoo : ${question.meli_odoo_answerer}`
+          : "Mercado Libre";
+
         return question;
       });
-  
+
+      // Ordenar preguntas por fecha de creación descendente (más reciente primero)
+      questions.sort((a, b) => new Date(b.meli_created_at) - new Date(a.meli_created_at));
+
       // Mapear preguntas a productos
-      let productsWithQuestions = products.map(product => ({
-        ...product,
-        questions: questions.filter(q => q.meli_item_id === product.meli_code)
-      })).filter(product => product.questions.length > 0);
-  
-      // Actualizar el estado con los productos y preguntas
+      let productsWithQuestions = products.map(product => {
+        const qList = questions.filter(q => q.meli_item_id === product.meli_product_id);
+        return {
+          ...product,
+          questions: qList,
+          latest_question_date: qList.length ? new Date(qList[0].meli_created_at) : null,
+        };
+      }).filter(product => product.questions.length > 0);
+
+      // Ordenar productos según la fecha más reciente de pregunta
+      productsWithQuestions.sort((a, b) => b.latest_question_date - a.latest_question_date);
+
+      // Eliminar campo auxiliar antes de mostrar
+      productsWithQuestions.forEach(p => delete p.latest_question_date);
+
+      // Actualizar el estado
       this.state.data = productsWithQuestions;
-  
+
       console.log('Data loaded:', this.state.data);
     } catch (error) {
       console.error('Error loading data:', error);
@@ -399,7 +370,7 @@ class ChatbotTemplate extends Component {
             method: 'search_read',
             args: [],
             kwargs: {
-                fields: ['access_token'], // Especifica el campo que deseas leer
+                fields: ['meli_access_token'], // Especifica el campo que deseas leer
             },
         });
         
@@ -409,7 +380,7 @@ class ChatbotTemplate extends Component {
        
         
         //let accessToken = instanceResult[0].meli_access_token;
-        let accessToken = 0;
+        let accessToken = 0; // Anotaciones Luis: Le posieron 0 xq en el python capturan el access token
         console.log(accessToken);
 
         // Enviar la respuesta a la pregunta llamando a la funcion de python
@@ -419,7 +390,7 @@ class ChatbotTemplate extends Component {
             args: [itemId, responseText, accessToken],
             kwargs: {},
         });
-
+        console.log('answerResult',answerResult)
         if (answerResult) {
             console.log('Respuesta enviada correctamente.');
 
@@ -482,7 +453,7 @@ async deleteButtonClick(questionid) {
               method: 'search_read',
               args: [],
               kwargs: {
-                  fields: ['access_token'],
+                  fields: ['meli_access_token'],
               },
           });
 
