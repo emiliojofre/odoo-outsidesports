@@ -14,6 +14,10 @@ from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 import unicodedata
 
+from prophet import Prophet
+import pandas as pd
+import numpy as np
+
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
     meli_order_id = fields.Char(string="Meli Order ID", help="Unique identifier of the order in MercadoLibre.")
@@ -704,6 +708,66 @@ class SaleOrder(models.Model):
             'total_sales': round(total_sales, 2)
         }
 
+    def get_customer_forecast_data(self):
+        _logger.info("Iniciando forecast de nuevos clientes...")
+
+        # Buscar fechas de primera orden por cliente
+        query = """
+            SELECT MIN(date_order::date) as first_order_date
+            FROM sale_order
+            WHERE state IN ('sale', 'done')
+              AND partner_id IS NOT NULL
+            GROUP BY partner_id
+            ORDER BY first_order_date
+        """
+        self._cr.execute(query)
+        rows = self._cr.fetchall()
+
+        if not rows:
+            _logger.warning("No se encontraron datos de primeros pedidos de clientes.")
+            return {'labels': [], 'datasets': []}
+
+        # Agrupar por fecha
+        date_counts = {}
+        for (first_date,) in rows:
+            date_counts[first_date] = date_counts.get(first_date, 0) + 1
+
+        df = pd.DataFrame(list(date_counts.items()), columns=["ds", "y"])
+        df = df.sort_values("ds")
+
+        if df["ds"].nunique() < 2:
+            _logger.warning("No hay suficientes fechas distintas para entrenar modelo de clientes.")
+            return {'labels': [], 'datasets': []}
+
+        # Entrenar modelo
+        model = Prophet()
+        model.fit(df)
+
+        # Predecir 30 días
+        future = model.make_future_dataframe(periods=30)
+        forecast = model.predict(future)
+
+        labels = forecast['ds'].dt.strftime('%Y-%m-%d').tolist()
+        real = forecast['yhat'][:-30].tolist()
+        pred = forecast['yhat'][-30:].tolist()
+
+        return {
+            'labels': labels,
+            'datasets': [
+                {
+                    'label': 'Clientes Nuevos Históricos',
+                    'data': real + [None] * 30,
+                    'borderColor': 'rgb(54, 162, 235)',
+                },
+                {
+                    'label': 'Clientes Nuevos Predichos',
+                    'data': [None] * len(real) + pred,
+                    'borderColor': 'rgb(255, 99, 132)',
+                    'borderDash': [5, 5],
+                }
+            ]
+        }
+        
 class MeliOrderMediation(models.Model):
     _name = 'meli.order.mediation'
     _description = 'Meli Order Mediation'

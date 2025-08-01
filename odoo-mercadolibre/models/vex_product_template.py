@@ -444,6 +444,140 @@ class ProductTemplate(models.Model):
                 _logger.error(f"Error descargando imagen para {product.name}: {str(e)}")    
         return True
 
+    def get_stock_forecast_data(self):
+        _logger.info("Llamada a get_stock_forecast_data para: %s", self)
+        if not self or not self.exists():
+            _logger.warning("Recordset inválido. No se puede procesar forecast de stock.")
+            return {'labels': [], 'datasets': []}
+        
+        self.ensure_one()
+
+        # Buscar movimientos de inventario relevantes (realizados)
+        moves = self.env['stock.move'].search([
+            ('product_id.product_tmpl_id', '=', self.id),
+            ('state', '=', 'done'),
+            ('date', '!=', False),
+        ])
+
+        if not moves:
+            _logger.warning("No se encontraron movimientos de stock para el producto %s", self.name)
+            return {'labels': [], 'datasets': []}
+
+        # Agrupar por día la suma de cambios netos de inventario
+        stock_data = {}
+        for move in moves:
+            date = move.date.date()
+            qty = move.product_uom_qty if move.location_id.usage == 'supplier' or move.location_dest_id.usage == 'internal' else -move.product_uom_qty
+            stock_data[date] = stock_data.get(date, 0) + qty
+
+        _logger.info("Datos netos de stock por día: %s", stock_data)
+
+        # Convertir a dataframe
+        df = pd.DataFrame(list(stock_data.items()), columns=["ds", "qty"])
+        df = df.groupby('ds').sum().reset_index()  # Asegurar un valor por fecha
+        df = df.sort_values("ds")
+
+        # Calcular stock acumulado
+        df["y"] = df["qty"].cumsum()
+        df = df[["ds", "y"]]
+
+        if df["ds"].nunique() < 2:
+            _logger.warning("No hay suficientes fechas distintas para entrenar modelo de stock.")
+            return {'labels': [], 'datasets': []}
+
+        # Entrenar modelo
+        model = Prophet()
+        model.fit(df)
+
+        # Predecir 30 días hacia adelante
+        future = model.make_future_dataframe(periods=30)
+        forecast = model.predict(future)
+
+        labels = forecast['ds'].dt.strftime('%Y-%m-%d').tolist()
+        stock_real = forecast['yhat'][:-30].tolist()
+        stock_pred = forecast['yhat'][-30:].tolist()
+
+        return {
+            'labels': labels,
+            'datasets': [
+                {
+                    'label': 'Stock Histórico',
+                    'data': stock_real + [None] * 30,
+                    'borderColor': 'rgb(75, 192, 192)',
+                },
+                {
+                    'label': 'Stock Predicho',
+                    'data': [None] * len(stock_real) + stock_pred,
+                    'borderColor': 'rgb(255, 206, 86)',
+                    'borderDash': [5, 5],
+                }
+            ]
+        }
+    
+    def get_sales_forecast_data(self):
+        _logger.info("Llamada a get_sales_forecast_data para: %s", self)
+        if not self or not self.exists():
+            _logger.warning("Recordset inválido. No se puede procesar forecast.")
+            return {'labels': [], 'datasets': []}
+        
+        self.ensure_one()
+        #_logger.info(f"Obteniendo forecast para product.template ID: {self.id} - {self.name}")
+        orders = self.env['sale.order.line'].search([
+            ('product_id.product_tmpl_id', '=', self.id),
+            ('order_id.state', 'in', ['sale', 'done']),
+        ])
+        _logger.info("Cantidad de líneas de venta encontradas: %s", len(orders))
+        if not orders:
+            _logger.warning("No se encontraron órdenes para el producto %s", self.name)
+            return {'labels': [], 'datasets': []}
+
+        # Agrupar ventas por fecha
+        data = {}
+        for line in orders:
+            date = line.order_id.date_order.date()
+            data[date] = data.get(date, 0) + line.product_uom_qty
+        _logger.info("Datos agrupados por fecha: %s", data)
+        # Convertir a DataFrame
+        df = pd.DataFrame(list(data.items()), columns=["ds", "y"])
+        df["ds"] = pd.to_datetime(df["ds"])
+        df = df.sort_values("ds")
+
+        # Validación mínima
+        if df["ds"].nunique() < 2:
+            _logger.warning("No hay suficientes fechas distintas para entrenar modelo.")
+            return {'labels': [], 'datasets': []}
+
+        # Entrenar modelo
+        model = Prophet()
+        model.fit(df)
+
+        # Predecir 5 días adelante
+        future = model.make_future_dataframe(periods=30)
+        forecast = model.predict(future)
+
+        # Resultado
+        labels = forecast['ds'].dt.strftime('%Y-%m-%d').tolist()
+        sales = forecast['yhat'][:-30].tolist()
+        prediction = forecast['yhat'][-30:].tolist()
+        prediction_labels = forecast['ds'].dt.strftime('%Y-%m-%d')[-30:].tolist()
+
+        return {
+            'labels': labels,
+            'datasets': [
+                {
+                    'label': 'Sales',
+                    'data': sales + [None] * 5,
+                    'borderColor': 'rgb(54, 162, 235)',
+                },
+                {
+                    'label': 'Forecast',
+                    'data': [None] * (len(sales)) + prediction,
+                    'borderColor': 'rgb(255, 99, 132)',
+                    'borderDash': [5, 5],
+                }
+            ]
+        }
+        
     @api.model
     def get_top_selling_products(self, limit=10):
         DashboardData = self.env['vex.dashboard.data']

@@ -326,6 +326,7 @@ class VexSolucionesWebhookQueues(models.Model):
                 if sale_order:
                     sale_order.action_get_details()  # Actualizar detalles de la orden si es necesario
                     sale_order.action_get_shipping_details()
+                    sale_order.action_get_customer_details()
                     sale_order.action_copy_datetime_to_date()
                 else:
                     # Crear una nueva orden de venta
@@ -338,6 +339,7 @@ class VexSolucionesWebhookQueues(models.Model):
                     })
                     sale_order.action_get_details()
                     sale_order.action_get_shipping_details()
+                    sale_order.action_get_customer_details()
                     sale_order.action_copy_datetime_to_date()
                 # Por ejemplo, crear un registro de venta o actualizar uno existente
                 line.write({
