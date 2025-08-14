@@ -11,7 +11,7 @@
                     <div class="oe_button_box" name="button_box">
                         <button name="action_publish_product" type="object" string="Publish Product"
                             class="btn-primary" icon="fa-paper-plane" style="margin-right:10px;"
-                            help="Press to sync all details of product from Mercadolibre" attrs="{'invisible': [('meli_product_id','!=',False)]}"/>
+                            help="Press to sync all details of product from Mercadolibre"/>
                         <button name="action_get_details" type="object" string="Sync Details"
                             class="btn-primary" icon="fa-info-circle" style="margin-right:10px;"
                             help="Press to sync all details of product from Mercadolibre"/>
@@ -29,6 +29,7 @@
                                 class="btn-primary" icon="fa-toggle-on" style="margin-right:10px;"/>
                         <!-- <button name="action_update_post" type="object" string="Update Post"
                                 class="btn-primary" icon="fa-edit"/> -->
+                                <!-- attrs="{'invisible': [('meli_product_id','!=',False)]}" -->
                         <button name="set_image_from_meli" type="object" string="Update Image in Odoo"
                                 class="btn-primary" icon="fa-image"/>
                     </div>
