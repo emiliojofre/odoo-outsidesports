@@ -882,3 +882,4 @@ class SaleMeliShippingItemType(models.Model):
     _name = 'sale.meli.shipping.item.type'
     _description = 'MercadoLibre Shipping Item Type'
     name = fields.Char(required=True)
+    
