@@ -32,7 +32,7 @@ class VexQuestionsMeli(models.Model):
     meli_from_nickname = fields.Char()
     meli_answered_at = fields.Datetime()
     meli_instance_id = fields.Many2one('vex.instance', string="Instancia", required=True)
-
+    product_id = fields.Many2one('product.template')
 
     @api.model
     def create(self, vals):
