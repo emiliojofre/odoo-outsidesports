@@ -65,3 +65,19 @@ class VexPublishProductWizard(models.TransientModel):
         }
         self.product_id.write(vals)
         return {'type': 'ir.actions.act_window_close'}
+    
+    def process_meli_response(self, json_response):
+        """Procesa la respuesta de MercadoLibre al crear producto."""
+        self.ensure_one()
+        # Solo si no tiene meli_product_id
+        if not self.meli_product_id:
+            meli_id = json_response.get('id')
+            if meli_id:
+                self.meli_product_id = meli_id
+                # Aquí puedes guardar otros campos si lo deseas
+                # self.meli_site_id = json_response.get('site_id')
+                # self.meli_title = json_response.get('title')
+                # etc.
+
+                # Ejecutar automáticamente la sincronización de detalles
+                self.action_get_details()

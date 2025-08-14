@@ -11,7 +11,7 @@
                     <div class="oe_button_box" name="button_box">
                         <button name="action_publish_product" type="object" string="Publish Product"
                             class="btn-primary" icon="fa-paper-plane" style="margin-right:10px;"
-                            help="Press to sync all details of product from Mercadolibre"/>
+                            help="Press to sync all details of product from Mercadolibre" attrs="{'invisible': [('meli_product_id','!=',False)]}"/>
                         <button name="action_get_details" type="object" string="Sync Details"
                             class="btn-primary" icon="fa-info-circle" style="margin-right:10px;"
                             help="Press to sync all details of product from Mercadolibre"/>
