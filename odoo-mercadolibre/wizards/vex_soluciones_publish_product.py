@@ -16,15 +16,17 @@ class VexPublishProductWizard(models.TransientModel):
     meli_listing_type = fields.Char(string="Listing Type", required=True)
     meli_condition = fields.Char(string="Condition", required=True)
     meli_title = fields.Char(string="ML Title", required=True)
-    meli_permalink = fields.Char(string="Product URL", required=True)
+    meli_permalink = fields.Char(string="Product URL")
     meli_thumbnail = fields.Char(string="Thumbnail URL")
     meli_domain_id = fields.Char(string="Domain ID")
     meli_catalog_product_id = fields.Char(string="Catalog Product ID")
-    meli_category_vex = fields.Char(string="ML Category ID")
+    meli_category_vex = fields.Char(string="ML Category ID", required=True)
     meli_inventory_id = fields.Char(string="Inventory ID")
     meli_tag_ids = fields.Many2many('product.meli.tag', string="ML Tags")
     meli_channel_ids = fields.Many2many('product.meli.channel', string="ML Channels")
     meli_health = fields.Float(string="Health Score")
+    instance_id = fields.Many2one('vex.instance', string="Instancia", required=True)
+    meli_base_price = fields.Float(string="Base Price", help="Original base price")
 
     @api.model
     def default_get(self, fields_list):
@@ -37,10 +39,12 @@ class VexPublishProductWizard(models.TransientModel):
             'meli_product_id', 'meli_site_id', 'meli_status', 'meli_sub_status', 'meli_listing_type',
             'meli_condition', 'meli_title', 'meli_permalink', 'meli_thumbnail', 'meli_domain_id',
             'meli_catalog_product_id', 'meli_category_vex', 'meli_inventory_id', 'meli_tag_ids',
-            'meli_channel_ids', 'meli_health'
+            'meli_channel_ids', 'meli_health', 'meli_base_price'
         ]:
             res[field] = getattr(product, field)
-        res['product_id'] = product.id
+        instance = self.env['vex.instance'].search([('name', 'ilike', 'odoo')], limit=1)
+        if instance:
+            res['instance_id'] = instance.id
         return res
 
     def action_publish(self):
@@ -62,6 +66,7 @@ class VexPublishProductWizard(models.TransientModel):
             'meli_tag_ids': [(6, 0, self.meli_tag_ids.ids)],
             'meli_channel_ids': [(6, 0, self.meli_channel_ids.ids)],
             'meli_health': self.meli_health,
+            'meli_base_price': self.meli_base_price
         }
         self.product_id.write(vals)
         return {'type': 'ir.actions.act_window_close'}
@@ -74,8 +79,7 @@ class VexPublishProductWizard(models.TransientModel):
             meli_id = json_response.get('id')
             if meli_id:
                 self.meli_product_id = meli_id
-                # Aquí puedes guardar otros campos si lo deseas
-                # self.meli_site_id = json_response.get('site_id')
+                self.meli_permalink = json_response.get('permalink')
                 # self.meli_title = json_response.get('title')
                 # etc.
 
