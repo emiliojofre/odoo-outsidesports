@@ -169,6 +169,10 @@ class ProductTemplate(models.Model):
                 'default_product_id': self.id,
             }
         }
+    
+    def action_sync_questions(self):
+        pass
+
     def action_get_price(self):
         for record in self:
             if not record.meli_product_id:
