@@ -5,8 +5,8 @@ class VexPublishProductWizard(models.TransientModel):
     _description = 'Publicar producto en MercadoLibre'
 
     product_id = fields.Many2one('product.template', string="Producto", required=True)
-    name = fields.Char(related='product_id.name', string="Nombre", readonly=True)
-    image_1920 = fields.Binary(related='product_id.image_1920', string="Imagen", readonly=True)
+    name = fields.Char(string="Nombre")
+    image_1920 = fields.Binary(string="Imagen")
 
     # Campos a editar (los mismos que en General Info)
     meli_product_id = fields.Char(string="ML Product ID", required=True)
@@ -30,6 +30,9 @@ class VexPublishProductWizard(models.TransientModel):
     def default_get(self, fields_list):
         res = super().default_get(fields_list)
         product = self.env['product.template'].browse(self.env.context.get('active_id'))
+        res['product_id'] = product.id
+        res['name'] = product.name
+        res['image_1920'] = product.image_1920
         for field in [
             'meli_product_id', 'meli_site_id', 'meli_status', 'meli_sub_status', 'meli_listing_type',
             'meli_condition', 'meli_title', 'meli_permalink', 'meli_thumbnail', 'meli_domain_id',
