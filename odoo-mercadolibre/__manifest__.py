@@ -40,6 +40,7 @@
         'wizards/vex_soluciones_export_product.xml',
         'wizards/import_excel_wizard_views.xml',
         'wizards/vex_soluciones_mediation_menu.xml',
+        'wizards/vex_soluciones_publish_product.xml',
         #'security/vex_soluciones_instance_rules.xml',
         'security/ir_model_access.xml',
         'menus/menus.xml', 

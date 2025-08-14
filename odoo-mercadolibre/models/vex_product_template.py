@@ -215,7 +215,14 @@ class ProductTemplate(models.Model):
                 })
 
     def action_publish_product(self):
-        pass
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'vex.publish.product.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'active_id': self.id},
+        } 
 
     def action_get_details(self):
         """
