@@ -113,6 +113,7 @@ class ProductTemplate(models.Model):
     )
 
     recommended_price = fields.Float(string='Recommended Price')
+    meli_question_ids = fields.One2many('vex.meli.questions', 'product_id', string="Questions")
 
     def _compute_meli_type_item_logistc(self):
         """
@@ -171,7 +172,52 @@ class ProductTemplate(models.Model):
         }
     
     def action_sync_questions(self):
-        pass
+        "Sincronizar preguntas con MercadoLibre para este producto mediante la API."
+        for record in self:
+            if not record.meli_product_id:
+                raise UserError("Debe establecer primero el campo ML Product ID.")
+            if not record.instance_id or not record.instance_id.meli_access_token:
+                raise UserError("No se ha definido el token de acceso en la instancia vinculada.")
+            
+            access_token = record.instance_id.meli_access_token
+
+            url = f"https://api.mercadolibre.com/questions/search?item_id={record.meli_product_id}"
+            headers = {'Authorization': f'Bearer {access_token}'}
+            response = requests.get(url, headers=headers)
+            if response.status_code != 200:
+                raise UserError(f"Error al consultar API de MercadoLibre: {response.status_code} - {response.text}")
+            
+            data = response.json()
+            questions = data.get('questions', [])
+            _logger.info(f"Preguntas recibidas: {len(questions)}")
+            if not questions:
+                raise UserError("No hay preguntas para este producto en MercadoLibre.")
+            QuestionsModel = self.env['vex.meli.questions']
+
+            for q in questions:
+                vals = {
+                    'name': q.get('text', 'Pregunta'),
+                    'meli_created_at': self.safe_parse_date(q.get('date_created')),
+                    'meli_item_id': q.get('item_id'),
+                    'meli_seller_id': q.get('seller_id'),
+                    'meli_status': q.get('status'),
+                    'meli_text': q.get('text'),
+                    'meli_id': str(q.get('id')),
+                    'meli_deleted_from_listing': q.get('deleted_from_listing', False),
+                    'meli_hold': q.get('hold', False),
+                    'meli_answer': q.get('answer', {}).get('text') if q.get('answer') else False,
+                    'meli_from_id': str(q.get('from', {}).get('id')) if q.get('from') else False,
+                    'meli_from_nickname': q.get('from', {}).get('nickname') if q.get('from') else False,
+                    'meli_answered_at': self.safe_parse_date(q.get('answer', {}).get('date_created')) if q.get('answer') else False,
+                    'meli_instance_id': record.instance_id.id,
+                    'product_id': record.id,
+                }
+                existing_question = QuestionsModel.search([('meli_id', '=', vals['meli_id'])], limit=1)
+                if existing_question:
+                    existing_question.write(vals)
+                else:
+                    QuestionsModel.create(vals)
+                    _logger.info(f"Pregunta creada: {vals}")
 
     def action_get_price(self):
         for record in self:

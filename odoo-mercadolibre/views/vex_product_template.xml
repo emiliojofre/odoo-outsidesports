@@ -128,6 +128,16 @@
                                 </field>
                             </group>
                         </page>
+                        <page name="questions" string="Questions">
+                            <field name="meli_question_ids">
+                                <tree editable="bottom">
+                                    <field name="meli_id" string="Meli"/>
+                                    <field name="meli_from_nickname" string="Meli From Nickname"/>
+                                    <field name="meli_text" string="Meli Text"/>
+                                    <field name="meli_status" string="Meli Status"/>
+                                </tree>
+                            </field>
+                        </page>
                         <page string="MELI Score">
                             <field name="performance_score_ids" nolabel="1">
                                 <tree editable="bottom">
