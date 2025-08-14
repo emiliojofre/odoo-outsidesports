@@ -210,6 +210,9 @@ class ProductTemplate(models.Model):
                     'evolution_data_ids': list_history,
                 })
 
+    def action_publish_product(self):
+        pass
+
     def action_get_details(self):
         """
         Fetches product details from MercadoLibre API and updates the product template.
