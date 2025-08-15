@@ -1871,22 +1871,22 @@ class VexExportWizard(models.TransientModel):
         ('product', 'Product')
     ], string='Action', required=True)
 
-    PRODUCT_EXPORT_DOMAIN = [
-        ('meli_product_id', '=', False),
-        ('meli_title', '!=', False),
-        ('meli_category_vex', '!=', False),
-        ('meli_currency_id', '!=', False),
-        ('meli_available_quantity', '!=', False),
-        ('meli_buying_mode', '!=', False),
-        ('meli_condition', '!=', False),
-        ('meli_listing_type', '!=', False),
-        ('meli_base_price', '!=', False)
-    ]
+    # PRODUCT_EXPORT_DOMAIN = [
+    #     ('meli_product_id', '=', False),
+    #     ('meli_title', '!=', False),
+    #     ('meli_category_vex', '!=', False),
+    #     ('meli_currency_id', '!=', False),
+    #     ('meli_available_quantity', '!=', False),
+    #     ('meli_buying_mode', '!=', False),
+    #     ('meli_condition', '!=', False),
+    #     ('meli_listing_type', '!=', False),
+    #     ('meli_base_price', '!=', False)
+    # ]
 
     product_no_meli_ids = fields.Many2many(
         'product.template',
         string="Productos sin ML ID",
-        domain=PRODUCT_EXPORT_DOMAIN
+        domain="[('meli_product_id', '=', False)]"
     )
 
     def action_export(self):
