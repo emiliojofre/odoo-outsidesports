@@ -1,8 +1,6 @@
-import requests
-import UserWarning
-
-from odoo.exceptions import UserError
 from odoo import models, fields, api
+from odoo.exceptions import UserError
+import requests
 
 class VexPublishProductWizard(models.TransientModel):
     _name = 'vex.publish.product.wizard'
