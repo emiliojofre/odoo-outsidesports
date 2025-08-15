@@ -91,7 +91,7 @@
                         <field name="vex_actions"/>
                         <notebook>
                             <page string="Productos sin ML ID">
-                                <field name="product_no_meli_ids" widget="many2many_tree" context="{'show_required_fields': True}">
+                                <field name="product_no_meli_ids" widget="many2many_tree" context="{'show_required_fields': True}" style="height:400px;">
                                     <tree editable="bottom">
                                         <field name="name"/>
                                         <field name="meli_title"/>
