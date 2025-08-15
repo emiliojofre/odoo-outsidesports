@@ -5,32 +5,20 @@
         <field name="arch" type="xml">
             <form string="Publicar Producto en MercadoLibre">
                 <group>
-                    <field name="instance_id" />
+                    <field name="instance_id"/>
                     <field name="name" readonly="1"/>
                     <field name="image_1920" widget="image" readonly="1"/>
                 </group>
-                <group string="General Info">
-                    <group>
-                        <field name="meli_product_id"/>
-                        <field name="meli_site_id"/>
-                        <field name="meli_status"/>
-                        <field name="meli_sub_status"/>
-                        <field name="meli_listing_type"/>
-                        <field name="meli_condition"/>
-                        <field name="meli_title"/>
-                        <field name="meli_permalink"/>
-                        <field name="meli_base_price" />
-                    </group>
-                    <group>
-                        <field name="meli_thumbnail"/>
-                        <field name="meli_domain_id"/>
-                        <field name="meli_catalog_product_id"/>
-                        <field name="meli_category_vex"/>
-                        <field name="meli_inventory_id"/>
-                        <field name="meli_tag_ids" widget="many2many_tags"/>
-                        <field name="meli_channel_ids" widget="many2many_tags"/>
-                        <field name="meli_health"/>
-                    </group>
+                <group string="Datos requeridos ML">
+                    <field name="meli_title"/>
+                    <field name="meli_category_vex"/>
+                    <field name="meli_price"/>
+                    <field name="meli_currency_id"/>
+                    <field name="meli_available_quantity"/>
+                    <field name="meli_buying_mode"/>
+                    <field name="meli_condition"/>
+                    <field name="meli_listing_type"/>
+                    <field name="meli_base_price" />
                 </group>
                 <footer>
                     <button string="Publicar" type="object" name="action_publish" class="btn-primary"/>

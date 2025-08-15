@@ -8,23 +8,15 @@ class VexPublishProductWizard(models.TransientModel):
     name = fields.Char(string="Nombre")
     image_1920 = fields.Binary(string="Imagen")
 
-    # Campos a editar (los mismos que en General Info)
-    meli_product_id = fields.Char(string="ML Product ID", required=True)
-    meli_site_id = fields.Char(string="ML Site ID", required=True)
-    meli_status = fields.Char(string="ML Status", required=True)
-    meli_sub_status = fields.Char(string="Substatus")
-    meli_listing_type = fields.Char(string="Listing Type", required=True)
-    meli_condition = fields.Char(string="Condition", required=True)
+    # Solo los campos requeridos por la API
     meli_title = fields.Char(string="ML Title", required=True)
-    meli_permalink = fields.Char(string="Product URL")
-    meli_thumbnail = fields.Char(string="Thumbnail URL")
-    meli_domain_id = fields.Char(string="Domain ID")
-    meli_catalog_product_id = fields.Char(string="Catalog Product ID")
     meli_category_vex = fields.Char(string="ML Category ID", required=True)
-    meli_inventory_id = fields.Char(string="Inventory ID")
-    meli_tag_ids = fields.Many2many('product.meli.tag', string="ML Tags")
-    meli_channel_ids = fields.Many2many('product.meli.channel', string="ML Channels")
-    meli_health = fields.Float(string="Health Score")
+    meli_price = fields.Float(string="Price", required=True)
+    meli_currency_id = fields.Char(string="Currency", required=True)
+    meli_available_quantity = fields.Integer(string="Available Quantity", required=True)
+    meli_buying_mode = fields.Char(string="Buying Mode", required=True)
+    meli_condition = fields.Char(string="Condition", required=True)
+    meli_listing_type = fields.Char(string="Listing Type", required=True)
     instance_id = fields.Many2one('vex.instance', string="Instancia", required=True)
     meli_base_price = fields.Float(string="Base Price", help="Original base price")
 
@@ -36,10 +28,9 @@ class VexPublishProductWizard(models.TransientModel):
         res['name'] = product.name
         res['image_1920'] = product.image_1920
         for field in [
-            'meli_product_id', 'meli_site_id', 'meli_status', 'meli_sub_status', 'meli_listing_type',
-            'meli_condition', 'meli_title', 'meli_permalink', 'meli_thumbnail', 'meli_domain_id',
-            'meli_catalog_product_id', 'meli_category_vex', 'meli_inventory_id', 'meli_tag_ids',
-            'meli_channel_ids', 'meli_health', 'meli_base_price'
+            'meli_title', 'meli_category_vex', 'meli_price', 'meli_currency_id',
+            'meli_available_quantity', 'meli_buying_mode', 'meli_condition', 'meli_listing_type',
+            'meli_base_price',
         ]:
             res[field] = getattr(product, field)
         instance = self.env['vex.instance'].search([('name', 'ilike', 'odoo')], limit=1)
@@ -50,22 +41,14 @@ class VexPublishProductWizard(models.TransientModel):
     def action_publish(self):
         self.ensure_one()
         vals = {
-            'meli_product_id': self.meli_product_id,
-            'meli_site_id': self.meli_site_id,
-            'meli_status': self.meli_status,
-            'meli_sub_status': self.meli_sub_status,
-            'meli_listing_type': self.meli_listing_type,
-            'meli_condition': self.meli_condition,
             'meli_title': self.meli_title,
-            'meli_permalink': self.meli_permalink,
-            'meli_thumbnail': self.meli_thumbnail,
-            'meli_domain_id': self.meli_domain_id,
-            'meli_catalog_product_id': self.meli_catalog_product_id,
             'meli_category_vex': self.meli_category_vex,
-            'meli_inventory_id': self.meli_inventory_id,
-            'meli_tag_ids': [(6, 0, self.meli_tag_ids.ids)],
-            'meli_channel_ids': [(6, 0, self.meli_channel_ids.ids)],
-            'meli_health': self.meli_health,
+            'meli_price': self.meli_price,
+            'meli_currency_id': self.meli_currency_id,
+            'meli_available_quantity': self.meli_available_quantity,
+            'meli_buying_mode': self.meli_buying_mode,
+            'meli_condition': self.meli_condition,
+            'meli_listing_type': self.meli_listing_type,
             'meli_base_price': self.meli_base_price
         }
         self.product_id.write(vals)
