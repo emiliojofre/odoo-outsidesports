@@ -89,6 +89,7 @@
                     <group>
                         <field name="vex_instance_id" readonly="1"/>
                         <field name="vex_actions"/>
+                        <field name="product_no_meli_ids" widget="many2many_list"/>
                     </group>
                 </sheet>
                 <footer>
