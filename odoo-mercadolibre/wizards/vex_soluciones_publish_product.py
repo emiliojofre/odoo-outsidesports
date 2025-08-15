@@ -100,6 +100,9 @@ class VexPublishProductWizard(models.TransientModel):
                         tag = tag_model.create({'name': tag_name})
                     tag_ids.append(tag.id)
                 vals['meli_tag_ids'] = [(6, 0, tag_ids)]
+            
+            if data.get('id'):
+                self.product_id.action_get_details()
         else:
             raise UserError(f"Error al crear el producto en MercadoLibre: {response.text}")
 
