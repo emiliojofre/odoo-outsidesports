@@ -72,6 +72,10 @@ class VexPublishProductWizard(models.TransientModel):
             "listing_type_id": self.meli_listing_type,
             'price': self.meli_base_price,
         }
+
+        if not self.meli_category_vex or not self.meli_category_vex.startswith('ML'):
+            raise UserError("Debes ingresar un ID de categoría válido de MercadoLibre, por ejemplo: MLA1055.")
+
         response = requests.post(url, headers=headers, json=payload)
         if response.status_code == 201:
             data = response.json()
@@ -103,6 +107,10 @@ class VexPublishProductWizard(models.TransientModel):
             
             if data.get('id'):
                 self.product_id.action_get_details()
+
+            if tag_ids:
+                self.product_id.write({'meli_tag_ids': [(6, 0, tag_ids)]})
+                
         else:
             raise UserError(f"Error al crear el producto en MercadoLibre: {response.text}")
 
