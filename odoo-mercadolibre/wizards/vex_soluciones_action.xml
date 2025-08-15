@@ -87,25 +87,22 @@
             <form string="Exportar datos a MercadoLibre">
                 <sheet>
                     <group>
-                        <group>
-                            <field name="vex_instance_id" readonly="1"/>
-                            <field name="vex_actions"/>
-                        </group>
-                        <group string="Productos sin ML ID">
-                            <field name="product_no_meli_ids" context="{'show_required_fields': True}">
-                                <tree editable="bottom">
-                                    <field name="name"/>
-                                    <field name="meli_title"/>
-                                    <field name="meli_category_vex"/>
-                                    <field name="meli_currency_id"/>
-                                    <field name="meli_available_quantity"/>
-                                    <field name="meli_buying_mode"/>
-                                    <field name="meli_condition"/>
-                                    <field name="meli_listing_type"/>
-                                    <field name="meli_base_price"/>
-                                </tree>
-                            </field>
-                        </group>
+                        <field name="vex_instance_id" readonly="1"/>
+                        <field name="vex_actions"/>
+                        <separator string="Órdenes sin ML ID"/>
+                        <field name="product_no_meli_ids" context="{'show_required_fields': True}">
+                            <tree editable="bottom">
+                                <field name="name"/>
+                                <field name="meli_title"/>
+                                <field name="meli_category_vex"/>
+                                <field name="meli_currency_id"/>
+                                <field name="meli_available_quantity"/>
+                                <field name="meli_buying_mode"/>
+                                <field name="meli_condition"/>
+                                <field name="meli_listing_type"/>
+                                <field name="meli_base_price"/>
+                            </tree>
+                        </field>
                     </group>
                 </sheet>
                 <footer>
