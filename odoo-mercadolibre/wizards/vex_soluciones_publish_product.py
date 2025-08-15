@@ -1,3 +1,7 @@
+import requests
+import UserWarning
+
+from odoo.exceptions import UserError
 from odoo import models, fields, api
 
 class VexPublishProductWizard(models.TransientModel):
@@ -11,7 +15,6 @@ class VexPublishProductWizard(models.TransientModel):
     # Solo los campos requeridos por la API
     meli_title = fields.Char(string="ML Title", required=True)
     meli_category_vex = fields.Char(string="ML Category ID", required=True)
-    meli_price = fields.Float(string="Price", required=True)
     meli_currency_id = fields.Char(string="Currency", required=True)
     meli_available_quantity = fields.Integer(string="Available Quantity", required=True)
     meli_buying_mode = fields.Char(string="Buying Mode", required=True)
@@ -33,7 +36,7 @@ class VexPublishProductWizard(models.TransientModel):
             'meli_base_price',
         ]:
             res[field] = getattr(product, field)
-        instance = self.env['vex.instance'].search([('name', 'ilike', 'odoo')], limit=1)
+        instance = self.env['vex.instance'].search([('name', 'ilike', 'RIFCIF ODOO')], limit=1)
         if instance:
             res['instance_id'] = instance.id
         return res
@@ -43,7 +46,6 @@ class VexPublishProductWizard(models.TransientModel):
         vals = {
             'meli_title': self.meli_title,
             'meli_category_vex': self.meli_category_vex,
-            'meli_price': self.meli_price,
             'meli_currency_id': self.meli_currency_id,
             'meli_available_quantity': self.meli_available_quantity,
             'meli_buying_mode': self.meli_buying_mode,
@@ -52,19 +54,56 @@ class VexPublishProductWizard(models.TransientModel):
             'meli_base_price': self.meli_base_price
         }
         self.product_id.write(vals)
+
+        instance = self.instance_id
+        access_token = instance.meli_access_token
+
+        url = "https://api.mercadolibre.com/items"
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json"
+        }
+
+        payload = {
+            "title": self.meli_title,
+            "category_id": self.meli_category_vex,
+            "currency_id": self.meli_currency_id,
+            "available_quantity": self.meli_available_quantity,
+            "buying_mode": self.meli_buying_mode,
+            "condition": self.meli_condition,
+            "listing_type_id": self.meli_listing_type,
+            'price': self.meli_base_price,
+        }
+        response = requests.post(url, headers=headers, json=payload)
+        if response.status_code == 201:
+            data = response.json()
+            self.product_id.write({
+                'meli_product_id': data.get('id'),
+                'meli_site_id': data.get('site_id'),
+                'meli_status': data.get('status'),
+                'meli_sub_status': ','.join(data.get('sub_status', [])) if data.get('sub_status') else False,
+                'meli_listing_type': data.get('listing_type_id'),
+                'meli_condition': data.get('condition'),
+                'meli_title': data.get('title'),
+                'meli_permalink': data.get('permalink'),
+                'meli_thumbnail': data.get('thumbnail'),
+                'meli_domain_id': data.get('domain_id'),
+                'meli_catalog_product_id': data.get('catalog_product_id'),
+                'meli_category_vex': data.get('category_id'),
+                'meli_inventory_id': data.get('inventory_id'),
+                'meli_health': data.get('health'),
+            })
+            tag_ids = []
+            if data.get('tags'):
+                tag_model = self.env['product.meli.tag']
+                for tag_name in data['tags']:
+                    tag = tag_model.search([('name', '=', tag_name)], limit=1)
+                    if not tag:
+                        tag = tag_model.create({'name': tag_name})
+                    tag_ids.append(tag.id)
+                vals['meli_tag_ids'] = [(6, 0, tag_ids)]
+        else:
+            raise UserError(f"Error al crear el producto en MercadoLibre: {response.text}")
+
         return {'type': 'ir.actions.act_window_close'}
     
-    def process_meli_response(self, json_response):
-        """Procesa la respuesta de MercadoLibre al crear producto."""
-        self.ensure_one()
-        # Solo si no tiene meli_product_id
-        if not self.meli_product_id:
-            meli_id = json_response.get('id')
-            if meli_id:
-                self.meli_product_id = meli_id
-                self.meli_permalink = json_response.get('permalink')
-                # self.meli_title = json_response.get('title')
-                # etc.
-
-                # Ejecutar automáticamente la sincronización de detalles
-                self.action_get_details()

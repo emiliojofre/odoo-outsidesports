@@ -12,7 +12,6 @@
                 <group string="Datos requeridos ML">
                     <field name="meli_title"/>
                     <field name="meli_category_vex"/>
-                    <field name="meli_price"/>
                     <field name="meli_currency_id"/>
                     <field name="meli_available_quantity"/>
                     <field name="meli_buying_mode"/>
