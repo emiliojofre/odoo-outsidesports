@@ -29,7 +29,7 @@ class VexPublishProductWizard(models.TransientModel):
         res['name'] = product.name
         res['image_1920'] = product.image_1920
         for field in [
-            'meli_title', 'meli_category_vex', 'meli_price', 'meli_currency_id',
+            'meli_title', 'meli_category_vex', 'meli_currency_id',
             'meli_available_quantity', 'meli_buying_mode', 'meli_condition', 'meli_listing_type',
             'meli_base_price',
         ]:
