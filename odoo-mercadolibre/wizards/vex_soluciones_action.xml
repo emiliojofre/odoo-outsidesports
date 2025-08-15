@@ -90,7 +90,7 @@
                         <field name="vex_instance_id" readonly="1"/>
                         <field name="vex_actions"/>
                         <separator string="Órdenes sin ML ID"/>
-                        <field name="product_no_meli_ids" nolabel="1">
+                        <field name="product_no_meli_ids" nolabel="1" context="{'show_required_fields': True}">
                             <tree editable="bottom">
                                 <field name="name"/>
                                 <field name="meli_title"/>
