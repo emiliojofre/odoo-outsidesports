@@ -90,9 +90,9 @@
                         <field name="vex_instance_id" readonly="1"/>
                         <field name="vex_actions"/>
                     </group>
-                    <notebook>
+                    <notebook attrs="{'invisible': [('vex_actions', '!=', 'product')]}">
                         <page string="ÓRDENES SIN ML ID">
-                            <field name="product_no_meli_ids" attrs="{'invisible': [('vex_actions', '=', 'product')]}" widget="many2many_list" readonly="1" nolabel="1">
+                            <field name="product_no_meli_ids" widget="many2many_list" readonly="1" nolabel="1">
                                 <tree>
                                     <field name="name" string="Nombre"/>
                                     <field name="meli_title" string="ML Título"/>
