@@ -64,6 +64,15 @@ class VexPublishProductWizard(models.TransientModel):
             "Content-Type": "application/json"
         }
 
+        pictures = []
+        for img in self.product_id.meli_image_ids:
+            if img.secure_url:
+                pictures.append({"source": img.secure_url})
+
+        # Si no hay imágenes, puedes lanzar un error o dejar el campo vacío según tu lógica
+        if not pictures:
+            raise UserError("Debes agregar al menos una imagen con URL segura (https) para publicar en MercadoLibre.")
+
         # Datos a enviar a la creacion de producto
         payload = {
             "title": self.meli_title,
@@ -73,9 +82,8 @@ class VexPublishProductWizard(models.TransientModel):
             "buying_mode": self.meli_buying_mode,
             "condition": self.meli_condition,
             "listing_type_id": self.meli_listing_type,
-            "pictures": [
-                {"source": "https://metroio.vtexassets.com/arquivos/ids/381658/LAPICERO-BP1RT-AZUL-X6-1-172290389.jpg?v=638180593663000000"}
-            ],
+            "price": self.meli_base_price,
+            "pictures": pictures,
             "attributes": [
                 {"id": "BRAND", "value_name": "Marca"},
                 {"id": "MODEL", "value_name": "Modelo"}
