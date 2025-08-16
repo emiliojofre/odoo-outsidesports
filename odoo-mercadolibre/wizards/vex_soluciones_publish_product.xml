@@ -20,7 +20,7 @@
                     <field name="meli_base_price" />
                 </group>
                 <group string="Imágenes MercadoLibre">
-                    <field name="meli_image_ids" nolabel="1" readonly="1">
+                    <field name="meli_pictures_ids" nolabel="1" readonly="1">
                         <tree>
                             <field name="secure_url"/>
                         </tree>
