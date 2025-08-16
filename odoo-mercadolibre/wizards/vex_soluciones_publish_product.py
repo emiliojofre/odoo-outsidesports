@@ -61,7 +61,7 @@ class VexPublishProductWizard(models.TransientModel):
             'meli_buying_mode': self.meli_buying_mode,
             'meli_condition': self.meli_condition,
             'meli_listing_type': self.meli_listing_type,
-            'meli_base_price': self.meli_base_price
+            'meli_base_price': self.meli_base_price,
         }
         self.product_id.write(vals)
 
