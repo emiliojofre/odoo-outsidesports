@@ -64,8 +64,29 @@ class VexPublishProductWizard(models.TransientModel):
             "Content-Type": "application/json"
         }
 
+        # Imágenes desde el producto
+        pictures = [
+            {"source": img.secure_url}
+            for img in self.product_id.meli_image_ids if img.secure_url
+        ]
+        if not pictures:
+            raise UserError("Debes agregar al menos una imagen con URL segura (https) para publicar en MercadoLibre.")
+
+        # Atributos desde el producto
+        attributes = [
+            {"id": attr.meli_attribute_id, "value_name": attr.meli_value_name}
+            for attr in self.product_id.meli_attribute_ids
+            if attr.meli_attribute_id and attr.meli_value_name
+        ]
+
+        # Validación de categoría
+        if not self.meli_category_vex or not self.meli_category_vex.startswith('ML'):
+            raise UserError("Debes ingresar un ID de categoría válido de MercadoLibre, por ejemplo: MLA1055.")
+
+        # Precio entero si es CLP
         price = int(self.meli_base_price) if self.meli_currency_id == 'CLP' else self.meli_base_price
-        # Datos a enviar a la creacion de producto
+
+        # Payload final
         payload = {
             "title": self.meli_title,
             "category_id": self.meli_category_vex,
@@ -75,14 +96,8 @@ class VexPublishProductWizard(models.TransientModel):
             "condition": self.meli_condition,
             "listing_type_id": self.meli_listing_type,
             "price": price,
-            "pictures": [
-                {"source": "https://metroio.vtexassets.com/arquivos/ids/381658/LAPICERO-BP1RT-AZUL-X6-1-172290389.jpg?v=638180593663000000"}
-            ],
-            "attributes": [
-                {"id": "BRAND", "value_name": "Marca"},
-                {"id": "MODEL", "value_name": "Modelo"},
-                {"id": "INCLUDES_ASSEMBLY_MANUAL", "value_name": "Sí"}
-            ]
+            "pictures": pictures,
+            "attributes": attributes
         }
 
         if not self.meli_category_vex or not self.meli_category_vex.startswith('ML'):
