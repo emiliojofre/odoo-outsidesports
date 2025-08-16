@@ -24,6 +24,7 @@ class VexPublishProductWizard(models.TransientModel):
     @api.model
     def default_get(self, fields_list):
         res = super().default_get(fields_list)
+        # Campos a agarrar del modelo de product.template para el wizard
         product = self.env['product.template'].browse(self.env.context.get('active_id'))
         res['product_id'] = product.id
         res['name'] = product.name
@@ -41,6 +42,7 @@ class VexPublishProductWizard(models.TransientModel):
 
     def action_publish(self):
         self.ensure_one()
+        # Campos a llenar y actualizarlo en producto.template
         vals = {
             'meli_title': self.meli_title,
             'meli_category_vex': self.meli_category_vex,
@@ -62,6 +64,7 @@ class VexPublishProductWizard(models.TransientModel):
             "Content-Type": "application/json"
         }
 
+        # Datos a enviar a la creacion de producto
         payload = {
             "title": self.meli_title,
             "category_id": self.meli_category_vex,
@@ -70,7 +73,13 @@ class VexPublishProductWizard(models.TransientModel):
             "buying_mode": self.meli_buying_mode,
             "condition": self.meli_condition,
             "listing_type_id": self.meli_listing_type,
-            'price': self.meli_base_price,
+            "pictures": [
+                {"source": "https://metroio.vtexassets.com/arquivos/ids/381658/LAPICERO-BP1RT-AZUL-X6-1-172290389.jpg?v=638180593663000000"}
+            ],
+            "attributes": [
+                {"id": "BRAND", "value_name": "Marca"},
+                {"id": "MODEL", "value_name": "Modelo"}
+            ]
         }
 
         if not self.meli_category_vex or not self.meli_category_vex.startswith('ML'):
@@ -79,6 +88,7 @@ class VexPublishProductWizard(models.TransientModel):
         response = requests.post(url, headers=headers, json=payload)
         if response.status_code == 201:
             data = response.json()
+            # Campos a actuliazar con la respuesta de ML
             self.product_id.write({
                 'meli_product_id': data.get('id'),
                 'meli_site_id': data.get('site_id'),
