@@ -24,13 +24,11 @@ class VexPublishProductWizard(models.TransientModel):
         related='product_id.meli_pictures_ids',
         comodel_name='product.template.meli.image',
         string='ML Pictures',
-        readonly=True
     )
     meli_attribute_ids = fields.One2many(
         related='product_id.meli_attribute_ids',
         comodel_name='product.template.meli.attribute',
         string='Atributos MercadoLibre',
-        readonly=True
     )
 
     @api.model
