@@ -21,14 +21,18 @@ class VexPublishProductWizard(models.TransientModel):
     instance_id = fields.Many2one('vex.instance', string="Instancia", required=True)
     meli_base_price = fields.Float(string="Base Price", help="Original base price")
     meli_pictures_ids = fields.One2many(
-        related='product_id.meli_pictures_ids',
         comodel_name='product.template.meli.image',
+        inverse_name='product_tmpl_id',
+        related='product_id.meli_pictures_ids',
         string='ML Pictures',
+        readonly=True
     )
     meli_attribute_ids = fields.One2many(
-        related='product_id.meli_attribute_ids',
         comodel_name='product.template.meli.attribute',
+        inverse_name='product_tmpl_id',
+        related='product_id.meli_attribute_ids',
         string='Atributos MercadoLibre',
+        readonly=True
     )
 
     @api.model
