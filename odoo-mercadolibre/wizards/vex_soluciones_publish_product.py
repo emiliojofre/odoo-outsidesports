@@ -64,6 +64,7 @@ class VexPublishProductWizard(models.TransientModel):
             "Content-Type": "application/json"
         }
 
+        price = int(self.meli_base_price) if self.meli_currency_id == 'CLP' else self.meli_base_price
         # Datos a enviar a la creacion de producto
         payload = {
             "title": self.meli_title,
@@ -73,13 +74,14 @@ class VexPublishProductWizard(models.TransientModel):
             "buying_mode": self.meli_buying_mode,
             "condition": self.meli_condition,
             "listing_type_id": self.meli_listing_type,
-            "price": self.meli_base_price,
+            "price": price,
             "pictures": [
                 {"source": "https://metroio.vtexassets.com/arquivos/ids/381658/LAPICERO-BP1RT-AZUL-X6-1-172290389.jpg?v=638180593663000000"}
             ],
             "attributes": [
                 {"id": "BRAND", "value_name": "Marca"},
-                {"id": "MODEL", "value_name": "Modelo"}
+                {"id": "MODEL", "value_name": "Modelo"},
+                {"id": "INCLUDES_ASSEMBLY_MANUAL", "value_name": "Sí"}
             ]
         }
 
