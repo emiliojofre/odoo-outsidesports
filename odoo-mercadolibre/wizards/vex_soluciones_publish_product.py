@@ -21,15 +21,20 @@ class VexPublishProductWizard(models.TransientModel):
     instance_id = fields.Many2one('vex.instance', string="Instancia", required=True)
     meli_base_price = fields.Float(string="Base Price", help="Original base price")
     meli_pictures_ids = fields.One2many(
-        'vex.publish.product.wizard.image', 'wizard_id', string='ML Pictures'
+        'product.template.meli.image',
+        'product_tmpl_id',
+        string='ML Pictures'
     )
     meli_attribute_ids = fields.One2many(
-        'vex.publish.product.wizard.attribute', 'wizard_id', string='ML Attributes'
+        'product.template.meli.attribute',
+        'product_tmpl_id',
+        string='ML Attributes'
     )
 
     @api.model
     def default_get(self, fields_list):
         res = super().default_get(fields_list)
+        # Campos a agarrar del modelo de product.template para el wizard
         product = self.env['product.template'].browse(self.env.context.get('active_id'))
         res['product_id'] = product.id
         res['name'] = product.name
@@ -40,25 +45,11 @@ class VexPublishProductWizard(models.TransientModel):
             'meli_base_price',
         ]:
             res[field] = getattr(product, field)
-        # Copiar imágenes
-        res['meli_pictures_ids'] = [
-            (0, 0, {
-                'secure_url': img.secure_url,
-                'image_url': img.image_url,
-            }) for img in product.meli_pictures_ids
-        ]
-        # Copiar atributos
-        res['meli_attribute_ids'] = [
-            (0, 0, {
-                'meli_attribute_name': attr.meli_attribute_name,
-                'meli_value_name': attr.meli_value_name,
-            }) for attr in product.meli_attribute_ids
-        ]
         instance = self.env['vex.instance'].search([('name', 'ilike', 'RIFCIF ODOO')], limit=1)
         if instance:
             res['instance_id'] = instance.id
         return res
-    
+
     def action_publish(self):
         self.ensure_one()
         # Campos a llenar y actualizarlo en producto.template
