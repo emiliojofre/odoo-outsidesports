@@ -166,3 +166,4 @@ class VexPublishProductWizard(models.TransientModel):
 
         return {'type': 'ir.actions.act_window_close'}
     
+    
