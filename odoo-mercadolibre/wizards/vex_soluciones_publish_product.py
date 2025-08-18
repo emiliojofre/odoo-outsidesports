@@ -43,7 +43,7 @@ class VexPublishProductWizard(models.TransientModel):
         # Copiar imágenes al wizard
         res['meli_pictures_ids'] = [
             (0, 0, {'secure_url': img.secure_url})
-            for img in product.meli_pictures_ids
+            for img in self.product_id.meli_pictures_ids
         ]
 
         # Copiar atributos al wizard
