@@ -22,6 +22,7 @@
                     <field name="meli_warranty_time" />
                     <field name="meli_brand_name" />
                     <field name="meli_manufacturer_name" />
+                    <field name="meli_gtin" />
                 </group>
                 <group string="Imágenes MercadoLibre 1">
                     <field name="meli_pictures_ids">

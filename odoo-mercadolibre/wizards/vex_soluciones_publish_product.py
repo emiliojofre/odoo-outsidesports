@@ -26,6 +26,7 @@ class VexPublishProductWizard(models.TransientModel):
     meli_warranty_time = fields.Char(string="Tiempo de Garantía")
     meli_brand_name = fields.Char(string="Marca")
     meli_manufacturer_name = fields.Char(string="Fabricante")
+    meli_gtin = fields.Char(string="GTIN")
 
 
     @api.model
@@ -103,7 +104,7 @@ class VexPublishProductWizard(models.TransientModel):
             {"id": attr.meli_attribute_id, "value_name": attr.meli_value_name}
             for attr in self.product_id.meli_attribute_ids
             if attr.meli_attribute_id and attr.meli_value_name
-        ]
+        ]   
         
         # Agrega la marca y el fabricante si están llenos
         if self.meli_brand_name:
@@ -123,6 +124,8 @@ class VexPublishProductWizard(models.TransientModel):
                 "id": "WARRANTY_TIME",
                 "value_name": self.meli_warranty_time
             })
+
+        attributes.append({"id": "GTIN", "value_name": self.meli_gtin})
 
         # Validación de categoría
         if not self.meli_category_vex or not self.meli_category_vex.startswith('ML'):
