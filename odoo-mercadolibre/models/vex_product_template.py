@@ -969,6 +969,7 @@ class ProductTemplateMeliImage(models.Model):
     product_tmpl_id = fields.Many2one('product.template', ondelete="cascade")
     url = fields.Char(string="Image URL", help="Original image URL from MercadoLibre")
     secure_url = fields.Char(string="Secure Image URL", help="HTTPS secure image URL from MercadoLibre")
+    wizard_id = fields.Many2one('vex.publish.product.wizard', ondelete="cascade")
 
 class ProductTemplateMeliVariation(models.Model):
     _name = 'product.template.meli.variation'
@@ -990,6 +991,7 @@ class ProductTemplateMeliAttribute(models.Model):
     meli_attribute_name = fields.Char(string="Attribute Name", help="Name of the attribute")
     meli_value_id = fields.Char(string="Value ID", help="Identifier of the attribute value")
     meli_value_name = fields.Char(string="Value Name", help="Name of the attribute value")
+    wizard_id = fields.Many2one('vex.publish.product.wizard', ondelete="cascade")
 
 
 class ProductMeliTag(models.Model):
