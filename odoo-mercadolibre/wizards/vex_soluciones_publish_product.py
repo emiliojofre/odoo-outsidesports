@@ -89,7 +89,7 @@ class VexPublishProductWizard(models.TransientModel):
         # Imágenes desde el producto
         pictures = [
             {"source": img.secure_url}
-            for img in self.product_id.meli_image_ids if img.secure_url
+            for img in self.product_id.meli_pictures_ids if img.secure_url
         ]
         if not pictures:
             raise UserError("Debes agregar al menos una imagen con URL segura (https) para publicar en MercadoLibre.")
