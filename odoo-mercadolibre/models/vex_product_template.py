@@ -1021,9 +1021,10 @@ class VexPublishProductWizardImage(models.TransientModel):
 
 class VexPublishProductWizardAttribute(models.TransientModel):
     _name = 'vex.publish.product.wizard.attribute'
-    _description = 'MercadoLibre Product Attributes Wizard'
-
-    wizard_id = fields.Many2one('vex.publish.product.wizard', ondelete="cascade")
-    # Copia los campos que necesitas del modelo original
+    _description = 'Atributo temporal para el wizard de publicación'
+    
+    wizard_id = fields.Many2one('vex.publish.product.wizard', string='Wizard')
+    meli_attribute_id = fields.Char(string="Attribute ID")
     meli_attribute_name = fields.Char(string="Attribute Name")
+    meli_value_id = fields.Char(string="Value ID")
     meli_value_name = fields.Char(string="Value Name")
