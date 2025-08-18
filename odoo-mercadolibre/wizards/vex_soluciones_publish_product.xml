@@ -10,19 +10,24 @@
                     <field name="image_1920" widget="image" readonly="1"/>
                 </group>
                 <group string="Datos requeridos ML">
-                    <field name="meli_title"/>
-                    <field name="meli_category_vex"/>
-                    <field name="meli_currency_id"/>
-                    <field name="meli_available_quantity"/>
-                    <field name="meli_buying_mode"/>
-                    <field name="meli_condition"/>
-                    <field name="meli_listing_type"/>
-                    <field name="meli_base_price" />
-                    <field name="meli_warranty_type" />
-                    <field name="meli_warranty_time" />
-                    <field name="meli_brand_name" />
-                    <field name="meli_manufacturer_name" />
-                    <field name="meli_gtin" />
+                    <group>
+                        <field name="meli_title"/>
+                        <field name="meli_category_vex"/>
+                        <field name="meli_currency_id"/>
+                        <field name="meli_available_quantity"/>
+                        <field name="meli_buying_mode"/>
+                        <field name="meli_condition"/>
+                    </group>
+                    <group>
+                        <field name="meli_listing_type"/>
+                        <field name="meli_base_price" />
+                        <field name="meli_warranty_type" />
+                        <field name="meli_warranty_time" />
+                        <field name="meli_brand_name" />
+                        <field name="meli_manufacturer_name" />
+                        <field name="meli_gtin" />
+                        <field name="meli_model_name" />
+                    </group>
                 </group>
                 <group string="Imágenes MercadoLibre 1">
                     <field name="meli_pictures_ids">

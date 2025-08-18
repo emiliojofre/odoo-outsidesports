@@ -27,6 +27,7 @@ class VexPublishProductWizard(models.TransientModel):
     meli_brand_name = fields.Char(string="Marca")
     meli_manufacturer_name = fields.Char(string="Fabricante")
     meli_gtin = fields.Char(string="GTIN")
+    meli_model_name = fields.Char(string="Modelo")
 
 
     @api.model
@@ -111,6 +112,10 @@ class VexPublishProductWizard(models.TransientModel):
             attributes.append({"id": "BRAND", "value_name": self.meli_brand_name})
         if self.meli_manufacturer_name:
             attributes.append({"id": "MANUFACTURER", "value_name": self.meli_manufacturer_name})
+        if self.meli_gtin:
+            attributes.append({"id": "GTIN", "value_name": self.meli_gtin})
+        if self.meli_model_name:
+            attributes.append({"id": "MODEL", "value_name": self.meli_model_name})
 
         # Términos de venta
         sale_terms = []
