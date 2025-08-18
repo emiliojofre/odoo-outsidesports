@@ -19,16 +19,16 @@
                     <field name="meli_listing_type"/>
                     <field name="meli_base_price" />
                 </group>
-                <group string="Imágenes MercadoLibre">
+                <group string="Imágenes MercadoLibre 1">
                     <field name="meli_pictures_ids">
                         <tree>
                             <field name="secure_url"/>
                         </tree>
                     </field>
                 </group>
-                <group string="Atributos MercadoLibre">
+                <group string="Atributos MercadoLibre 2">
                     <field name="meli_attribute_ids">
-                        <tree editable="bottom">
+                        <tree>
                             <field name="meli_attribute_name"/>
                             <field name="meli_value_name"/>
                         </tree>

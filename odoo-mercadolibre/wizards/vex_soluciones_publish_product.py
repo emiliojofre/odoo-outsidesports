@@ -25,7 +25,6 @@ class VexPublishProductWizard(models.TransientModel):
         'product_tmpl_id',
         string='ML Pictures',
         compute='_compute_meli_pictures_ids',
-        readonly=True,
         store=False
     )
 
@@ -34,7 +33,6 @@ class VexPublishProductWizard(models.TransientModel):
         'product_tmpl_id',
         string='ML Attributes',
         compute='_compute_meli_attribute_ids',
-        readonly=True,
         store=False
     )
 
