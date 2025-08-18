@@ -18,6 +18,10 @@
                     <field name="meli_condition"/>
                     <field name="meli_listing_type"/>
                     <field name="meli_base_price" />
+                    <field name="meli_warranty_type" />
+                    <field name="meli_warranty_time" />
+                    <field name="meli_brand_name" />
+                    <field name="meli_manufacturer_name" />
                 </group>
                 <group string="Imágenes MercadoLibre 1">
                     <field name="meli_pictures_ids">

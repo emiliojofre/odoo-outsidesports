@@ -22,6 +22,10 @@ class VexPublishProductWizard(models.TransientModel):
     meli_base_price = fields.Float(string="Base Price", help="Original base price")
     meli_pictures_ids = fields.One2many('vex.publish.product.wizard.image', 'wizard_id', string="ML Pictures")
     meli_attribute_ids = fields.One2many('vex.publish.product.wizard.attribute', 'wizard_id', string="ML Attributes")
+    meli_warranty_type = fields.Char(string="Tipo de Garantía (ID)")
+    meli_warranty_time = fields.Char(string="Tiempo de Garantía")
+    meli_brand_name = fields.Char(string="Marca")
+    meli_manufacturer_name = fields.Char(string="Fabricante")
 
 
     @api.model
@@ -94,12 +98,31 @@ class VexPublishProductWizard(models.TransientModel):
         if not pictures:
             raise UserError("Debes agregar al menos una imagen con URL segura (https) para publicar en MercadoLibre.")
 
-        # Atributos desde el producto
+        # Atributos desde el producto (combina los One2many con los nuevos campos de marca y fabricante)
         attributes = [
             {"id": attr.meli_attribute_id, "value_name": attr.meli_value_name}
             for attr in self.product_id.meli_attribute_ids
             if attr.meli_attribute_id and attr.meli_value_name
         ]
+        
+        # Agrega la marca y el fabricante si están llenos
+        if self.meli_brand_name:
+            attributes.append({"id": "BRAND", "value_name": self.meli_brand_name})
+        if self.meli_manufacturer_name:
+            attributes.append({"id": "MANUFACTURER", "value_name": self.meli_manufacturer_name})
+
+        # Términos de venta
+        sale_terms = []
+        if self.meli_warranty_type:
+            sale_terms.append({
+                "id": "WARRANTY_TYPE",
+                "value_id": self.meli_warranty_type,
+            })
+        if self.meli_warranty_time:
+            sale_terms.append({
+                "id": "WARRANTY_TIME",
+                "value_name": self.meli_warranty_time
+            })
 
         # Validación de categoría
         if not self.meli_category_vex or not self.meli_category_vex.startswith('ML'):
@@ -119,7 +142,8 @@ class VexPublishProductWizard(models.TransientModel):
             "listing_type_id": self.meli_listing_type,
             "price": price,
             "pictures": pictures,
-            "attributes": attributes
+            "attributes": attributes, # ¡Aquí se incluye la lista 'attributes'!
+            "sale_terms": sale_terms, # ¡Y aquí se incluye la lista 'sale_terms'!
         }
 
         if not self.meli_category_vex or not self.meli_category_vex.startswith('ML'):
@@ -128,7 +152,6 @@ class VexPublishProductWizard(models.TransientModel):
         response = requests.post(url, headers=headers, json=payload)
         if response.status_code == 201:
             data = response.json()
-            # Campos a actuliazar con la respuesta de ML
             self.product_id.write({
                 'meli_product_id': data.get('id'),
                 'meli_site_id': data.get('site_id'),
@@ -145,22 +168,19 @@ class VexPublishProductWizard(models.TransientModel):
                 'meli_inventory_id': data.get('inventory_id'),
                 'meli_health': data.get('health'),
             })
-            tag_ids = []
             if data.get('tags'):
                 tag_model = self.env['product.meli.tag']
+                tag_ids = []
                 for tag_name in data['tags']:
                     tag = tag_model.search([('name', '=', tag_name)], limit=1)
                     if not tag:
                         tag = tag_model.create({'name': tag_name})
                     tag_ids.append(tag.id)
-                vals['meli_tag_ids'] = [(6, 0, tag_ids)]
+                self.product_id.write({'meli_tag_ids': [(6, 0, tag_ids)]})
             
             if data.get('id'):
                 self.product_id.action_get_details()
 
-            if tag_ids:
-                self.product_id.write({'meli_tag_ids': [(6, 0, tag_ids)]})
-                
         else:
             raise UserError(f"Error al crear el producto en MercadoLibre: {response.text}")
 
