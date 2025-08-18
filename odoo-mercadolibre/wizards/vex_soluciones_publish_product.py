@@ -23,28 +23,13 @@ class VexPublishProductWizard(models.TransientModel):
     meli_pictures_ids = fields.One2many(
         'product.template.meli.image',
         'product_tmpl_id',
-        string='ML Pictures',
-        compute='_compute_meli_pictures_ids',
-        store=False
+        string='ML Pictures'
     )
-
     meli_attribute_ids = fields.One2many(
         'product.template.meli.attribute',
         'product_tmpl_id',
-        string='ML Attributes',
-        compute='_compute_meli_attribute_ids',
-        store=False
+        string='ML Attributes'
     )
-
-    @api.depends('product_id')
-    def _compute_meli_pictures_ids(self):
-        for rec in self:
-            rec.meli_pictures_ids = rec.product_id.meli_pictures_ids if rec.product_id else False
-
-    @api.depends('product_id')
-    def _compute_meli_attribute_ids(self):
-        for rec in self:
-            rec.meli_attribute_ids = rec.product_id.meli_attribute_ids if rec.product_id else False
 
     @api.model
     def default_get(self, fields_list):
