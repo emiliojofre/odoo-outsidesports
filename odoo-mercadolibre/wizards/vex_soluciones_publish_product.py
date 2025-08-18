@@ -34,7 +34,6 @@ class VexPublishProductWizard(models.TransientModel):
     @api.model
     def default_get(self, fields_list):
         res = super().default_get(fields_list)
-        # Campos a agarrar del modelo de product.template para el wizard
         product = self.env['product.template'].browse(self.env.context.get('active_id'))
         res['product_id'] = product.id
         res['name'] = product.name
@@ -45,11 +44,25 @@ class VexPublishProductWizard(models.TransientModel):
             'meli_base_price',
         ]:
             res[field] = getattr(product, field)
+        # Copiar imágenes
+        res['meli_pictures_ids'] = [
+            (0, 0, {
+                'secure_url': img.secure_url,
+                'image_url': img.image_url,
+            }) for img in product.meli_pictures_ids
+        ]
+        # Copiar atributos
+        res['meli_attribute_ids'] = [
+            (0, 0, {
+                'meli_attribute_name': attr.meli_attribute_name,
+                'meli_value_name': attr.meli_value_name,
+            }) for attr in product.meli_attribute_ids
+        ]
         instance = self.env['vex.instance'].search([('name', 'ilike', 'RIFCIF ODOO')], limit=1)
         if instance:
             res['instance_id'] = instance.id
         return res
-
+    
     def action_publish(self):
         self.ensure_one()
         # Campos a llenar y actualizarlo en producto.template
