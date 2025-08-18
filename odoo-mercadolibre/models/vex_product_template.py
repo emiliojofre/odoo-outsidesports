@@ -969,7 +969,6 @@ class ProductTemplateMeliImage(models.Model):
     product_tmpl_id = fields.Many2one('product.template', ondelete="cascade")
     url = fields.Char(string="Image URL", help="Original image URL from MercadoLibre")
     secure_url = fields.Char(string="Secure Image URL", help="HTTPS secure image URL from MercadoLibre")
-    wizard_id = fields.Many2one('vex.publish.product.wizard', ondelete="cascade")
 
 class ProductTemplateMeliVariation(models.Model):
     _name = 'product.template.meli.variation'
@@ -991,8 +990,6 @@ class ProductTemplateMeliAttribute(models.Model):
     meli_attribute_name = fields.Char(string="Attribute Name", help="Name of the attribute")
     meli_value_id = fields.Char(string="Value ID", help="Identifier of the attribute value")
     meli_value_name = fields.Char(string="Value Name", help="Name of the attribute value")
-    wizard_id = fields.Many2one('vex.publish.product.wizard', ondelete="cascade")
-
 
 class ProductMeliTag(models.Model):
     _name = 'product.meli.tag'
@@ -1011,3 +1008,22 @@ class ProductMarketplace(models.Model):
     _description = 'Marketplace'
 
     name = fields.Char(string='Marketplace Name', required=True, index=True)
+
+# Modelos del wizard
+class VexPublishProductWizardImage(models.TransientModel):
+    _name = 'vex.publish.product.wizard.image'
+    _description = 'MercadoLibre Product Images Wizard'
+
+    wizard_id = fields.Many2one('vex.publish.product.wizard', ondelete="cascade")
+    # Copia los campos que necesitas del modelo original
+    secure_url = fields.Char(string="Secure Image URL")
+    # Puedes añadir otros campos que solo sean relevantes para el wizard
+
+class VexPublishProductWizardAttribute(models.TransientModel):
+    _name = 'vex.publish.product.wizard.attribute'
+    _description = 'MercadoLibre Product Attributes Wizard'
+
+    wizard_id = fields.Many2one('vex.publish.product.wizard', ondelete="cascade")
+    # Copia los campos que necesitas del modelo original
+    meli_attribute_name = fields.Char(string="Attribute Name")
+    meli_value_name = fields.Char(string="Value Name")
