@@ -1,6 +1,8 @@
 from odoo import models, fields, api
 from odoo.exceptions import UserError
 import requests
+import logging
+_logger = logging.getLogger(__name__)
 
 class VexPublishProductWizard(models.TransientModel):
     _name = 'vex.publish.product.wizard'
@@ -102,6 +104,11 @@ class VexPublishProductWizard(models.TransientModel):
 
         instance = self.instance_id
         access_token = instance.meli_access_token
+
+        if not access_token or len(access_token) < 20:
+            raise UserError("Token de acceso no válido.")
+        
+        _logger.info(f"Access Token usado: {access_token}")
 
         url = "https://api.mercadolibre.com/items"
         headers = {
