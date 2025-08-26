@@ -28,6 +28,10 @@ class VexPublishProductWizard(models.TransientModel):
     meli_warranty_time = fields.Char(string="Tiempo de Garantía")
 
 
+    def _get_image_url(self, record, field_name='image_1920'):
+        base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
+        return f"{base_url}/web/image?model={record._name}&id={record.id}&field={field_name}"
+
     @api.model
     def default_get(self, fields_list):
         res = super().default_get(fields_list)

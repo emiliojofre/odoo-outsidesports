@@ -1016,6 +1016,7 @@ class VexPublishProductWizardImage(models.TransientModel):
 
     wizard_id = fields.Many2one('vex.publish.product.wizard', ondelete="cascade")
     # Copia los campos que necesitas del modelo original
+    url = fields.Char(string="Imagen URL")
     secure_url = fields.Char(string="Secure Image URL")
     # Puedes añadir otros campos que solo sean relevantes para el wizard
 

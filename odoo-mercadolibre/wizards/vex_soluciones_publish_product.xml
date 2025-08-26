@@ -28,6 +28,7 @@
                 <group string="Imágenes MercadoLibre 1">
                     <field name="meli_pictures_ids">
                         <tree>
+                            <field name="url" />
                             <field name="secure_url"/>
                         </tree>
                     </field>
