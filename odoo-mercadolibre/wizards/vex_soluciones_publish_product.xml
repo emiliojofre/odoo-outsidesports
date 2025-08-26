@@ -26,6 +26,9 @@
                         <field name="meli_warranty_time" />
                     </group>
                 </group>
+                <group string="Descripción MercadoLibre">
+                    <field name="meli_description" widget="text" placeholder="Agrega la descripción del producto"/>
+                </group>
                 <group string="Imágenes MercadoLibre 1">
                     <field name="meli_pictures_ids">
                         <tree>

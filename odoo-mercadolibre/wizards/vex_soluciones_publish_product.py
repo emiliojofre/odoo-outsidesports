@@ -28,6 +28,7 @@ class VexPublishProductWizard(models.TransientModel):
     meli_attribute_ids = fields.One2many('vex.publish.product.wizard.attribute', 'wizard_id', string="ML Attributes")
     meli_warranty_type = fields.Char(string="Tipo de Garantía (ID)")
     meli_warranty_time = fields.Char(string="Tiempo de Garantía")
+    meli_description = fields.Text(string="Descripción en MercadoLibre")
 
     @api.model
     def default_get(self, fields_list):
@@ -46,14 +47,12 @@ class VexPublishProductWizard(models.TransientModel):
         ]:
             res[field] = getattr(product, field)
 
-        # Copiar imágenes al wizard
+        # Solo imágenes secundarias
         pictures = [
-            (0, 0, {'secure_url': img.secure_url})
+            (0, 0, {'url': img.url, 'secure_url': img.secure_url})
             for img in product.meli_pictures_ids
+            if img.secure_url != product.meli_thumbnail
         ]
-        # Si hay thumbnail, lo agregamos como primera imagen
-        if product.meli_thumbnail:
-            pictures = [(0, 0, {'secure_url': product.meli_thumbnail})] + pictures
         res['meli_pictures_ids'] = pictures
 
         # Copiar atributos al wizard (todos los campos relevantes)
@@ -74,9 +73,32 @@ class VexPublishProductWizard(models.TransientModel):
 
         return res
 
+    def _upload_picture_to_meli(self, url, access_token):
+        """Sube una imagen externa a MercadoLibre y devuelve la URL transformada."""
+        upload_url = "https://api.mercadolibre.com/pictures/items/upload"
+        headers = {
+            "Authorization": f"Bearer {access_token}"
+        }
+        try:
+            resp = requests.post(
+                upload_url,
+                headers=headers,
+                files={"file": requests.get(url, stream=True).raw}
+            )
+            if resp.status_code == 201:
+                data = resp.json()
+                return data.get("secure_url") or data.get("url")
+            else:
+                _logger.error(f"Error al subir imagen a MercadoLibre [{resp.status_code}]: {resp.text}")
+                raise UserError(f"Error al subir imagen a MercadoLibre: {resp.text}")
+        except Exception as e:
+            raise UserError(f"No se pudo subir la imagen {url}: {str(e)}")
+
+
     def action_publish(self):
         self.ensure_one()
-        # Actualizar campos simples en producto.template
+
+        # --- ACTUALIZAR CAMPOS SIMPLES EN product.template ---
         vals = {
             'meli_title': self.meli_title,
             'meli_category_vex': self.meli_category_vex,
@@ -89,16 +111,16 @@ class VexPublishProductWizard(models.TransientModel):
         }
         self.product_id.write(vals)
 
-        # Sincronizar imágenes
+        # --- SINCRONIZAR IMÁGENES ---
         self.product_id.meli_pictures_ids.unlink()
         for img in self.meli_pictures_ids:
             self.product_id.meli_pictures_ids.create({
                 'product_tmpl_id': self.product_id.id,
+                'url': img.url,
                 'secure_url': img.secure_url,
-                'url': img.url
             })
 
-        # Sincronizar atributos
+        # --- SINCRONIZAR ATRIBUTOS ---
         self.product_id.meli_attribute_ids.unlink()
         for attr in self.meli_attribute_ids:
             self.product_id.meli_attribute_ids.create({
@@ -109,29 +131,40 @@ class VexPublishProductWizard(models.TransientModel):
                 'meli_value_name': attr.meli_value_name,
             })
 
+        # --- TOKEN ---
         instance = self.instance_id
         access_token = instance.meli_access_token
-
         if not access_token or len(access_token) < 20:
             raise UserError("Token de acceso no válido.")
         
         _logger.info(f"Access Token usado: {access_token}")
 
-        url = "https://api.mercadolibre.com/items"
-        headers = {
-            "Authorization": f"Bearer {access_token}",
-            "Content-Type": "application/json"
-        }
+        # --- ARMAR IMÁGENES CON SUBIDA PREVIA A ML ---
+        pictures = []
 
-        # Imágenes desde el wizard
-        pictures = [
-            {"source": img.secure_url}
-            for img in self.meli_pictures_ids if img.secure_url
-        ]
+        # Imagen principal
+        if self.meli_thumbnail:
+            thumb_url = self.meli_thumbnail
+            if "mlstatic.com" not in thumb_url:  # subir si no es de MercadoLibre
+                thumb_url = self._upload_picture_to_meli(thumb_url, access_token)
+                self.meli_thumbnail = thumb_url
+                self.product_id.meli_thumbnail = thumb_url
+            pictures.append({"source": thumb_url})
+
+        # Imágenes secundarias
+        for img in self.meli_pictures_ids:
+            img_url = img.secure_url or img.url
+            if not img_url:
+                continue
+            if "mlstatic.com" not in img_url:
+                img_url = self._upload_picture_to_meli(img_url, access_token)
+                img.write({"secure_url": img_url, "url": img_url})
+            pictures.append({"source": img_url})
+
         if not pictures:
-            raise UserError("Debes agregar al menos una imagen con URL segura (https) para publicar en MercadoLibre.")
+            raise UserError("Debes agregar al menos una imagen válida para publicar en MercadoLibre.")
 
-        # Atributos desde el wizard
+        # --- ATRIBUTOS ---
         attributes = [
             {
                 "id": attr.meli_attribute_id,
@@ -142,7 +175,7 @@ class VexPublishProductWizard(models.TransientModel):
             if attr.meli_attribute_id and (attr.meli_value_id or attr.meli_value_name)
         ]
 
-        # Términos de venta
+        # --- TÉRMINOS DE VENTA ---
         sale_terms = []
         if self.meli_warranty_type:
             sale_terms.append({
@@ -155,14 +188,13 @@ class VexPublishProductWizard(models.TransientModel):
                 "value_name": self.meli_warranty_time
             })
 
-        # Validación de categoría
+        # --- VALIDACIÓN ---
         if not self.meli_category_vex or not self.meli_category_vex.startswith('ML'):
             raise UserError("Debes ingresar un ID de categoría válido de MercadoLibre, por ejemplo: MLA1055.")
 
-        # Precio entero si es CLP
         price = int(self.meli_base_price) if self.meli_currency_id == 'CLP' else self.meli_base_price
 
-        # Payload final
+        # --- PAYLOAD ---
         payload = {
             "title": self.meli_title,
             "category_id": self.meli_category_vex,
@@ -178,41 +210,35 @@ class VexPublishProductWizard(models.TransientModel):
         }
         _logger.info(f"Payload enviado a Mercado Libre: {json.dumps(payload, indent=2, ensure_ascii=False)}")
 
+        # --- POST A MERCADO LIBRE ---
+        url = "https://api.mercadolibre.com/items"
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json"
+        }
         response = requests.post(url, headers=headers, json=payload)
         _logger.info(f"Respuesta de Mercado Libre [{response.status_code}]: {response.text}")
-        
-        if response.status_code == 201:
-            data = response.json()
-            self.product_id.write({
-                'meli_product_id': data.get('id'),
-                'meli_site_id': data.get('site_id'),
-                'meli_status': data.get('status'),
-                'meli_sub_status': ','.join(data.get('sub_status', [])) if data.get('sub_status') else False,
-                'meli_listing_type': data.get('listing_type_id'),
-                'meli_condition': data.get('condition'),
-                'meli_title': data.get('title'),
-                'meli_permalink': data.get('permalink'),
-                'meli_thumbnail': data.get('thumbnail'),
-                'meli_domain_id': data.get('domain_id'),
-                'meli_catalog_product_id': data.get('catalog_product_id'),
-                'meli_category_vex': data.get('category_id'),
-                'meli_inventory_id': data.get('inventory_id'),
-                'meli_health': data.get('health'),
-            })
-            if data.get('tags'):
-                tag_model = self.env['product.meli.tag']
-                tag_ids = []
-                for tag_name in data['tags']:
-                    tag = tag_model.search([('name', '=', tag_name)], limit=1)
-                    if not tag:
-                        tag = tag_model.create({'name': tag_name})
-                    tag_ids.append(tag.id)
-                self.product_id.write({'meli_tag_ids': [(6, 0, tag_ids)]})
-            # if data.get('id'):
-            #     self.product_id.action_get_details()
-        else:
+
+        if response.status_code != 201:
             raise UserError(f"Error al crear el producto en MercadoLibre: {response.text}")
 
+        # --- ACTUALIZAR CAMPOS DESDE RESPUESTA ---
+        data = response.json()
+        self.product_id.write({
+            'meli_product_id': data.get('id'),
+            'meli_site_id': data.get('site_id'),
+            'meli_status': data.get('status'),
+            'meli_sub_status': ','.join(data.get('sub_status', [])) if data.get('sub_status') else False,
+            'meli_listing_type': data.get('listing_type_id'),
+            'meli_condition': data.get('condition'),
+            'meli_title': data.get('title'),
+            'meli_permalink': data.get('permalink'),
+            'meli_thumbnail': data.get('thumbnail'),
+            'meli_domain_id': data.get('domain_id'),
+            'meli_catalog_product_id': data.get('catalog_product_id'),
+            'meli_category_vex': data.get('category_id'),
+            'meli_inventory_id': data.get('inventory_id'),
+            'meli_health': data.get('health'),
+        })
+
         return {'type': 'ir.actions.act_window_close'}
-    
-    

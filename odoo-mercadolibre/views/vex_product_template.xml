@@ -44,7 +44,7 @@
                                     <field name="meli_listing_type"/>
                                     <field name="meli_condition"/>
                                     <field name="meli_title"/>
-                                    <field name="meli_permalink"/>
+                                    <field name="meli_permalink" widget="url"/>
                                 </group>
                                 <group>
                                     <field name="meli_thumbnail"/>
