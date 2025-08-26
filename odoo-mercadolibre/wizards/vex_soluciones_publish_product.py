@@ -2,6 +2,7 @@ from odoo import models, fields, api
 from odoo.exceptions import UserError
 import requests
 import logging
+import json
 _logger = logging.getLogger(__name__)
 
 class VexPublishProductWizard(models.TransientModel):
@@ -175,8 +176,11 @@ class VexPublishProductWizard(models.TransientModel):
             "attributes": attributes,
             "sale_terms": sale_terms,
         }
+        _logger.info(f"Payload enviado a Mercado Libre: {json.dumps(payload, indent=2, ensure_ascii=False)}")
 
         response = requests.post(url, headers=headers, json=payload)
+        _logger.info(f"Respuesta de Mercado Libre [{response.status_code}]: {response.text}")
+        
         if response.status_code == 201:
             data = response.json()
             self.product_id.write({
