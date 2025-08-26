@@ -8,6 +8,7 @@
                     <field name="instance_id"/>
                     <field name="name" readonly="1"/>
                     <field name="image_1920" widget="image" readonly="1"/>
+                    <field name="meli_thumbnail" />
                 </group>
                 <group string="Datos requeridos ML">
                     <group>

@@ -11,6 +11,7 @@ class VexPublishProductWizard(models.TransientModel):
     product_id = fields.Many2one('product.template', string="Producto", required=True)
     name = fields.Char(string="Nombre")
     image_1920 = fields.Binary(string="Imagen")
+    meli_thumbnail = fields.Char(string="Thumbnail URL", help="URL of the product thumbnail")
 
     # Solo los campos requeridos por la API
     meli_title = fields.Char(string="ML Title", required=True)
@@ -27,11 +28,6 @@ class VexPublishProductWizard(models.TransientModel):
     meli_warranty_type = fields.Char(string="Tipo de Garantía (ID)")
     meli_warranty_time = fields.Char(string="Tiempo de Garantía")
 
-
-    def _get_image_url(self, record, field_name='image_1920'):
-        base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
-        return f"{base_url}/web/image?model={record._name}&id={record.id}&field={field_name}"
-
     @api.model
     def default_get(self, fields_list):
         res = super().default_get(fields_list)
@@ -45,14 +41,19 @@ class VexPublishProductWizard(models.TransientModel):
             'meli_title', 'meli_category_vex', 'meli_currency_id',
             'meli_available_quantity', 'meli_buying_mode',
             'meli_condition', 'meli_listing_type', 'meli_base_price',
+            'meli_thumbnail'
         ]:
             res[field] = getattr(product, field)
 
         # Copiar imágenes al wizard
-        res['meli_pictures_ids'] = [
+        pictures = [
             (0, 0, {'secure_url': img.secure_url})
             for img in product.meli_pictures_ids
         ]
+        # Si hay thumbnail, lo agregamos como primera imagen
+        if product.meli_thumbnail:
+            pictures = [(0, 0, {'secure_url': product.meli_thumbnail})] + pictures
+        res['meli_pictures_ids'] = pictures
 
         # Copiar atributos al wizard (todos los campos relevantes)
         res['meli_attribute_ids'] = [
@@ -93,6 +94,7 @@ class VexPublishProductWizard(models.TransientModel):
             self.product_id.meli_pictures_ids.create({
                 'product_tmpl_id': self.product_id.id,
                 'secure_url': img.secure_url,
+                'url': img.url
             })
 
         # Sincronizar atributos
