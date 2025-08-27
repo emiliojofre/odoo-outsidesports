@@ -3,6 +3,9 @@ from odoo.exceptions import UserError
 import requests
 import logging
 import json
+from io import BytesIO
+from PIL import Image
+
 _logger = logging.getLogger(__name__)
 
 class VexPublishProductWizard(models.TransientModel):
@@ -74,7 +77,6 @@ class VexPublishProductWizard(models.TransientModel):
         return res
 
     def _upload_picture_to_meli(self, url, access_token):
-        """Sube una imagen externa a MercadoLibre y devuelve la URL transformada."""
         upload_url = "https://api.mercadolibre.com/pictures/items/upload"
         headers = {"Authorization": f"Bearer {access_token}"}
         try:
@@ -82,20 +84,18 @@ class VexPublishProductWizard(models.TransientModel):
             if img_resp.status_code != 200:
                 raise UserError(f"No se pudo descargar la imagen: {url}")
 
-            # Detectar content-type correcto
             content_type = img_resp.headers.get("Content-Type", "")
             if not any(t in content_type for t in ["jpeg", "jpg", "png", "gif", "webp"]):
-                _logger.warning(f"Advertencia: Content-Type sospechoso ({content_type}) para {url}. Forzando image/jpeg")
+                _logger.warning(f"Content-Type sospechoso ({content_type}) para {url}. Forzando image/jpeg")
                 content_type = "image/jpeg"
 
             files = {"file": ("image.jpg", img_resp.content, content_type)}
 
             resp = requests.post(upload_url, headers=headers, files=files)
             if resp.status_code == 201:
-                data = resp.json()
-                return data.get("secure_url") or data.get("url")
+                return resp.json()  # devuelve todo (id, secure_url, etc.)
             else:
-                _logger.error(f"Error al subir imagen a MercadoLibre [{resp.status_code}]: {resp.text}")
+                _logger.error(f"Error al subir imagen a ML [{resp.status_code}]: {resp.text}")
                 raise UserError(f"Error al subir imagen a MercadoLibre: {resp.text}")
 
         except Exception as e:
@@ -159,22 +159,25 @@ class VexPublishProductWizard(models.TransientModel):
             _logger.info(f"Procesando thumbnail: {thumb_url}")
             if "mlstatic.com" not in thumb_url:
                 _logger.info("Thumbnail externo detectado. Subiendo a ML...")
-                thumb_url = self._upload_picture_to_meli(thumb_url, access_token)
-                self.meli_thumbnail = thumb_url
-                self.product_id.meli_thumbnail = thumb_url
-            pictures.append({"source": thumb_url})
+                pic_data = self._upload_picture_to_meli(thumb_url, access_token)
+                self.meli_thumbnail = pic_data.get("secure_url")
+                self.product_id.meli_thumbnail = pic_data.get("secure_url")
+                pictures.append({"id": pic_data.get("id")})
+            else:
+                pictures.append({"source": thumb_url})
 
         # Imágenes secundarias
         for img in self.meli_pictures_ids:
             img_url = img.secure_url or img.url
             if not img_url:
                 continue
-            _logger.info(f"Procesando imagen secundaria: {img_url}")
             if "mlstatic.com" not in img_url:
                 _logger.info("Imagen externa detectada. Subiendo a ML...")
-                img_url = self._upload_picture_to_meli(img_url, access_token)
-                img.write({"secure_url": img_url, "url": img_url})
-            pictures.append({"source": img_url})
+                pic_data = self._upload_picture_to_meli(img_url, access_token)
+                img.write({"secure_url": pic_data.get("secure_url"), "url": pic_data.get("secure_url")})
+                pictures.append({"id": pic_data.get("id")})
+            else:
+                pictures.append({"source": img_url})
 
         if not pictures:
             _logger.warning("No se encontraron imágenes válidas para publicar en ML.")
