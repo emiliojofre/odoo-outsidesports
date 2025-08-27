@@ -76,27 +76,31 @@ class VexPublishProductWizard(models.TransientModel):
     def _upload_picture_to_meli(self, url, access_token):
         """Sube una imagen externa a MercadoLibre y devuelve la URL transformada."""
         upload_url = "https://api.mercadolibre.com/pictures/items/upload"
-        headers = {
-            "Authorization": f"Bearer {access_token}"
-        }
+        headers = {"Authorization": f"Bearer {access_token}"}
         try:
+            _logger.info(f"Intentando subir imagen a MercadoLibre: {url}")
             resp = requests.post(
                 upload_url,
                 headers=headers,
                 files={"file": requests.get(url, stream=True).raw}
             )
+            _logger.info(f"Respuesta subida de imagen [{resp.status_code}]: {resp.text}")
             if resp.status_code == 201:
                 data = resp.json()
-                return data.get("secure_url") or data.get("url")
+                secure_url = data.get("secure_url") or data.get("url")
+                _logger.info(f"Imagen subida con éxito. URL ML: {secure_url}")
+                return secure_url
             else:
                 _logger.error(f"Error al subir imagen a MercadoLibre [{resp.status_code}]: {resp.text}")
                 raise UserError(f"Error al subir imagen a MercadoLibre: {resp.text}")
         except Exception as e:
+            _logger.exception(f"No se pudo subir la imagen {url}: {str(e)}")
             raise UserError(f"No se pudo subir la imagen {url}: {str(e)}")
 
 
     def action_publish(self):
         self.ensure_one()
+        _logger.info(f"=== Iniciando publicación del producto {self.product_id.name} (ID {self.product_id.id}) ===")
 
         # --- ACTUALIZAR CAMPOS SIMPLES EN product.template ---
         vals = {
@@ -110,18 +114,22 @@ class VexPublishProductWizard(models.TransientModel):
             'meli_base_price': self.meli_base_price,
         }
         self.product_id.write(vals)
+        _logger.info(f"Campos simples sincronizados con product.template: {vals}")
 
         # --- SINCRONIZAR IMÁGENES ---
         self.product_id.meli_pictures_ids.unlink()
+        _logger.info("Imágenes previas eliminadas en product.template.")
         for img in self.meli_pictures_ids:
             self.product_id.meli_pictures_ids.create({
                 'product_tmpl_id': self.product_id.id,
                 'url': img.url,
                 'secure_url': img.secure_url,
             })
+        _logger.info(f"Imágenes secundarias sincronizadas: {len(self.meli_pictures_ids)}")
 
         # --- SINCRONIZAR ATRIBUTOS ---
         self.product_id.meli_attribute_ids.unlink()
+        _logger.info("Atributos previos eliminados en product.template.")
         for attr in self.meli_attribute_ids:
             self.product_id.meli_attribute_ids.create({
                 'product_tmpl_id': self.product_id.id,
@@ -130,14 +138,14 @@ class VexPublishProductWizard(models.TransientModel):
                 'meli_value_id': attr.meli_value_id,
                 'meli_value_name': attr.meli_value_name,
             })
+        _logger.info(f"Atributos sincronizados: {len(self.meli_attribute_ids)}")
 
         # --- TOKEN ---
         instance = self.instance_id
         access_token = instance.meli_access_token
         if not access_token or len(access_token) < 20:
             raise UserError("Token de acceso no válido.")
-        
-        _logger.info(f"Access Token usado: {access_token}")
+        _logger.info(f"Access Token usado: {access_token[:10]}... (ocultado por seguridad)")
 
         # --- ARMAR IMÁGENES CON SUBIDA PREVIA A ML ---
         pictures = []
@@ -145,7 +153,9 @@ class VexPublishProductWizard(models.TransientModel):
         # Imagen principal
         if self.meli_thumbnail:
             thumb_url = self.meli_thumbnail
-            if "mlstatic.com" not in thumb_url:  # subir si no es de MercadoLibre
+            _logger.info(f"Procesando thumbnail: {thumb_url}")
+            if "mlstatic.com" not in thumb_url:
+                _logger.info("Thumbnail externo detectado. Subiendo a ML...")
                 thumb_url = self._upload_picture_to_meli(thumb_url, access_token)
                 self.meli_thumbnail = thumb_url
                 self.product_id.meli_thumbnail = thumb_url
@@ -156,13 +166,18 @@ class VexPublishProductWizard(models.TransientModel):
             img_url = img.secure_url or img.url
             if not img_url:
                 continue
+            _logger.info(f"Procesando imagen secundaria: {img_url}")
             if "mlstatic.com" not in img_url:
+                _logger.info("Imagen externa detectada. Subiendo a ML...")
                 img_url = self._upload_picture_to_meli(img_url, access_token)
                 img.write({"secure_url": img_url, "url": img_url})
             pictures.append({"source": img_url})
 
         if not pictures:
+            _logger.warning("No se encontraron imágenes válidas para publicar en ML.")
             raise UserError("Debes agregar al menos una imagen válida para publicar en MercadoLibre.")
+
+        _logger.info(f"Total imágenes preparadas para ML: {len(pictures)}")
 
         # --- ATRIBUTOS ---
         attributes = [
@@ -174,25 +189,23 @@ class VexPublishProductWizard(models.TransientModel):
             for attr in self.meli_attribute_ids
             if attr.meli_attribute_id and (attr.meli_value_id or attr.meli_value_name)
         ]
+        _logger.info(f"Atributos preparados para ML: {attributes}")
 
         # --- TÉRMINOS DE VENTA ---
         sale_terms = []
         if self.meli_warranty_type:
-            sale_terms.append({
-                "id": "WARRANTY_TYPE",
-                "value_id": self.meli_warranty_type,
-            })
+            sale_terms.append({"id": "WARRANTY_TYPE", "value_id": self.meli_warranty_type})
         if self.meli_warranty_time:
-            sale_terms.append({
-                "id": "WARRANTY_TIME",
-                "value_name": self.meli_warranty_time
-            })
+            sale_terms.append({"id": "WARRANTY_TIME", "value_name": self.meli_warranty_time})
+        _logger.info(f"Términos de venta: {sale_terms}")
 
         # --- VALIDACIÓN ---
         if not self.meli_category_vex or not self.meli_category_vex.startswith('ML'):
+            _logger.error("Categoría inválida detectada.")
             raise UserError("Debes ingresar un ID de categoría válido de MercadoLibre, por ejemplo: MLA1055.")
 
         price = int(self.meli_base_price) if self.meli_currency_id == 'CLP' else self.meli_base_price
+        _logger.info(f"Precio preparado para ML: {price}")
 
         # --- PAYLOAD ---
         payload = {
@@ -208,18 +221,16 @@ class VexPublishProductWizard(models.TransientModel):
             "attributes": attributes,
             "sale_terms": sale_terms,
         }
-        _logger.info(f"Payload enviado a Mercado Libre: {json.dumps(payload, indent=2, ensure_ascii=False)}")
+        _logger.info(f"Payload final enviado a ML: {json.dumps(payload, indent=2, ensure_ascii=False)}")
 
         # --- POST A MERCADO LIBRE ---
         url = "https://api.mercadolibre.com/items"
-        headers = {
-            "Authorization": f"Bearer {access_token}",
-            "Content-Type": "application/json"
-        }
+        headers = {"Authorization": f"Bearer {access_token}", "Content-Type": "application/json"}
         response = requests.post(url, headers=headers, json=payload)
         _logger.info(f"Respuesta de Mercado Libre [{response.status_code}]: {response.text}")
 
         if response.status_code != 201:
+            _logger.error(f"Error al crear el producto en ML: {response.text}")
             raise UserError(f"Error al crear el producto en MercadoLibre: {response.text}")
 
         # --- ACTUALIZAR CAMPOS DESDE RESPUESTA ---
@@ -240,5 +251,7 @@ class VexPublishProductWizard(models.TransientModel):
             'meli_inventory_id': data.get('inventory_id'),
             'meli_health': data.get('health'),
         })
+        _logger.info(f"Producto publicado con éxito en ML. ID: {data.get('id')} | Status: {data.get('status')}")
 
         return {'type': 'ir.actions.act_window_close'}
+
