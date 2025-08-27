@@ -78,25 +78,28 @@ class VexPublishProductWizard(models.TransientModel):
         upload_url = "https://api.mercadolibre.com/pictures/items/upload"
         headers = {"Authorization": f"Bearer {access_token}"}
         try:
-            _logger.info(f"Intentando subir imagen a MercadoLibre: {url}")
-            resp = requests.post(
-                upload_url,
-                headers=headers,
-                files={"file": requests.get(url, stream=True).raw}
-            )
-            _logger.info(f"Respuesta subida de imagen [{resp.status_code}]: {resp.text}")
+            img_resp = requests.get(url, stream=True)
+            if img_resp.status_code != 200:
+                raise UserError(f"No se pudo descargar la imagen: {url}")
+
+            # Detectar content-type correcto
+            content_type = img_resp.headers.get("Content-Type", "")
+            if not any(t in content_type for t in ["jpeg", "jpg", "png", "gif", "webp"]):
+                _logger.warning(f"Advertencia: Content-Type sospechoso ({content_type}) para {url}. Forzando image/jpeg")
+                content_type = "image/jpeg"
+
+            files = {"file": ("image.jpg", img_resp.content, content_type)}
+
+            resp = requests.post(upload_url, headers=headers, files=files)
             if resp.status_code == 201:
                 data = resp.json()
-                secure_url = data.get("secure_url") or data.get("url")
-                _logger.info(f"Imagen subida con éxito. URL ML: {secure_url}")
-                return secure_url
+                return data.get("secure_url") or data.get("url")
             else:
                 _logger.error(f"Error al subir imagen a MercadoLibre [{resp.status_code}]: {resp.text}")
                 raise UserError(f"Error al subir imagen a MercadoLibre: {resp.text}")
-        except Exception as e:
-            _logger.exception(f"No se pudo subir la imagen {url}: {str(e)}")
-            raise UserError(f"No se pudo subir la imagen {url}: {str(e)}")
 
+        except Exception as e:
+            raise UserError(f"No se pudo subir la imagen {url}: {str(e)}")
 
     def action_publish(self):
         self.ensure_one()
