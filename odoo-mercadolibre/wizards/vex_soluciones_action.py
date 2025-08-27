@@ -1962,5 +1962,12 @@ class VexExportWizard(models.TransientModel):
             # MercadoLibre no permite subir órdenes manualmente, este bloque
             # puede usarse para integraciones con ERPs externos o sincronización paralela.
 
-
-        
+    @api.model
+    def default_get(self, fields):
+        res = super().default_get(fields)
+        products = self.env['product.template'].search([
+            ('meli_product_id', '=', False),
+            ('marketplace_ids', 'ilike', 'mercado libre')
+        ])
+        res['product_no_meli_ids'] = [(6, 0, products.ids)]
+        return res
