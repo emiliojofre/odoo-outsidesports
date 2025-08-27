@@ -1886,7 +1886,7 @@ class VexExportWizard(models.TransientModel):
     product_no_meli_ids = fields.Many2many(
         'product.template',
         string="Productos sin ML ID",
-        domain="[('meli_product_id', '=', False)]"
+        domain="[('meli_product_id', '=', False), ('marketplace_ids', 'ilike', 'mercado libre')]"
     )
 
     def action_export(self):
