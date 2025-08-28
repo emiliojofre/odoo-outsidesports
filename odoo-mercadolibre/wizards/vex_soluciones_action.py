@@ -1889,6 +1889,16 @@ class VexExportWizard(models.TransientModel):
         domain="[('meli_product_id', '=', False), ('marketplace_ids', 'ilike', 'mercado libre')]"
     )
 
+    @api.model
+    def default_get(self, fields):
+        res = super().default_get(fields)
+        products = self.env['product.template'].search([
+            ('meli_product_id', '=', False),
+            ('marketplace_ids', 'ilike', 'mercado libre')
+        ])
+        res['product_no_meli_ids'] = [(6, 0, products.ids)]
+        return res
+
     def action_export(self):
         self.ensure_one()
         instance = self.vex_instance_id
@@ -1904,7 +1914,7 @@ class VexExportWizard(models.TransientModel):
         }
 
         if self.vex_actions == 'product':
-            self.export_products(instance, headers)
+            self.export_products(headers)
         """ elif self.vex_actions == 'customer':
             self.export_customers(instance, headers)
         elif self.vex_actions == 'order':
@@ -1912,7 +1922,7 @@ class VexExportWizard(models.TransientModel):
 
         return {'type': 'ir.actions.act_window_close'}
 
-    def export_products(self, instance, headers):
+    def export_products(self, headers):
         # Buscar productos listos para publicar (ajusta el dominio según tus necesidades)
         products = self.env['product.template'].search([
             ('meli_product_id', '=', False),
@@ -1952,7 +1962,7 @@ class VexExportWizard(models.TransientModel):
             if product.meli_warranty_time:
                 sale_terms.append({
                     "id": "WARRANTY_TIME",
-                    "value_name": product.meli_warranty_time
+                    "value_name": str(product.meli_warranty_time)
                 })
 
             # Precio entero si es CLP
@@ -2008,14 +2018,3 @@ class VexExportWizard(models.TransientModel):
             # MercadoLibre no permite subir órdenes manualmente, este bloque
             # puede usarse para integraciones con ERPs externos o sincronización paralela.
 
-    @api.model
-    def default_get(self, fields):
-        res = super().default_get(fields)
-        products = self.env['product.template'].search([
-            ('meli_product_id', '=', False),
-            ('marketplace_ids', 'ilike', 'mercado libre')
-        ])
-        res['product_no_meli_ids'] = [(6, 0, products.ids)]
-        return res
-    
-    

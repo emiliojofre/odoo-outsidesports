@@ -115,6 +115,10 @@ class ProductTemplate(models.Model):
     recommended_price = fields.Float(string='Recommended Price')
     meli_question_ids = fields.One2many('vex.meli.questions', 'product_id', string="Questions")
     ready_create = fields.Boolean(string="Listo para Crear",compute="_compute_ready_create", store=True)
+    meli_warranty_type = fields.Selection([
+        ('2230280', 'Garantia de Proveedor'),
+    ], string="Tipo de Garantía", required=True)
+    meli_warranty_time = fields.Integer(string="Tiempo de Garantía (días)", help="Duración de la garantía en días", required=True)
 
     @api.depends(
         'meli_title', 'meli_category_vex', 'meli_currency_id', 'meli_available_quantity',
