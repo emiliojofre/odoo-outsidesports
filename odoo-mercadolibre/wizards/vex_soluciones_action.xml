@@ -94,6 +94,7 @@
                         <page string="ÓRDENES SIN ML ID">
                             <field name="product_no_meli_ids" widget="many2many_list" readonly="0" nolabel="1">
                                 <tree>
+                                    <field name="ready_create" />
                                     <field name="name" string="Nombre"/>
                                     <field name="meli_title" string="ML Título"/>
                                     <field name="meli_category_vex" string="ML Categoría"/>

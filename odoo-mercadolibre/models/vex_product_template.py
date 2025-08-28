@@ -114,6 +114,7 @@ class ProductTemplate(models.Model):
 
     recommended_price = fields.Float(string='Recommended Price')
     meli_question_ids = fields.One2many('vex.meli.questions', 'product_id', string="Questions")
+    ready_create = fields.Boolean(string="Listo para Crear")
 
     def _compute_meli_type_item_logistc(self):
         """
