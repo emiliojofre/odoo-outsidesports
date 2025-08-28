@@ -1913,39 +1913,84 @@ class VexExportWizard(models.TransientModel):
         return {'type': 'ir.actions.act_window_close'}
 
     def export_products(self, instance, headers):
-        domain = [('ml_publication_code', '=', False),
-                  ('active', '=', True),
-                  ('type', '=', 'product'),
-                #   ('store_type', '=', 'mercadolibre')
-                  ]
-        products = self.env['product.template'].search(domain)
-        _logger.info(f"Numeros de Productos a exportar: {len(products)}")
+        # Buscar productos listos para publicar (ajusta el dominio según tus necesidades)
+        products = self.env['product.template'].search([
+            ('meli_product_id', '=', False),
+            ('ready_create', '=', True),
+            ('active', '=', True),
+        ])
+        _logger.info(f"Número de productos a exportar: {len(products)}")
         for product in products:
-            if product.ml_publication_code:
+            # Construir el payload igual que en tu wizard individual
+            pictures = []
+            if product.meli_thumbnail:
+                pictures.append({"source": product.meli_thumbnail})
+            pictures += [
+                {"source": img.secure_url}
+                for img in product.meli_pictures_ids if img.secure_url
+            ]
+            if not pictures:
+                _logger.warning(f"Producto {product.name} sin imágenes válidas, se omite.")
                 continue
-            data = {
-                'title': product.name,
-                'price': product.list_price,
-                'available_quantity': int(product.qty_available),
-                'category_id': product.meli_category_code,
-                'currency_id': instance.meli_default_currency,
-                'buying_mode': product.buying_mode,
-                'listing_type_id': product.listing_type_id,
-                'condition': product.condition,
-                "description": {
-                    "plain_text": product.description_sale or product.name
-                },
-                "pictures": [
-                    {"source": product.thumbnail} 
-                ],
+
+            attributes = [
+                {
+                    "id": attr.meli_attribute_id,
+                    "value_id": attr.meli_value_id if attr.meli_value_id else None,
+                    "value_name": attr.meli_value_name if attr.meli_value_name else None,
+                }
+                for attr in product.meli_attribute_ids
+                if attr.meli_attribute_id and (attr.meli_value_id or attr.meli_value_name)
+            ]
+
+            sale_terms = []
+            if product.meli_warranty_type:
+                sale_terms.append({
+                    "id": "WARRANTY_TYPE",
+                    "value_id": product.meli_warranty_type,
+                })
+            if product.meli_warranty_time:
+                sale_terms.append({
+                    "id": "WARRANTY_TIME",
+                    "value_name": product.meli_warranty_time
+                })
+
+            # Precio entero si es CLP
+            price = int(product.meli_base_price) if product.meli_currency_id == 'CLP' else product.meli_base_price
+
+            payload = {
+                "title": product.meli_title,
+                "category_id": product.meli_category_vex,
+                "currency_id": product.meli_currency_id,
+                "available_quantity": product.meli_available_quantity,
+                "buying_mode": product.meli_buying_mode,
+                "condition": product.meli_condition,
+                "listing_type_id": product.meli_listing_type,
+                "price": price,
+                "pictures": pictures,
+                "attributes": attributes,
+                "sale_terms": sale_terms,
             }
             url = "https://api.mercadolibre.com/items"
-            response = requests.post(url, headers=headers, json=data)
+            response = requests.post(url, headers=headers, json=payload)
 
             if response.status_code in [200, 201]:
                 result = response.json()
-                product.write({'ml_publication_code': result['id']})
-                _logger.info(f"Producto exportado: {response}")
+                product.write({
+                    'meli_product_id': result.get('id'),
+                    'meli_status': result.get('status'),
+                    'meli_permalink': result.get('permalink'),
+                    'meli_thumbnail': result.get('thumbnail'),
+                    'meli_category_vex': result.get('category_id'),
+                    'meli_title': result.get('title'),
+                    'meli_listing_type': result.get('listing_type_id'),
+                    'meli_condition': result.get('condition'),
+                    'meli_buying_mode': result.get('buying_mode'),
+                    'meli_currency_id': result.get('currency_id'),
+                    'meli_available_quantity': result.get('available_quantity'),
+                    'meli_base_price': result.get('price'),
+                })
+                _logger.info(f"Producto exportado: {product.name} ({result.get('id')})")
             else:
                 _logger.warning(f"No se pudo exportar producto {product.name}: {response.text}")
 
