@@ -45,6 +45,7 @@
                                     <field name="meli_condition"/>
                                     <field name="meli_title"/>
                                     <field name="meli_permalink" widget="url"/>
+                                    <field name="ready_create" />
                                 </group>
                                 <group>
                                     <field name="meli_thumbnail"/>
@@ -55,7 +56,7 @@
                                     <field name="meli_tag_ids" widget="many2many_tags" placeholder="Agregar etiquetas..."/>
                                     <field name="meli_channel_ids" widget="many2many_tags" placeholder="Agregar canales..."/>
                                     <field name="meli_buying_mode" />
-                                    <field name="meli_health"/>                            
+                                    <field name="meli_health"/>                         
                                 </group>
                             </group>
                         </page>

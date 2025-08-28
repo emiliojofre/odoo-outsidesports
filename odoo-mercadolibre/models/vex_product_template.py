@@ -114,7 +114,35 @@ class ProductTemplate(models.Model):
 
     recommended_price = fields.Float(string='Recommended Price')
     meli_question_ids = fields.One2many('vex.meli.questions', 'product_id', string="Questions")
-    ready_create = fields.Boolean(string="Listo para Crear")
+    ready_create = fields.Boolean(string="Listo para Crear",compute="_compute_ready_create", store=True)
+
+    @api.depends(
+        'meli_title', 'meli_category_vex', 'meli_currency_id', 'meli_available_quantity',
+        'meli_buying_mode', 'meli_condition', 'meli_listing_type', 'meli_base_price',
+        'meli_thumbnail', 'meli_pictures_ids', 'meli_attribute_ids'
+    )
+    def _compute_ready_create(self):
+        for rec in self:
+            # Validar campos simples
+            campos_ok = all([
+                rec.meli_title,
+                rec.meli_category_vex,
+                rec.meli_currency_id,
+                rec.meli_available_quantity,
+                rec.meli_buying_mode,
+                rec.meli_condition,
+                rec.meli_listing_type,
+                rec.meli_base_price,
+                rec.meli_thumbnail
+            ])
+            # Validar imágenes secundarias (al menos una)
+            imagenes_ok = bool(rec.meli_pictures_ids)
+            # Validar atributos (al menos uno y que estén completos)
+            atributos_ok = any(
+                attr.meli_attribute_id and (attr.meli_value_id or attr.meli_value_name)
+                for attr in rec.meli_attribute_ids
+            )
+            rec.ready_create = campos_ok and imagenes_ok and atributos_ok
 
     def _compute_meli_type_item_logistc(self):
         """

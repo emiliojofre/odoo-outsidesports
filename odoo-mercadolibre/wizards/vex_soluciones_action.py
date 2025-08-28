@@ -1971,3 +1971,5 @@ class VexExportWizard(models.TransientModel):
         ])
         res['product_no_meli_ids'] = [(6, 0, products.ids)]
         return res
+    
+    
