@@ -1916,7 +1916,8 @@ class VexExportWizard(models.TransientModel):
         domain = [('ml_publication_code', '=', False),
                   ('active', '=', True),
                   ('type', '=', 'product'),
-                  ('store_type', '=', 'mercadolibre')]
+                #   ('store_type', '=', 'mercadolibre')
+                  ]
         products = self.env['product.template'].search(domain)
         _logger.info(f"Numeros de Productos a exportar: {len(products)}")
         for product in products:

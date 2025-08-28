@@ -126,13 +126,13 @@ class ProductTemplate(models.Model):
             # Validar campos simples
             campos_ok = all([
                 rec.meli_title,
+                rec.meli_listing_type,
+                rec.meli_condition,
                 rec.meli_category_vex,
+                rec.meli_buying_mode,
+                rec.meli_base_price,
                 rec.meli_currency_id,
                 rec.meli_available_quantity,
-                rec.meli_buying_mode,
-                rec.meli_condition,
-                rec.meli_listing_type,
-                rec.meli_base_price,
                 rec.meli_thumbnail
             ])
             # Validar imágenes secundarias (al menos una)
