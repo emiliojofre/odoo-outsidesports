@@ -15,7 +15,7 @@ class VexPublishProductWizard(models.TransientModel):
     product_id = fields.Many2one('product.template', string="Producto", required=True)
     name = fields.Char(string="Nombre")
     image_1920 = fields.Binary(string="Imagen")
-    meli_thumbnail = fields.Char(string="Thumbnail URL", help="URL of the product thumbnail")
+    meli_thumbnail = fields.Char(string="Thumbnail URL", help="URL of the product thumbnail", required=True)
 
     # Solo los campos requeridos por la API
     meli_title = fields.Char(string="ML Title", required=True)
@@ -27,11 +27,11 @@ class VexPublishProductWizard(models.TransientModel):
     meli_listing_type = fields.Char(string="Listing Type", required=True)
     instance_id = fields.Many2one('vex.instance', string="Instancia", required=True)
     meli_base_price = fields.Float(string="Base Price", help="Original base price")
-    meli_pictures_ids = fields.One2many('vex.publish.product.wizard.image', 'wizard_id', string="ML Pictures")
-    meli_attribute_ids = fields.One2many('vex.publish.product.wizard.attribute', 'wizard_id', string="ML Attributes")
-    meli_warranty_type = fields.Char(string="Tipo de Garantía (ID)")
-    meli_warranty_time = fields.Char(string="Tiempo de Garantía")
-    meli_description = fields.Text(string="Descripción en MercadoLibre")
+    meli_pictures_ids = fields.One2many('vex.publish.product.wizard.image', 'wizard_id', string="ML Pictures", required=True)
+    meli_attribute_ids = fields.One2many('vex.publish.product.wizard.attribute', 'wizard_id', string="ML Attributes", required=True)
+    meli_warranty_type = fields.Char(string="Tipo de Garantía (ID)", required=True)
+    meli_warranty_time = fields.Char(string="Tiempo de Garantía", required=True)
+    meli_description = fields.Text(string="Descripción en MercadoLibre", required=True)
 
     @api.model
     def default_get(self, fields_list):
@@ -116,6 +116,8 @@ class VexPublishProductWizard(models.TransientModel):
             'meli_condition': self.meli_condition,
             'meli_listing_type': self.meli_listing_type,
             'meli_base_price': self.meli_base_price,
+            'meli_warranty_type': self.meli_warranty_time,
+            'meli_warranty_time': self.meli_warranty_time,
         }
         self.product_id.write(vals)
         _logger.info(f"Campos simples sincronizados con product.template: {vals}")
