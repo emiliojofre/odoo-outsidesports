@@ -1921,6 +1921,31 @@ class VexExportWizard(models.TransientModel):
             self.export_orders(instance, headers) """
 
         return {'type': 'ir.actions.act_window_close'}
+    
+    def _upload_picture_to_meli(self, url, access_token):
+        upload_url = "https://api.mercadolibre.com/pictures/items/upload"
+        headers = {"Authorization": f"Bearer {access_token}"}
+        try:
+            img_resp = requests.get(url, stream=True)
+            if img_resp.status_code != 200:
+                raise UserError(f"No se pudo descargar la imagen: {url}")
+
+            content_type = img_resp.headers.get("Content-Type", "")
+            if not any(t in content_type for t in ["jpeg", "jpg", "png", "gif", "webp"]):
+                _logger.warning(f"Content-Type sospechoso ({content_type}) para {url}. Forzando image/jpeg")
+                content_type = "image/jpeg"
+
+            files = {"file": ("image.jpg", img_resp.content, content_type)}
+
+            resp = requests.post(upload_url, headers=headers, files=files)
+            if resp.status_code == 201:
+                return resp.json()  # devuelve {"id": "...", "secure_url": "..."}
+            else:
+                _logger.error(f"Error al subir imagen a ML [{resp.status_code}]: {resp.text}")
+                raise UserError(f"Error al subir imagen a MercadoLibre: {resp.text}")
+
+        except Exception as e:
+            raise UserError(f"No se pudo subir la imagen {url}: {str(e)}")
 
     def export_products(self, headers):
         # Buscar productos listos para publicar (ajusta el dominio según tus necesidades)
@@ -1933,12 +1958,30 @@ class VexExportWizard(models.TransientModel):
         for product in products:
             # Construir el payload igual que en tu wizard individual
             pictures = []
+
+            # Thumbnail principal
             if product.meli_thumbnail:
-                pictures.append({"source": product.meli_thumbnail})
-            pictures += [
-                {"source": img.secure_url}
-                for img in product.meli_pictures_ids if img.secure_url
-            ]
+                thumb_url = product.meli_thumbnail
+                if "mlstatic.com" not in thumb_url:  # imagen externa
+                    _logger.info(f"Subiendo thumbnail externo para {product.name}")
+                    pic_data = self._upload_picture_to_meli(thumb_url, headers["Authorization"].split(" ")[1])
+                    product.meli_thumbnail = pic_data.get("secure_url")
+                    pictures.append({"id": pic_data.get("id")})
+                else:
+                    pictures.append({"source": thumb_url})
+
+            # Imágenes secundarias
+            for img in product.meli_pictures_ids:
+                img_url = img.secure_url or img.url
+                if not img_url:
+                    continue
+                if "mlstatic.com" not in img_url:  # imagen externa
+                    _logger.info(f"Subiendo imagen secundaria externa para {product.name}")
+                    pic_data = self._upload_picture_to_meli(img_url, headers["Authorization"].split(" ")[1])
+                    img.write({"secure_url": pic_data.get("secure_url"), "url": pic_data.get("secure_url")})
+                    pictures.append({"id": pic_data.get("id")})
+                else:
+                    pictures.append({"source": img_url})
             if not pictures:
                 _logger.warning(f"Producto {product.name} sin imágenes válidas, se omite.")
                 continue
