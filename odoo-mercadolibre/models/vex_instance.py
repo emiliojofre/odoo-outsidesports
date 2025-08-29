@@ -48,6 +48,14 @@ class VexInstance(models.Model):
     meli_refresh_token = fields.Char('Refresh Token')
     email_instance = fields.Char("Email")
     meli_introduction = fields.Html('Introduction')
+    type_of_commission = fields.Selection(
+        [
+            ('fixed', 'Fixed'),
+            ('percentage', 'Percentage'),
+        ],
+        string="Type of Commission"
+    )
+    meli_comision = fields.Float(string="Commission")
 
     def get_user(self):
         if not self.meli_nick:
