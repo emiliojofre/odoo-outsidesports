@@ -137,8 +137,10 @@ class ProductTemplate(models.Model):
                 rec.meli_buying_mode,
                 rec.meli_base_price,
                 rec.meli_currency_id,
-                rec.meli_available_quantity,
-                rec.meli_thumbnail
+                rec.meli_thumbnail,
+                rec.meli_description,
+                rec.meli_warranty_type,
+                rec.meli_warranty_time
             ])
             # Validar imágenes secundarias (al menos una)
             imagenes_ok = bool(rec.meli_pictures_ids)
