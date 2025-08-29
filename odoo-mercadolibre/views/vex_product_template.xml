@@ -108,7 +108,7 @@
                             <group string="Relations">
                                 <field name="meli_pictures_ids">
                                     <tree>
-                                        <!-- <field name="url" widget="url" invisible="1"/> -->
+                                        <field name="url" widget="url" invisible="1"/>
                                         <field name="secure_url" widget="url"/>
                                     </tree>
                                 </field>

@@ -125,7 +125,7 @@ class VexPublishProductWizard(models.TransientModel):
         for img in self.meli_pictures_ids:
             self.product_id.meli_pictures_ids.create({
                 'product_tmpl_id': self.product_id.id,
-                # 'url': img.url,
+                'url': img.url,
                 'secure_url': img.secure_url,
             })
         _logger.info(f"Imágenes secundarias sincronizadas: {len(self.meli_pictures_ids)}")
@@ -168,13 +168,13 @@ class VexPublishProductWizard(models.TransientModel):
 
         # Imágenes secundarias
         for img in self.meli_pictures_ids:
-            img_url = img.secure_url
+            img_url = img.secure_url or img.url
             if not img_url:
                 continue
             if "mlstatic.com" not in img_url:
                 _logger.info("Imagen externa detectada. Subiendo a ML...")
                 pic_data = self._upload_picture_to_meli(img_url, access_token)
-                img.write({"secure_url": pic_data.get("secure_url")})
+                img.write({"secure_url": pic_data.get("secure_url"), "url": pic_data.get("secure_url")})
                 pictures.append({"id": pic_data.get("id")})
             else:
                 pictures.append({"source": img_url})
