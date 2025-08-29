@@ -2000,11 +2000,6 @@ class VexExportWizard(models.TransientModel):
                 if product.meli_warranty_time:
                     sale_terms.append({"id": "WARRANTY_TIME", "value_name": str(product.meli_warranty_time)})
 
-                # --- VALIDACIÓN ---
-                if not self.meli_category_vex or not self.meli_category_vex.startswith('ML'):
-                    _logger.error("Categoría inválida detectada.")
-                    raise UserError("Debes ingresar un ID de categoría válido de MercadoLibre, por ejemplo: MLA1055.")
-
                 precio_base = self.list_price
                 type_comision = instance.type_of_commission
                 valor_comision = instance.meli_commission
