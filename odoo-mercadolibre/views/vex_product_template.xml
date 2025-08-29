@@ -45,6 +45,7 @@
                                     <field name="meli_condition"/>
                                     <field name="meli_title"/>
                                     <field name="meli_permalink" widget="url"/>
+                                    <field name="meli_description" />
                                     <field name="ready_create" />
                                 </group>
                                 <group>
@@ -55,8 +56,8 @@
                                     <field name="meli_inventory_id"/>
                                     <field name="meli_tag_ids" widget="many2many_tags" placeholder="Agregar etiquetas..."/>
                                     <field name="meli_channel_ids" widget="many2many_tags" placeholder="Agregar canales..."/>
-                                    <field name="meli_buying_mode" />
                                     <field name="meli_health"/>
+                                    <field name="meli_buying_mode" />
                                     <field name="meli_warranty_type" />
                                     <field name="meli_warranty_time" />                       
                                 </group>

@@ -46,7 +46,7 @@ class VexPublishProductWizard(models.TransientModel):
             'meli_title', 'meli_category_vex', 'meli_currency_id',
             'meli_available_quantity', 'meli_buying_mode',
             'meli_condition', 'meli_listing_type',
-            'meli_thumbnail'
+            'meli_thumbnail', 'meli_warranty_time', 'meli_warranty_type',
         ]:
             res[field] = getattr(product, field)
         res['meli_base_price'] = product.list_price
@@ -116,7 +116,7 @@ class VexPublishProductWizard(models.TransientModel):
             'meli_condition': self.meli_condition,
             'meli_listing_type': self.meli_listing_type,
             'meli_base_price': self.meli_base_price,
-            'meli_warranty_type': self.meli_warranty_time,
+            'meli_warranty_type': self.meli_warranty_type,
             'meli_warranty_time': self.meli_warranty_time,
         }
         self.product_id.write(vals)
