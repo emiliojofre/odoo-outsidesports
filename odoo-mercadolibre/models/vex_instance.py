@@ -55,7 +55,7 @@ class VexInstance(models.Model):
         ],
         string="Type of Commission"
     )
-    meli_comision = fields.Float(string="Commission")
+    meli_commission = fields.Float(string="Commission")
 
     def get_user(self):
         if not self.meli_nick:

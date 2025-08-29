@@ -45,10 +45,11 @@ class VexPublishProductWizard(models.TransientModel):
         for field in [
             'meli_title', 'meli_category_vex', 'meli_currency_id',
             'meli_available_quantity', 'meli_buying_mode',
-            'meli_condition', 'meli_listing_type', 'meli_base_price',
+            'meli_condition', 'meli_listing_type',
             'meli_thumbnail'
         ]:
             res[field] = getattr(product, field)
+        res['meli_base_price'] = product.list_price
 
         # Solo imágenes secundarias
         pictures = [
@@ -210,7 +211,18 @@ class VexPublishProductWizard(models.TransientModel):
             _logger.error("Categoría inválida detectada.")
             raise UserError("Debes ingresar un ID de categoría válido de MercadoLibre, por ejemplo: MLA1055.")
 
-        price = int(self.meli_base_price) if self.meli_currency_id == 'CLP' else self.meli_base_price
+        precio_base = self.meli_base_price
+        tipo_comision = self.instance_id.type_of_commission
+        valor_comision = self.instance_id.meli_commission
+
+        if tipo_comision == 'fixed':
+            precio_meli = precio_base+valor_comision
+        elif tipo_comision == 'percentage':
+            precio_meli = precio_base*(1+valor_comision/100)
+        else:
+            precio_meli = precio_base
+
+        price = int(precio_meli) if self.meli_currency_id == 'CLP' else precio_meli
         _logger.info(f"Precio preparado para ML: {price}")
 
         # --- PAYLOAD ---

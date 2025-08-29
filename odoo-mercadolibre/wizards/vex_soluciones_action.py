@@ -2000,8 +2000,24 @@ class VexExportWizard(models.TransientModel):
                 if product.meli_warranty_time:
                     sale_terms.append({"id": "WARRANTY_TIME", "value_name": str(product.meli_warranty_time)})
 
+                # --- VALIDACIÓN ---
+                if not self.meli_category_vex or not self.meli_category_vex.startswith('ML'):
+                    _logger.error("Categoría inválida detectada.")
+                    raise UserError("Debes ingresar un ID de categoría válido de MercadoLibre, por ejemplo: MLA1055.")
+
+                precio_base = self.list_price
+                type_comision = instance.type_of_commission
+                valor_comision = instance.meli_commission
+
+                if type_comision == 'fixed':
+                    precio_meli = precio_base+valor_comision
+                elif type_comision == 'porcentage':
+                    precio_meli = precio_base*(1+valor_comision/100)
+                else:
+                    precio_meli = precio_base
+
                 # === Precio ===
-                price = int(product.meli_base_price) if product.meli_currency_id == 'CLP' else product.meli_base_price
+                price = int(precio_meli) if product.meli_currency_id == 'CLP' else precio_meli
 
                 payload = {
                     "title": product.meli_title,

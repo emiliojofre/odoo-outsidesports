@@ -62,7 +62,7 @@
                             <field name="meli_country" attrs="{'required': [('status', '=', 'initial_settings'), ('store_type', '=', 'mercadolibre')]}"/>
                             <field name="meli_default_currency" attrs="{'required': [('status', '=', 'initial_settings'), ('store_type', '=', 'mercadolibre')]}"/>
                             <field name="type_of_commission" />
-                            <field name="meli_comision" />
+                            <field name="meli_commission" />
                         </group>
 
                         <!-- Columna 2: Usuario -->
