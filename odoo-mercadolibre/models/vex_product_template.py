@@ -1000,7 +1000,7 @@ class ProductTemplateMeliImage(models.Model):
     _description = 'MercadoLibre Product Images'
 
     product_tmpl_id = fields.Many2one('product.template', ondelete="cascade")
-    url = fields.Char(string="Image URL", help="Original image URL from MercadoLibre")
+    # url = fields.Char(string="Image URL", help="Original image URL from MercadoLibre", )
     secure_url = fields.Char(string="Secure Image URL", help="HTTPS secure image URL from MercadoLibre")
 
 class ProductTemplateMeliVariation(models.Model):
