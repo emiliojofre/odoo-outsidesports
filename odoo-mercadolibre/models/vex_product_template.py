@@ -118,7 +118,7 @@ class ProductTemplate(models.Model):
     meli_warranty_type = fields.Selection([
         ('2230280', 'Garantia de Proveedor'),
     ], string="Tipo de Garantía", required=True)
-    meli_warranty_time = fields.Integer(string="Tiempo de Garantía (días)", help="Duración de la garantía en días", required=True)
+    meli_warranty_time = fields.Char(string="Tiempo de Garantía (días)", help="Duración de la garantía en días", required=True)
 
     @api.depends(
         'meli_title', 'meli_category_vex', 'meli_currency_id', 'meli_available_quantity',
