@@ -2000,7 +2000,7 @@ class VexExportWizard(models.TransientModel):
                 if product.meli_warranty_time:
                     sale_terms.append({"id": "WARRANTY_TIME", "value_name": str(product.meli_warranty_time)})
 
-                precio_base = self.list_price
+                precio_base = product.list_price
                 type_comision = instance.type_of_commission
                 valor_comision = instance.meli_commission
 
