@@ -47,10 +47,10 @@ class VexPublishProductWizard(models.TransientModel):
             'meli_available_quantity', 'meli_buying_mode',
             'meli_condition', 'meli_listing_type',
             'meli_thumbnail', 'meli_warranty_time', 'meli_warranty_type',
-            'meli_description'
         ]:
             res[field] = getattr(product, field)
         res['meli_base_price'] = product.list_price
+        res['meli_description'] = product.description_sale
 
         # Solo imágenes secundarias
         pictures = [
@@ -242,6 +242,9 @@ class VexPublishProductWizard(models.TransientModel):
             "pictures": pictures,
             "attributes": attributes,
             "sale_terms": sale_terms,
+            "description": {
+                "plain_text": self.meli_description,
+            }
         }
         _logger.info(f"Payload final enviado a ML: {json.dumps(payload, indent=2, ensure_ascii=False)}")
 
