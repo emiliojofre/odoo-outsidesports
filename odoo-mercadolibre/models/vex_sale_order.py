@@ -202,107 +202,152 @@ class SaleOrder(models.Model):
         return data
 
     def action_get_details(self):
-        for record in self:
-            if not record.meli_order_id:
-                raise UserError("Debe establecer primero el campo Meli Order ID.")
-            if not record.instance_id or not record.instance_id.meli_access_token:
-                raise UserError("No se ha definido el token de acceso en la instancia vinculada.")
+        """Main entry: Sync MercadoLibre order or pack into Sale Order."""
+        _logger.info("=== [ML SYNC] Inicio de action_get_details para sale.order ID=%s, meli_order_id=%s ===",
+                    self.id, self.meli_order_id)
 
-            access_token = record.instance_id.meli_access_token
-            url = f"https://api.mercadolibre.com/orders/{record.meli_order_id}"
-            headers = {'Authorization': f'Bearer {access_token}'}
-            response = requests.get(url, headers=headers)
-            Marketplace = record.env['vex.marketplace']
-            ml_marketplace = Marketplace.search([('name', '=', 'Mercado Libre')], limit=1)
+        # Validaciones iniciales
+        if not self.meli_order_id:
+            _logger.error("[ML SYNC] Error: No se definió meli_order_id en la orden ID=%s", self.id)
+            raise UserError("Debe establecer primero el campo Meli Order ID.")
+        if not self.instance_id or not self.instance_id.meli_access_token:
+            _logger.error("[ML SYNC] Error: No se definió instance_id o access_token en la orden ID=%s", self.id)
+            raise UserError("No se ha definido el token de acceso en la instancia vinculada.")
 
-            if response.status_code not in (200, 206):
-                raise UserError(f"Error al consultar API de MercadoLibre: {response.status_code} - {response.text}")
+        access_token = self.instance_id.meli_access_token
+        headers = {'Authorization': f'Bearer {access_token}'}
 
-            data = response.json()
-            _logger.info(f"Datos obtenidos de la API: {data}")
-            record.meli_json_data = json.dumps(data, indent=4, ensure_ascii=False)
-            buyer_nickname = self.safe_get(data, "buyer", "nickname")
-            if not buyer_nickname:
-                raise UserError("No se pudo obtener el nickname del comprador desde la API de MercadoLibre.")
-            # Evitar duplicados
-            partner_id = self.env['res.partner'].search([('nickname', '=', buyer_nickname)], limit=1)
-            if not partner_id:
-                partner_id = self.env['res.partner'].create({
-                    'name': data.get("buyer", {}).get("first_name", buyer_nickname) + " " + data.get("buyer", {}).get("last_name",""),
-                    'nickname': buyer_nickname,
-                    'instance_id': record.instance_id.id,
-                    'marketplace_ids': [(4, ml_marketplace.id)],
-                })
-            # 🔁 Limpiar líneas anteriores para evitar duplicados
-            record.meli_mediation_ids.unlink()
-            record.meli_item_ids.unlink()
-            record.meli_payment_ids.unlink()
+        # 1. Intentar como Orden
+        order_url = f"https://api.mercadolibre.com/orders/{self.meli_order_id}"
+        order_response = requests.get(order_url, headers=headers)
 
-            # Mediation records
-            mediations = [(0, 0, {'meli_mediation_id': str(m.get("id"))}) for m in data.get("mediations", [])]
+        order_data = {}
+        order_items = []
+        pack_id = None
 
-            # Order items
-            items = [(0, 0, {
-                'meli_item_id': i["item"]["id"],
-                'meli_title': i["item"]["title"],
-                'meli_category_id': i["item"]["category_id"],
-                'meli_variation_id': i["item"].get("variation_id"),
-                'meli_warranty': i["item"].get("warranty"),
-                'meli_condition': i["item"].get("condition"),
-                'meli_quantity': i["quantity"],
-                'meli_measure': self.safe_get(i, "requested_quantity", "measure"),
-                'meli_value': self.safe_get(i, "requested_quantity", "value"),
-                'meli_unit_price': i["unit_price"],
-                'meli_full_unit_price': i["full_unit_price"],
-                'meli_currency_id': i["currency_id"],
-                'meli_sale_fee': i["sale_fee"],
-                'meli_listing_type_id': i["listing_type_id"],
-            }) for i in data.get("order_items", [])]
-            # Crear sale.order.line para cada item
-            order_lines = []
-            product_model = self.env['product.template']
-            uom_model = self.env['uom.uom']
-            for i in data.get("order_items", []):
-                # Buscar producto por referencia externa o nombre
-                product = product_model.search([('meli_product_id', '=', i["item"]["id"])], limit=1)
-                if not product:
-                    product = product_model.create({
-                        'name': i["item"]["title"],
-                        'meli_product_id': i["item"]["id"],
-                        'detailed_type': 'product',
-                        'instance_id': record.instance_id.id,
-                        'marketplace_ids': [(4, ml_marketplace.id)],
-                        'taxes_id': [(6, 0, [20])],
-                    })
-                    product.action_get_details()
-                    product.set_image_from_meli()
-                # Buscar unidad de medida
-                uom = product.uom_id
-                if not uom:
-                    uom = uom_model.search([('name', 'ilike', 'Unit')], limit=1)
-                item_line = {}
-                # Crear línea de orden
-                product_product_id = self.env['product.product'].search([('product_tmpl_id', '=', product.id)], limit=1)
-                #item_line['product_template_id'] = product.id
-                item_line['product_id'] = product_product_id.id if product_product_id else False
-                item_line['name'] = i["item"]["title"]
-                item_line['product_uom_qty'] = i["quantity"]
-                item_line['price_unit'] = i["unit_price"]
-                item_line['product_uom'] = uom.id if uom else False
-                item_line['display_type'] = False
-                item_line['tax_id'] = [(6, 0, [20])] 
-                order_lines.append((0, 0, item_line))
-                
-                # order_lines.append((0, 0, {
-                #     'product_id': product.id,
-                #     'name': i["item"]["title"],
-                #     'product_uom_qty': i["quantity"],
-                #     'price_unit': i["unit_price"],
-                #     'product_uom': uom.id if uom else False,
-                # }))
+        if order_response.status_code == 200:
+            # Es una orden simple (o una orden que pertenece a un pack)
+            _logger.info("[ML SYNC] Se encontró la orden ML con ID=%s.", self.meli_order_id)
+            order_data = order_response.json()
+            pack_id = order_data.get("pack_id")
+            if pack_id:
+                # Si la orden pertenece a un pack, obtenemos todas las órdenes del pack para consolidar
+                _logger.info("[ML SYNC] La orden pertenece al pack %s. Consolidando ítems del pack.", pack_id)
+                all_pack_orders_data = self._meli_get_pack_orders(pack_id, headers)
+                consolidated_items = []
+                for sub_order_data in all_pack_orders_data:
+                    sub_order_id = sub_order_data.get('id')
+                    for item in sub_order_data.get("order_items", []):
+                        item['sub_order_id'] = sub_order_id
+                        consolidated_items.append(item)
+                order_items = consolidated_items
+                self.is_package = True
+            else:
+                # Es una orden simple
+                order_items = order_data.get("order_items", [])
+                # CORRECCIÓN: Asignar sub_order_id a cada item
+                for item in order_items:
+                    item['sub_order_id'] = self.meli_order_id
 
-            # Payments
-            payments = [(0, 0, {
+        elif order_response.status_code == 404:
+            # 2. Si falla, intentar como Pack
+            _logger.warning("[ML SYNC] Orden %s no encontrada, intentando como Pack ID.", self.meli_order_id)
+            pack_id = self.meli_order_id # El ID principal es el del pack
+            all_pack_orders_data = self._meli_get_pack_orders(pack_id, headers)
+            if not all_pack_orders_data:
+                raise UserError(f"El ID {pack_id} no se encontró ni como orden ni como pack en Mercado Libre.")
+            
+            order_data = all_pack_orders_data[0]
+            # Usamos los datos de la primera orden del pack como base para el partner, etc.
+            consolidated_items = []
+            for sub_order_data in all_pack_orders_data:
+                sub_order_id = sub_order_data.get('id')
+                for item in sub_order_data.get("order_items", []):
+                    item['sub_order_id'] = sub_order_id 
+                    consolidated_items.append(item)
+            
+            order_items = consolidated_items
+            self.is_package = True
+        else:
+            # Otro error de API
+            raise UserError(f"Error al consultar la API de Mercado Libre: {order_response.text}")
+
+        # Guardar JSON para auditoría
+        self.meli_json_data = json.dumps(order_data, indent=4, ensure_ascii=False)
+        _logger.debug("[ML SYNC] meli_json_data guardado en sale.order ID=%s", self.id)
+
+        # 🧑‍🤝‍🧑 Partner
+        _logger.info("[ML SYNC] Buscando o creando partner para la orden ID=%s ...", self.id)
+        partner_id = self._get_or_create_partner(order_data, self)
+        _logger.info("[ML SYNC] Partner asignado: ID=%s - Nombre=%s", partner_id.id, partner_id.name)
+
+        # 🧹 Limpiar líneas anteriores
+        _logger.info("[ML SYNC] Limpiando mediations, items y payments previos para sale.order ID=%s ...", self.id)
+        self.meli_mediation_ids.unlink()
+        self.meli_item_ids.unlink()
+        self.meli_payment_ids.unlink()
+
+        # 📦 Preparar líneas de venta
+        _logger.info("[ML SYNC] Preparando líneas de venta para %s ítems ...", len(order_items))
+        order_lines, meli_items = self._prepare_order_lines(order_items, self)
+        _logger.info("[ML SYNC] Líneas preparadas: %s | Ítems ML: %s", len(order_lines), len(meli_items))
+
+        # Valores comunes de la orden
+        vals = {
+            # Identificación
+            #'partner_id': partner_id.id,
+            'meli_pack_id': str(pack_id) if pack_id else False,
+            'meli_sale_id': str(pack_id) if pack_id else self.meli_order_id,
+
+            # Fechas
+            'date_order': self.parse_meli_datetime(order_data.get("date_created")),
+            'meli_date_created': self.parse_meli_datetime(order_data.get("date_created")),
+            'meli_last_updated': self.parse_meli_datetime(order_data.get("last_updated")),
+            'meli_date_closed': self.parse_meli_datetime(order_data.get("date_closed")),
+
+            # Datos de orden
+            'meli_fulfilled': order_data.get("fulfilled"),
+            'meli_buying_mode': order_data.get("buying_mode"),
+            'meli_total_amount': order_data.get("total_amount") or 0.0,
+            'meli_paid_amount': order_data.get("paid_amount") or 0.0,
+            'meli_currency_id_api': order_data.get("currency_id"),
+            'meli_status': order_data.get("status"),
+            'meli_status_detail': order_data.get("status_detail"),
+
+            # Tags
+            'meli_tags': ','.join(order_data.get("tags", [])),
+            'meli_internal_tags': ','.join(order_data.get("internal_tags", [])),
+            'meli_tag_ids': self.get_tag_ids('sale.meli.tag', order_data.get("tags", [])),
+            'meli_internal_tag_ids': self.get_tag_ids('sale.meli.internal.tag', order_data.get("internal_tags", [])),
+            'meli_context_flow_ids': self.get_tag_ids('sale.meli.context.flow', order_data.get("context", {}).get("flows", [])),
+
+            # Buyer / Seller
+            'meli_shipping_id': str(self.safe_get(order_data, "shipping", "id")),
+            'meli_buyer_id': str(self.safe_get(order_data, "buyer", "id")),
+            'meli_buyer_nickname': self.safe_get(order_data, "buyer", "nickname"),
+            'meli_buyer_first_name': self.safe_get(order_data, "buyer", "first_name"),
+            'meli_buyer_last_name': self.safe_get(order_data, "buyer", "last_name"),
+            'meli_seller_id': str(self.safe_get(order_data, "seller", "id")),
+            'meli_feedback_seller_id': str(self.safe_get(order_data, "feedback", "seller", "id")),
+            'meli_feedback_buyer_id': str(self.safe_get(order_data, "feedback", "buyer", "id")),
+
+            # Context
+            'meli_context_channel': self.safe_get(order_data, "context", "channel"),
+            'meli_context_site': self.safe_get(order_data, "context", "site"),
+            'meli_context_flows': ','.join(order_data.get("context", {}).get("flows", [])),
+
+            # Cancel
+            'meli_cancel_group': self.safe_get(order_data, "cancel_detail", "group"),
+            'meli_cancel_code': self.safe_get(order_data, "cancel_detail", "code"),
+            'meli_cancel_description': self.safe_get(order_data, "cancel_detail", "description"),
+            'meli_cancel_requested_by': self.safe_get(order_data, "cancel_detail", "requested_by"),
+            'meli_cancel_date': self.parse_meli_datetime(self.safe_get(order_data, "cancel_detail", "date")),
+            'meli_cancel_application_id': self.safe_get(order_data, "cancel_detail", "application_id"),
+
+            # Relaciones
+            'meli_mediation_ids': [(0, 0, {'meli_mediation_id': str(m.get("id"))}) for m in order_data.get("mediations", [])],
+            'meli_item_ids': meli_items,  # ya lo tenías con _prepare_order_lines
+            'meli_payment_ids': [(0, 0, {
                 'meli_payment_id': str(p["id"]),
                 'meli_payer_id': str(p["payer_id"]),
                 'meli_collector_id': self.safe_get(p, "collector", "id"),
@@ -327,54 +372,167 @@ class SaleOrder(models.Model):
                 'meli_date_created': self.parse_meli_datetime(p.get("date_created")),
                 'meli_date_last_modified': self.parse_meli_datetime(p.get("date_last_modified")),
                 'meli_marketplace_fee': p.get("marketplace_fee"),
-            }) for p in data.get("payments", [])]
+            }) for p in order_data.get("payments", [])],
 
-            # Escritura final
-            record.write({
-                'partner_id': partner_id.id,
-                'date_order': self.parse_meli_datetime(data.get("date_created")),
-                'meli_date_created': self.parse_meli_datetime(data.get("date_created")),
-                'meli_last_updated': self.parse_meli_datetime(data.get("last_updated")),
-                'meli_date_closed': self.parse_meli_datetime(data.get("date_closed")),
-                'meli_pack_id': str(data.get("pack_id")) if data.get("pack_id") else False,
-                'meli_fulfilled': data.get("fulfilled"),
-                'meli_buying_mode': data.get("buying_mode"),
-                'meli_total_amount': data.get("total_amount") or 0.0,
-                'meli_paid_amount': data.get("paid_amount") or 0.0,
-                'meli_currency_id_api': data.get("currency_id"),
-                'meli_status': data.get("status"),
-                'meli_status_detail': data.get("status_detail"),
-                'meli_tags': ','.join(data.get("tags", [])),
-                'meli_internal_tags': ','.join(data.get("internal_tags", [])),
-                'meli_manufacturing_ending_date': data.get("manufacturing_ending_date"),
-                'meli_shipping_id': str(self.safe_get(data, "shipping", "id")),
-                'meli_buyer_id': str(self.safe_get(data, "buyer", "id")),
-                'meli_buyer_nickname': self.safe_get(data, "buyer", "nickname"),
-                'meli_buyer_first_name': self.safe_get(data, "buyer", "first_name"),
-                'meli_buyer_last_name': self.safe_get(data, "buyer", "last_name"),
-                'meli_seller_id': str(self.safe_get(data, "seller", "id")),
-                'meli_feedback_seller_id': str(self.safe_get(data, "feedback", "seller", "id")),
-                'meli_feedback_buyer_id': str(self.safe_get(data, "feedback", "buyer", "id")),
-                'meli_context_channel': self.safe_get(data, "context", "channel"),
-                'meli_context_site': self.safe_get(data, "context", "site"),
-                'meli_context_flows': ','.join(data.get("context", {}).get("flows", [])),
-                'meli_cancel_group': self.safe_get(data, "cancel_detail", "group"),
-                'meli_cancel_code': self.safe_get(data, "cancel_detail", "code"),
-                'meli_cancel_description': self.safe_get(data, "cancel_detail", "description"),
-                'meli_cancel_requested_by': self.safe_get(data, "cancel_detail", "requested_by"),
-                'meli_cancel_date': self.parse_meli_datetime(self.safe_get(data, "cancel_detail", "date")),
-                'meli_cancel_application_id': self.safe_get(data, "cancel_detail", "application_id"),
-                'meli_order_request_change': self.safe_get(data, "order_request", "change"),
-                'meli_order_request_return': self.safe_get(data, "order_request", "return"),
-                'meli_mediation_ids': mediations,
-                'meli_item_ids': items,
-                'meli_payment_ids': payments,
-                'meli_tag_ids': self.get_tag_ids('sale.meli.tag', data.get("tags", [])),
-                'meli_internal_tag_ids': self.get_tag_ids('sale.meli.internal.tag', data.get("internal_tags", [])),
-                'meli_context_flow_ids': self.get_tag_ids('sale.meli.context.flow', data.get("context", {}).get("flows", [])),
-                'order_line': [(5, 0, 0)] + order_lines,
-            })
+            # Order lines y almacén
+            #'order_line': [(5, 0, 0)] + order_lines,
+            #'warehouse_id': self._get_default_warehouse(order_items),
+        }
+        if self.state=='draft':
+            vals['partner_id'] = partner_id.id
+            vals['order_line'] = [(5, 0, 0)] + order_lines
+            vals['warehouse_id'] = self._get_default_warehouse(order_items)       
+        _logger.debug("[ML SYNC] Valores que se escribirán en sale.order ID=%s: %s", self.id, vals)
+
+        if pack_id:
+            existing_order = self.env['sale.order'].search([
+                ('meli_sale_id', '=', str(pack_id))
+            ], limit=1)
+            if existing_order and existing_order.id != self.id:
+                _logger.info(f"Ya existe una sale.order para el pack {pack_id}: {existing_order.name}")
+                existing_order.write(vals)
+                return True
+            
+        # Crear o actualizar orden
+        if self.state == 'draft':
+            _logger.info("[ML SYNC] La orden está en estado 'draft'. Escribiendo y confirmando...")
+            self.write(vals)
+            self.action_confirm()
+            _logger.info("[ML SYNC] Orden ID=%s confirmada correctamente.", self.id)
+        else:
+            _logger.info("[ML SYNC] La orden NO está en estado draft. Solo se actualizan valores.")
+            self.write(vals)
+
+        _logger.info("=== [ML SYNC] Fin de action_get_details para sale.order ID=%s ===", self.id)
         return True
+
+
+
+    # ============================================================
+    # Métodos auxiliares
+    # ============================================================
+
+    def _meli_get_order(self, order_id, headers):
+        """Get order detail from MercadoLibre API."""
+        url = f"https://api.mercadolibre.com/orders/{order_id}"
+        response = requests.get(url, headers=headers)
+        if response.status_code not in (200, 206):
+            raise UserError(f"Error al consultar orden {order_id}: {response.status_code} - {response.text}")
+        return response.json()
+
+    def _meli_get_pack_orders(self, pack_id, headers):
+        """Get all orders inside a pack."""
+        url = f"https://api.mercadolibre.com/packs/{pack_id}"
+        response = requests.get(url, headers=headers)
+        if response.status_code not in (200, 206):
+            raise UserError(f"Error al consultar pack {pack_id}: {response.status_code} - {response.text}")
+        data_pack = response.json()
+        orders = []
+        for order in data_pack.get("orders", []):
+            od = self._meli_get_order(order.get("id"), headers)
+            orders.append(od)
+        return orders
+
+    def _get_or_create_partner(self, order_data, record):
+        """Get or create partner based on buyer nickname."""
+        ml_marketplace = self.env['vex.marketplace'].search([('name', '=', 'Mercado Libre')], limit=1)
+        buyer_nickname = self.safe_get(order_data, "buyer", "nickname")
+        if not buyer_nickname:
+            raise UserError("No se pudo obtener el nickname del comprador desde la API de MercadoLibre.")
+
+        partner = self.env['res.partner'].search([('nickname', '=', buyer_nickname)], limit=1)
+        if not partner:
+            partner = self.env['res.partner'].create({
+                'name': order_data.get("buyer", {}).get("first_name", buyer_nickname) + " " + order_data.get("buyer", {}).get("last_name", ""),
+                'nickname': buyer_nickname,
+                'instance_id': record.instance_id.id,
+                'marketplace_ids': [(4, ml_marketplace.id)],
+                'company_id': record.company_id.id if record.company_id else False
+            })
+        return partner
+
+    def _prepare_order_lines(self, order_items, record):
+        order_lines = []
+        meli_items = []
+        product_model = self.env['product.template']
+        uom_model = self.env['uom.uom']
+
+        for i in order_items:
+            product = product_model.search([('meli_product_id', '=', i["item"]["id"])], limit=1)
+            if not product:
+                product = product_model.create({
+                    'name': i["item"]["title"],
+                    'meli_product_id': i["item"]["id"],
+                    'detailed_type': 'product',
+                    'instance_id': record.instance_id.id,
+                    'marketplace_ids': [(4, self.env.ref('odoo-mercadolibre.vex_marketplace_mercadolibre').id)],
+                    'company_id': record.company_id.id if record.company_id else False
+                })
+                product.action_get_details()
+                product.set_image_from_meli()
+                product.action_download_stock()
+
+            uom = product.uom_id or uom_model.search([('name', 'ilike', 'Unit')], limit=1)
+            product_product_id = self.env['product.product'].search([('product_tmpl_id', '=', product.id)], limit=1)
+
+            sub_order_id = i.get('sub_order_id') or record.meli_order_id
+
+            order_lines.append((0, 0, {
+                'product_id': product_product_id.id if product_product_id else False,
+                'name': i["item"]["title"],
+                'product_uom_qty': i["quantity"],
+                'price_unit': i["unit_price"],
+                'product_uom': uom.id if uom else False,
+                'display_type': False,
+                'order_meli_id': str(sub_order_id) if sub_order_id else False,  
+            }))
+
+            meli_items.append((0, 0, {
+                'meli_item_id': i["item"]["id"],
+                'meli_title': i["item"]["title"],
+                'meli_category_id': i["item"]["category_id"],
+                'meli_variation_id': i["item"].get("variation_id"),
+                'meli_warranty': i["item"].get("warranty"),
+                'meli_condition': i["item"].get("condition"),
+                'meli_quantity': i["quantity"],
+                'meli_unit_price': i["unit_price"],
+                'meli_full_unit_price': i["full_unit_price"],
+                'meli_currency_id': i["currency_id"],
+            }))
+
+        return order_lines, meli_items
+
+    def _get_default_warehouse(self, order_items):
+        """Select default warehouse based on logistic type of first item."""
+        if not order_items:
+            return False
+        first_item = order_items[0]
+        product = self.env['product.template'].search([('meli_product_id', '=', first_item["item"]["id"])], limit=1)
+        if product and product.meli_logistic_type == 'fulfillment':
+            #return self.env.ref('odoo-mercadolibre.stock_warehouse_mercadolibre_full').id
+            return self.instance_id.ml_full_warehouse_id.id
+        #return self.env.ref('odoo-mercadolibre.stock_warehouse_mercadolibre_not_full').id
+        return self.instance_id.ml_not_full_warehouse_id.id
+
+    def action_confirm_delivery(self):
+        for order in self:
+            pickings = self.env['stock.picking'].search([
+                ('origin', '=', self.name),
+                ('state', 'not in', ['done', 'cancel'])
+            ])
+            for picking in pickings:
+                if picking.state == 'draft':
+                    picking.action_confirm()
+                if picking.state in ['confirmed', 'assigned']:
+                    picking.action_assign()
+
+                # Asegurar que se llenen las cantidades entregadas
+                for move_line in picking.move_ids_without_package:
+                    if move_line.quantity == 0.0:
+                        move_line.quantity = move_line.product_uom_qty
+
+                # Validar (confirma la entrega sin abrir wizard)
+                picking.button_validate()
 
     def action_get_shipping_details(self):
         for order in self:
@@ -492,6 +650,14 @@ class SaleOrder(models.Model):
                 'meli_sender_latitude': sender.get('latitude'),
                 'meli_sender_longitude': sender.get('longitude'),                
             })
+            if data.get('status')=='delivered':
+                order.action_confirm_delivery()
+                if order.instance_id.allow_send_auto_invoice:
+                    if order.meli_shipping_logistic_type == 'fulfillment':
+                        if not order.meli_autoinvoicing_sent:
+                            _logger.info("Enviando mensaje de autoinvoicing al cliente...")
+                            order.meli_send_message_to_customer()
+                            order.meli_autoinvoicing_sent = True
         return True
         
     def action_get_customer_details(self):

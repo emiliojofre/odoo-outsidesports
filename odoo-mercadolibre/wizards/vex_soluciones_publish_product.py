@@ -32,6 +32,26 @@ class VexPublishProductWizard(models.TransientModel):
     meli_warranty_type = fields.Char(string="Tipo de Garantía (ID)", required=True)
     meli_warranty_time = fields.Char(string="Tiempo de Garantía", required=True)
     meli_description = fields.Text(string="Descripción en MercadoLibre", required=True)
+    meli_logistic_type = fields.Selection([
+    ('fulfillment', 'Fulfillment (Mercado Libre Full)'),
+    ('cross_docking', 'Cross Docking'),
+    ('drop_off', 'Drop Off (Sucursal de correo)'),
+    ('xd_drop_off', 'Cross Docking + Drop Off'),
+    ('self_service', 'Self Service (Logística propia)'),
+    ('not_specified', 'No especificado'),
+    ], 
+    default="not_specified",
+    string="Tipo de Logística",
+    required=True,
+    help="""
+    **fulfillment**: El producto está en los almacenes de Mercado Libre (Full). ML se encarga de almacenamiento, empaque, envío y postventa.
+    **cross_docking**: El vendedor lleva la mercadería a una estación de Mercado Libre y desde ahí ML hace el despacho.
+    **drop_off**: El vendedor despacha el producto en una sucursal de correo autorizado por ML.
+    **xd_drop_off**: Variante mixta: drop off + cross docking.
+    **self_service**: El vendedor organiza y paga su propia logística, sin integración con ML.
+    **not_specified**: No se especifica ningún tipo de logística (por defecto).
+    """
+    )
 
     @api.model
     def default_get(self, fields_list):
@@ -44,7 +64,7 @@ class VexPublishProductWizard(models.TransientModel):
 
         for field in [
             'meli_title', 'meli_category_vex', 'meli_currency_id',
-            'meli_available_quantity', 'meli_buying_mode',
+            'meli_buying_mode',
             'meli_condition', 'meli_listing_type',
             'meli_thumbnail', 'meli_warranty_time', 'meli_warranty_type',
         ]:
@@ -76,7 +96,13 @@ class VexPublishProductWizard(models.TransientModel):
         if instance:
             res['instance_id'] = instance.id
 
+        wizard = self.browse()
+        wizard.update(res)
+        wizard._onchange_meli_logistic_type()
+        res['meli_available_quantity'] = wizard.meli_available_quantity
+        
         return res
+    
 
     def _upload_picture_to_meli(self, url, access_token):
         upload_url = "https://api.mercadolibre.com/pictures/items/upload"
@@ -102,6 +128,24 @@ class VexPublishProductWizard(models.TransientModel):
 
         except Exception as e:
             raise UserError(f"No se pudo subir la imagen {url}: {str(e)}")
+
+    @api.onchange('meli_logistic_type', 'instance_id', 'product_id')
+    def _onchange_meli_logistic_type(self):
+        qty = 0
+        instance = self.instance_id
+        product = self.product_id
+        if instance and product:
+            if self.meli_logistic_type == 'fulfillment':
+                location = instance.ml_full_location_id
+            else:
+                location = instance.ml_not_full_location_id
+            if location:
+                quant = self.env['stock.quant'].search([
+                    ('product_id', '=', product.id),
+                    ('location_id', '=', location.id)
+                ], limit=1)
+                qty = quant.quantity if quant else 0
+        self.meli_available_quantity = qty
 
     def action_publish(self):
         self.ensure_one()
@@ -242,6 +286,7 @@ class VexPublishProductWizard(models.TransientModel):
             "pictures": pictures,
             "attributes": attributes,
             "sale_terms": sale_terms,
+            "logistic_type": self.meli_logistic_type,
             "description": {
                 "plain_text": self.meli_description,
             }
