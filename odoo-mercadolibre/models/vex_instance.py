@@ -56,6 +56,31 @@ class VexInstance(models.Model):
         string="Type of Commission"
     )
     meli_commission = fields.Float(string="Commission")
+    ml_full_warehouse_id = fields.Many2one(
+        comodel_name="stock.warehouse",
+        string="MercadoLibre Full Warehouse",
+        help="Select the MercadoLibre Full warehouse for this product.",
+    )
+
+    ml_full_location_id = fields.Many2one(
+        comodel_name="stock.location",
+        string="MercadoLibre Full Location",
+        domain="[('warehouse_id', '=', ml_full_warehouse_id)]",
+        help="Select the MercadoLibre Full location based on the selected warehouse.",
+    )
+
+    ml_not_full_warehouse_id = fields.Many2one(
+        comodel_name="stock.warehouse",
+        string="MercadoLibre Not Full Warehouse",
+        help="Select the MercadoLibre Not Full warehouse for this product.",
+    )
+
+    ml_not_full_location_id = fields.Many2one(
+        comodel_name="stock.location",
+        string="MercadoLibre Not Full Location",
+        domain="[('warehouse_id', '=', ml_not_full_warehouse_id)]",
+        help="Select the MercadoLibre Not Full location based on the selected warehouse.",
+    )
 
     def get_user(self):
         if not self.meli_nick:
