@@ -113,66 +113,26 @@ class VexPublishProductWizard(models.TransientModel):
         logistic_type = res.get('meli_logistic_type') or 'not_specified'
         res['meli_logistic_type'] = logistic_type
 
-        # --- Cantidad según tipo logístico ---
-        qty = 0
-        if instance and product:
-            if logistic_type == 'fulfillment':
-                location = instance.ml_full_location_id
-            else:
-                location = instance.ml_not_full_location_id
-            if location:
-                quant = self.env['stock.quant'].search([
-                    ('product_id', 'in', product.product_variant_ids.ids),
-                    ('location_id', '=', location.id)
-                ], limit=1)
-                qty = quant.quantity if quant else 0
-        res['meli_available_quantity'] = qty
-
         return res
-
-    def _upload_picture_to_meli(self, url, access_token):
-        upload_url = "https://api.mercadolibre.com/pictures/items/upload"
-        headers = {"Authorization": f"Bearer {access_token}"}
-        try:
-            img_resp = requests.get(url, stream=True)
-            if img_resp.status_code != 200:
-                raise UserError(f"No se pudo descargar la imagen: {url}")
-
-            content_type = img_resp.headers.get("Content-Type", "")
-            if not any(t in content_type for t in ["jpeg", "jpg", "png", "gif", "webp"]):
-                _logger.warning(f"Content-Type sospechoso ({content_type}) para {url}. Forzando image/jpeg")
-                content_type = "image/jpeg"
-
-            files = {"file": ("image.jpg", img_resp.content, content_type)}
-
-            resp = requests.post(upload_url, headers=headers, files=files)
-            if resp.status_code == 201:
-                return resp.json()  # devuelve todo (id, secure_url, etc.)
-            else:
-                _logger.error(f"Error al subir imagen a ML [{resp.status_code}]: {resp.text}")
-                raise UserError(f"Error al subir imagen a MercadoLibre: {resp.text}")
-
-        except Exception as e:
-            raise UserError(f"No se pudo subir la imagen {url}: {str(e)}")
 
     @api.onchange('meli_logistic_type', 'instance_id', 'product_id')
     def _onchange_meli_logistic_type(self):
-        qty = 0
-        instance = self.instance_id
-        product = self.product_id
-        if instance and product:
-            if self.meli_logistic_type == 'fulfillment':
-                location = instance.ml_full_location_id
-            else:
-                location = instance.ml_not_full_location_id
-            if location:
-                quant = self.env['stock.quant'].search([
-                    ('product_id', 'in', product.product_variant_ids.ids),
-                    ('location_id', '=', location.id)
-                ], limit=1)
-                qty = quant.quantity if quant else 0
-        self.meli_available_quantity = qty
-
+        for wizard in self:
+            qty = 0
+            instance = wizard.instance_id
+            product = wizard.product_id
+            if instance and product:
+                if wizard.meli_logistic_type == 'fulfillment':
+                    location = instance.ml_full_location_id
+                else:
+                    location = instance.ml_not_full_location_id
+                if location:
+                    quant = self.env['stock.quant'].search([
+                        ('product_id', 'in', product.product_variant_ids.ids),
+                        ('location_id', '=', location.id)
+                    ], limit=1)
+                    qty = quant.quantity if quant else 0
+            wizard.meli_available_quantity = qty
 
     def action_publish(self):
         self.ensure_one()
@@ -229,32 +189,13 @@ class VexPublishProductWizard(models.TransientModel):
 
         # --- ARMAR IMÁGENES CON SUBIDA PREVIA A ML ---
         pictures = []
-
-        # Imagen principal
         if self.meli_thumbnail:
-            thumb_url = self.meli_thumbnail
-            _logger.info(f"Procesando thumbnail: {thumb_url}")
-            if "mlstatic.com" not in thumb_url:
-                _logger.info("Thumbnail externo detectado. Subiendo a ML...")
-                pic_data = self._upload_picture_to_meli(thumb_url, access_token)
-                self.meli_thumbnail = pic_data.get("secure_url")
-                self.product_id.meli_thumbnail = pic_data.get("secure_url")
-                pictures.append({"id": pic_data.get("id")})
-            else:
-                pictures.append({"source": thumb_url})
+            pictures.append({"source": self.meli_thumbnail})
 
-        # Imágenes secundarias
-        for img in self.meli_pictures_ids:
-            img_url = img.secure_url or img.url
-            if not img_url:
-                continue
-            if "mlstatic.com" not in img_url:
-                _logger.info("Imagen externa detectada. Subiendo a ML...")
-                pic_data = self._upload_picture_to_meli(img_url, access_token)
-                img.write({"secure_url": pic_data.get("secure_url"), "url": pic_data.get("secure_url")})
-                pictures.append({"id": pic_data.get("id")})
-            else:
-                pictures.append({"source": img_url})
+        # Agregar imágenes secundarias
+        for pic in self.meli_pictures_ids:
+            if pic.secure_url:
+                pictures.append({"source": pic.secure_url})
 
         if not pictures:
             _logger.warning("No se encontraron imágenes válidas para publicar en ML.")
@@ -351,5 +292,10 @@ class VexPublishProductWizard(models.TransientModel):
         })
         _logger.info(f"Producto publicado con éxito en ML. ID: {data.get('id')} | Status: {data.get('status')}")
 
-        return {'type': 'ir.actions.act_window_close'}
+        return {
+            'type': 'ir.actions.act_window',
+            "res_model": 'product.tempaate',
+            "view_model": 'form',
+            "res_id": self.product_id.id
+        }
 
