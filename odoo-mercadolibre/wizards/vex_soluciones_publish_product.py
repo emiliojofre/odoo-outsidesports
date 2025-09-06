@@ -69,7 +69,9 @@ class VexPublishProductWizard(models.TransientModel):
         res['image_1920'] = product.image_1920
 
         base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
-        res['meli_thumbnail'] = f"{base_url}/web/image/product.template/{product.id}/image_1920"
+        variant = product.product_variant_id  
+
+        res['meli_thumbnail'] = f"{base_url}/web/image/product.product/{variant.id}/image_1920"
 
         for field in [
             'meli_title', 'meli_category_vex', 'meli_currency_id',
