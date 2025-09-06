@@ -54,6 +54,12 @@ class VexPublishProductWizard(models.TransientModel):
     )
 
     @api.model
+    def set_odoo_image_url_as_thumbnail(self, product):
+        base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
+        image_url = f"{base_url}/web/image/product.template/{product.id}/image_1920"
+        product.meli_thumbnail = image_url
+
+    @api.model
     def default_get(self, fields_list):
         res = super().default_get(fields_list)
         product = self.env['product.template'].browse(self.env.context.get('active_id'))
@@ -61,6 +67,9 @@ class VexPublishProductWizard(models.TransientModel):
         res['product_id'] = product.id
         res['name'] = product.name
         res['image_1920'] = product.image_1920
+
+        base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
+        res['meli_thumbnail'] = f"{base_url}/web/image/product.template/{product.id}/image_1920"
 
         for field in [
             'meli_title', 'meli_category_vex', 'meli_currency_id',
@@ -100,7 +109,7 @@ class VexPublishProductWizard(models.TransientModel):
         wizard.update(res)
         wizard._onchange_meli_logistic_type()
         res['meli_available_quantity'] = wizard.meli_available_quantity
-        
+
         return res
     
 
