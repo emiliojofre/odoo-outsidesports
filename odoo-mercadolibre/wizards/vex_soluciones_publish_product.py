@@ -68,12 +68,12 @@ class VexPublishProductWizard(models.TransientModel):
         res['name'] = product.name
         res['image_1920'] = product.image_1920
 
-        # --- Generar URL de la imagen principal desde el variant ---
+        # --- Generar URL imagen principal ---
         base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
         variant = product.product_variant_id
         res['meli_thumbnail'] = f"{base_url}/web/image/product.product/{variant.id}/image_1920"
 
-        # --- Copiar campos simples, SIN meli_thumbnail para evitar sobreescribir ---
+        # --- Copiar campos simples ---
         for field in [
             'meli_title', 'meli_category_vex', 'meli_currency_id',
             'meli_buying_mode',
@@ -109,10 +109,17 @@ class VexPublishProductWizard(models.TransientModel):
         if instance:
             res['instance_id'] = instance.id
 
-        # --- Cantidad disponible (stock) ---
+        # --- Definir tipo logístico por defecto ---
+        logistic_type = res.get('meli_logistic_type') or 'not_specified'
+        res['meli_logistic_type'] = logistic_type
+
+        # --- Cantidad según tipo logístico ---
         qty = 0
         if instance and product:
-            location = instance.ml_full_location_id if res.get('meli_logistic_type') == 'fulfillment' else instance.ml_not_full_location_id
+            if logistic_type == 'fulfillment':
+                location = instance.ml_full_location_id
+            else:
+                location = instance.ml_not_full_location_id
             if location:
                 quant = self.env['stock.quant'].search([
                     ('product_id', 'in', product.product_variant_ids.ids),
@@ -184,6 +191,7 @@ class VexPublishProductWizard(models.TransientModel):
             'meli_warranty_type': self.meli_warranty_type,
             'meli_warranty_time': self.meli_warranty_time,
             'meli_description': self.meli_description,
+            'meli_thumbnail': self.meli_thumbnail,
         }
         self.product_id.write(vals)
         _logger.info(f"Campos simples sincronizados con product.template: {vals}")
