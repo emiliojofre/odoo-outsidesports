@@ -68,22 +68,24 @@ class VexPublishProductWizard(models.TransientModel):
         res['name'] = product.name
         res['image_1920'] = product.image_1920
 
+        # --- Generar URL de la imagen principal desde el variant ---
         base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
-        variant = product.product_variant_id  
-
+        variant = product.product_variant_id
         res['meli_thumbnail'] = f"{base_url}/web/image/product.product/{variant.id}/image_1920"
 
+        # --- Copiar campos simples, SIN meli_thumbnail para evitar sobreescribir ---
         for field in [
             'meli_title', 'meli_category_vex', 'meli_currency_id',
             'meli_buying_mode',
             'meli_condition', 'meli_listing_type',
-            'meli_thumbnail', 'meli_warranty_time', 'meli_warranty_type',
+            'meli_warranty_time', 'meli_warranty_type',
         ]:
             res[field] = getattr(product, field)
+
         res['meli_base_price'] = product.list_price
         res['meli_description'] = product.description_sale
 
-        # Solo imágenes secundarias
+        # --- Imágenes secundarias ---
         pictures = [
             (0, 0, {'url': img.url, 'secure_url': img.secure_url})
             for img in product.meli_pictures_ids
@@ -91,7 +93,7 @@ class VexPublishProductWizard(models.TransientModel):
         ]
         res['meli_pictures_ids'] = pictures
 
-        # Copiar atributos al wizard (todos los campos relevantes)
+        # --- Atributos ---
         res['meli_attribute_ids'] = [
             (0, 0, {
                 'meli_attribute_id': attr.meli_attribute_id,
@@ -102,12 +104,12 @@ class VexPublishProductWizard(models.TransientModel):
             for attr in product.meli_attribute_ids
         ]
 
-        # Instancia por defecto
+        # --- Instancia por defecto ---
         instance = self.env['vex.instance'].search([('name', 'ilike', 'RIFCIF ODOO')], limit=1)
         if instance:
             res['instance_id'] = instance.id
 
-        # Calcular qty inicial directamente en res
+        # --- Cantidad disponible (stock) ---
         qty = 0
         if instance and product:
             location = instance.ml_full_location_id if res.get('meli_logistic_type') == 'fulfillment' else instance.ml_not_full_location_id
@@ -120,7 +122,6 @@ class VexPublishProductWizard(models.TransientModel):
         res['meli_available_quantity'] = qty
 
         return res
-    
 
     def _upload_picture_to_meli(self, url, access_token):
         upload_url = "https://api.mercadolibre.com/pictures/items/upload"
