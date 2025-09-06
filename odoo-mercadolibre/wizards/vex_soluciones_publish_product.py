@@ -105,10 +105,17 @@ class VexPublishProductWizard(models.TransientModel):
         if instance:
             res['instance_id'] = instance.id
 
-        wizard = self.browse()
-        wizard.update(res)
-        wizard._onchange_meli_logistic_type()
-        res['meli_available_quantity'] = wizard.meli_available_quantity
+        # Calcular qty inicial directamente en res
+        qty = 0
+        if instance and product:
+            location = instance.ml_full_location_id if res.get('meli_logistic_type') == 'fulfillment' else instance.ml_not_full_location_id
+            if location:
+                quant = self.env['stock.quant'].search([
+                    ('product_id', 'in', product.product_variant_ids.ids),
+                    ('location_id', '=', location.id)
+                ], limit=1)
+                qty = quant.quantity if quant else 0
+        res['meli_available_quantity'] = qty
 
         return res
     
@@ -150,11 +157,12 @@ class VexPublishProductWizard(models.TransientModel):
                 location = instance.ml_not_full_location_id
             if location:
                 quant = self.env['stock.quant'].search([
-                    ('product_id', '=', product.id),
+                    ('product_id', 'in', product.product_variant_ids.ids),
                     ('location_id', '=', location.id)
                 ], limit=1)
                 qty = quant.quantity if quant else 0
         self.meli_available_quantity = qty
+
 
     def action_publish(self):
         self.ensure_one()
