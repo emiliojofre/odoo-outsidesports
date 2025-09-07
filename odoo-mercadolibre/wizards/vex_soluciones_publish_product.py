@@ -122,10 +122,14 @@ class VexPublishProductWizard(models.TransientModel):
         # --- Calcular gross_amount con API de ML ---
         price = product.list_price
         category = product.meli_category_vex
+        instance = product.instance_id or self.env['vex.instance'].search([('name', 'ilike', 'RIFCIF ODOO')], limit=1)
+        if instance:
+            res['instance_id'] = instance.id
         if price and category:
             try:
                 url = f"https://api.mercadolibre.com/sites/MLC/listing_prices?price={int(price)}&category_id={category}"
-                response = requests.get(url)
+                headers = {"Authorization": f"Bearer {instance.meli_access_token}"}
+                response = requests.get(url, headers=headers)
                 if response.status_code == 200:
                     data = response.json()
                     if data and isinstance(data, list):
@@ -202,10 +206,16 @@ class VexPublishProductWizard(models.TransientModel):
         for wizard in self:
             price = self.meli_base_price
             category = self.meli_category_vex
+            instance = wizard.instance_id
+            if instance and instance.meli_access_token:
+                access_token = instance.meli_access_token
+            else:
+                access_token = False
             if price and category:
                 try:
                     url = f"https://api.mercadolibre.com/sites/MLC/listing_prices?price={int(price)}&category_id={category}"
-                    response = requests.get(url)
+                    headers = {"Authorization": f"Bearer {access_token}"}
+                    response = requests.get(url, headers=headers)
                     if response.status_code == 200:
                         data = response.json()
                         if data and isinstance(data, list):
