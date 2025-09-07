@@ -34,7 +34,15 @@ class ProductTemplate(models.Model):
     meli_sold_quantity = fields.Integer(string="Sold Quantity", help="Total units sold")
     meli_buying_mode = fields.Char(string="Buying Mode", help="Buying mode used (e.g., buy_it_now)")
     meli_listing_type = fields.Char(string="Listing Type", help="Type of MercadoLibre listing")
-    meli_condition = fields.Char(string="Condition", help="Condition of the product")
+    meli_condition = fields.Selection(
+        [
+            ('2230284', 'Nuevo'),
+            ('2230581', 'Usado'),
+        ],
+        string="Condición",
+        required=True,
+        help="Condición del ítem para Mercado Libre"
+    )
     meli_permalink = fields.Char(string="Product URL", help="Permanent link to the product on MercadoLibre")
     meli_thumbnail = fields.Char(string="Thumbnail URL", help="URL of the product thumbnail")
     meli_inventory_id = fields.Char(string="Inventory ID", help="Inventory identifier in MercadoLibre")

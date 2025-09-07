@@ -36,9 +36,32 @@ class VexPublishProductWizard(models.TransientModel):
     meli_category_vex = fields.Char(string="Categoría ID", required=True)
     meli_currency_id = fields.Char(string="Moneda", required=True)
     meli_available_quantity = fields.Integer(string="Cantidad disponible", required=True)
-    meli_buying_mode = fields.Char(string="Modo de compra", required=True)
-    meli_condition = fields.Char(string="Condición", required=True)
-    meli_listing_type = fields.Char(string="Tipo de publicación", required=True)
+    meli_buying_mode = fields.Selection(
+        [
+            ('buy_it_now', 'Compra inmediata'),
+        ],
+        string="Modo de compra",
+        required=True,
+        help="Modo de compra permitido por Mercado Libre"
+    )
+    meli_condition = fields.Selection(
+        [
+            ('2230284', 'Nuevo'),
+            ('2230581', 'Usado'),
+        ],
+        string="Condición",
+        required=True,
+        help="Condición del ítem para Mercado Libre"
+    )
+    meli_listing_type = fields.Selection(
+        [
+            ('gold_pro', 'Premium'),
+            ('gold_special', 'Clásica'),
+        ],
+        string="Tipo de publicación",
+        required=True,
+        help="Tipo de publicación en Mercado Libre"
+    )
     percentaje_fee = fields.Float(string="Porcentaje de comisión", help="Porcentaje de comisión de MercadoLibre")
     fixed_fee = fields.Float(string="Comisión fija", help="Comisión fija de MercadoLibre")
     gross_amount = fields.Float(string="Monto bruto", help="Monto bruto antes de comisiones")
