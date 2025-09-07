@@ -170,6 +170,32 @@ class VexPublishProductWizard(models.TransientModel):
             wizard.meli_available_quantity = qty
             _logger.info(f"Logistic Type: {wizard.meli_logistic_type} | Location: {location.display_name if location else 'N/A'} | Qty: {qty}")
 
+    @api.onechange('meli_base_price', 'meli_category_vex')
+    def _onchange_meli_base_price_or_category(self):
+        for wizard in self:
+            price = self.meli_base_price
+            category = self.meli_category_vex
+            if price and category:
+                try:
+                    url = f"https://api.mercadolibre.com/sites/MLC/listing_prices?price={int(price)}&category_id={category}"
+                    response = requests.get(url)
+                    if response.status_code == 200:
+                        data = response.json()
+                        if data and isinstance(data, list):
+                            info = data[0]
+                            wizard.percentaje_fee = info.get('sale_fee_details', {}).get('percentage_fee', 0)
+                            wizard.fixed_fee = info.get('sale_fee_details', {}).get('fixed_fee', 0)
+                            wizard.gross_amount = info.get('sale_fee_details', {}).get('gross_amount', 0)
+                            if wizard.gross_amount:
+                                wizard.meli_base_price = wizard.gross_amount
+                                _logger.info(f"API ML precios: {info}")
+                        else:
+                            _logger.warning("Respuesta vacía o inesperada de la API de Mercado Libre.")
+                    else:
+                        _logger.warning(f"Error al consultar la API de ML: {response.status_code} - {response.text}")
+                except Exception as e:
+                    _logger.error(f"Error al consumir la API de ML: {e}")
+
     def action_publish(self):
         self.ensure_one()
         _logger.info(f"=== Iniciando publicación del producto {self.product_id.name} (ID {self.product_id.id}) ===")
@@ -263,20 +289,6 @@ class VexPublishProductWizard(models.TransientModel):
         if not self.meli_category_vex or not self.meli_category_vex.startswith('ML'):
             _logger.error("Categoría inválida detectada.")
             raise UserError("Debes ingresar un ID de categoría válido de MercadoLibre, por ejemplo: MLA1055.")
-
-        # precio_base = self.meli_base_price
-        # tipo_comision = self.instance_id.type_of_commission
-        # valor_comision = self.instance_id.meli_commission
-
-        # if tipo_comision == 'fixed':
-        #     precio_meli = precio_base+valor_comision
-        # elif tipo_comision == 'percentage':
-        #     precio_meli = precio_base*(1+valor_comision/100)
-        # else:
-        #     precio_meli = precio_base
-
-        # price = int(precio_meli) if self.meli_currency_id == 'CLP' else precio_meli
-        # _logger.info(f"Precio preparado para ML: {price}")
 
         # --- PAYLOAD ---
         payload = {

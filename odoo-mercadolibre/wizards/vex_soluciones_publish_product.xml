@@ -7,7 +7,7 @@
 
                 <!-- Información del producto -->
                 <group col="2">
-                    <group>
+                    <group string="Información del producto">
                         <field name="instance_id"/>
                         <field name="name" readonly="1"/>
                         <field name="meli_thumbnail" readonly="1"/>
@@ -17,7 +17,7 @@
                     <group string="Detalle del Precio">
                         <field name="percentaje_fee" />
                         <field name="fixed_fee" />
-                        <field name="gross_amount" class="oe_bold"/>
+                        <field name="gross_amount" class="oe_inline oe_bold" readonly="1"/>
                         <field name="meli_base_price" />
                     </group>
                 </group>
