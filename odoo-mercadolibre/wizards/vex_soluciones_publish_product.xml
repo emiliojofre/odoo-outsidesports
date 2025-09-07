@@ -6,7 +6,7 @@
             <form string="Publicar en MercadoLibre">
 
                 <!-- Información del producto -->
-                <group col="4">
+                <group col="2">
                     <group>
                         <field name="instance_id"/>
                         <field name="name" readonly="1"/>
