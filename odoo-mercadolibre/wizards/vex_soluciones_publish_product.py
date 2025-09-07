@@ -39,6 +39,9 @@ class VexPublishProductWizard(models.TransientModel):
     meli_buying_mode = fields.Char(string="Modo de compra", required=True)
     meli_condition = fields.Char(string="Condición", required=True)
     meli_listing_type = fields.Char(string="Tipo de publicación", required=True)
+    percentaje_fee = fields.Float(string="Porcentaje de comisión", help="Porcentaje de comisión de MercadoLibre")
+    fixed_fee = fields.Float(string="Comisión fija", help="Comisión fija de MercadoLibre")
+    gross_amount = fields.Float(string="Monto bruto", help="Monto bruto antes de comisiones")
     meli_base_price = fields.Float(string="Precio base", help="Precio original del producto")
 
     # Garantía
