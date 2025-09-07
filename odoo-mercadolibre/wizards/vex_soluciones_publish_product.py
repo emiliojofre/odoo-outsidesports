@@ -119,6 +119,33 @@ class VexPublishProductWizard(models.TransientModel):
         res['meli_base_price'] = product.list_price
         res['meli_description'] = product.description_sale
 
+        # --- Calcular gross_amount con API de ML ---
+        price = product.list_price
+        category = product.meli_category_vex
+        if price and category:
+            try:
+                url = f"https://api.mercadolibre.com/sites/MLC/listing_prices?price={int(price)}&category_id={category}"
+                response = requests.get(url)
+                if response.status_code == 200:
+                    data = response.json()
+                    if data and isinstance(data, list):
+                        info = data[0]
+                        res['percentaje_fee'] = info.get('sale_fee_details', {}).get('percentage_fee', 0)
+                        res['fixed_fee'] = info.get('sale_fee_details', {}).get('fixed_fee', 0)
+                        res['gross_amount'] = info.get('sale_fee_details', {}).get('gross_amount', 0)
+
+                        # Si gross_amount viene con valor, lo usamos como precio
+                        if res['gross_amount']:
+                            res['meli_base_price'] = res['gross_amount']
+
+                        _logger.info(f"[default_get] API ML precios: {info}")
+                    else:
+                        _logger.warning("[default_get] Respuesta vacía o inesperada de la API de Mercado Libre.")
+                else:
+                    _logger.warning(f"[default_get] Error al consultar la API de ML: {response.status_code} - {response.text}")
+            except Exception as e:
+                _logger.error(f"[default_get] Error al consumir la API de ML: {e}")
+
         # --- Imágenes secundarias ---
         pictures = [
             (0, 0, {'url': img.url, 'secure_url': img.secure_url})
