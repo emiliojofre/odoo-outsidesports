@@ -68,7 +68,17 @@ class VexPublishProductWizard(models.TransientModel):
     meli_base_price = fields.Float(string="Precio base", help="Precio original del producto")
 
     # Garantía
-    meli_warranty_type = fields.Char(string="Tipo de garantía (ID)", required=True)
+    meli_warranty_type = fields.Selection(
+        [
+            ('2230280', 'Garantía de Proveedor'),
+            ('2230279', 'Sin garantía'),
+            ('2230582', 'Garantía de fábrica'),
+        ],
+        string="Tipo de Garantía",
+        required=True,
+        default="2230280",
+        help="Tipo de garantía según Mercado Libre"
+    )
     meli_warranty_time = fields.Char(string="Tiempo de garantía", required=True)
 
     # Descripción

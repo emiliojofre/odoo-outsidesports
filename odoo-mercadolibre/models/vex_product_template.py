@@ -40,7 +40,6 @@ class ProductTemplate(models.Model):
             ('2230581', 'Usado'),
         ],
         string="Condición",
-        required=True,
         help="Condición del ítem para Mercado Libre"
     )
     meli_permalink = fields.Char(string="Product URL", help="Permanent link to the product on MercadoLibre")
