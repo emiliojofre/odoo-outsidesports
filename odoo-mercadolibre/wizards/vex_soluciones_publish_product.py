@@ -12,45 +12,76 @@ class VexPublishProductWizard(models.TransientModel):
     _name = 'vex.publish.product.wizard'
     _description = 'Publicar producto en MercadoLibre'
 
-    product_id = fields.Many2one('product.template', string="Producto", required=True)
+    # Información del producto
+    product_id = fields.Many2one(
+        "product.template", 
+        string="Producto", 
+        required=True
+    )
     name = fields.Char(string="Nombre")
     image_1920 = fields.Binary(string="Imagen")
-    meli_thumbnail = fields.Char(string="Thumbnail URL", help="URL of the product thumbnail", required=True)
+    meli_thumbnail = fields.Char(
+        string="Miniatura (URL)", 
+        help="URL de la miniatura del producto", 
+        required=True
+    )
+    instance_id = fields.Many2one(
+        "vex.instance", 
+        string="Instancia", 
+        required=True
+    )
 
-    # Solo los campos requeridos por la API
-    meli_title = fields.Char(string="ML Title", required=True)
-    meli_category_vex = fields.Char(string="ML Category ID", required=True)
-    meli_currency_id = fields.Char(string="Currency", required=True)
-    meli_available_quantity = fields.Integer(string="Available Quantity", required=True)
-    meli_buying_mode = fields.Char(string="Buying Mode", required=True)
-    meli_condition = fields.Char(string="Condition", required=True)
-    meli_listing_type = fields.Char(string="Listing Type", required=True)
-    instance_id = fields.Many2one('vex.instance', string="Instancia", required=True)
-    meli_base_price = fields.Float(string="Base Price", help="Original base price")
-    meli_pictures_ids = fields.One2many('vex.publish.product.wizard.image', 'wizard_id', string="ML Pictures", required=True)
-    meli_attribute_ids = fields.One2many('vex.publish.product.wizard.attribute', 'wizard_id', string="ML Attributes", required=True)
-    meli_warranty_type = fields.Char(string="Tipo de Garantía (ID)", required=True)
-    meli_warranty_time = fields.Char(string="Tiempo de Garantía", required=True)
-    meli_description = fields.Text(string="Descripción en MercadoLibre", required=True)
+    # Campos requeridos por la API
+    meli_title = fields.Char(string="Título", required=True)
+    meli_category_vex = fields.Char(string="Categoría ID", required=True)
+    meli_currency_id = fields.Char(string="Moneda", required=True)
+    meli_available_quantity = fields.Integer(string="Cantidad disponible", required=True)
+    meli_buying_mode = fields.Char(string="Modo de compra", required=True)
+    meli_condition = fields.Char(string="Condición", required=True)
+    meli_listing_type = fields.Char(string="Tipo de publicación", required=True)
+    meli_base_price = fields.Float(string="Precio base", help="Precio original del producto")
+
+    # Garantía
+    meli_warranty_type = fields.Char(string="Tipo de garantía (ID)", required=True)
+    meli_warranty_time = fields.Char(string="Tiempo de garantía", required=True)
+
+    # Descripción
+    meli_description = fields.Text(string="Descripción", required=True)
+
+    # Logística
     meli_logistic_type = fields.Selection([
-    ('fulfillment', 'Fulfillment (Mercado Libre Full)'),
-    ('cross_docking', 'Cross Docking'),
-    ('drop_off', 'Drop Off (Sucursal de correo)'),
-    ('xd_drop_off', 'Cross Docking + Drop Off'),
-    ('self_service', 'Self Service (Logística propia)'),
-    ('not_specified', 'No especificado'),
-    ], 
-    default="not_specified",
-    string="Tipo de Logística",
-    required=True,
-    help="""
-    **fulfillment**: El producto está en los almacenes de Mercado Libre (Full). ML se encarga de almacenamiento, empaque, envío y postventa.
-    **cross_docking**: El vendedor lleva la mercadería a una estación de Mercado Libre y desde ahí ML hace el despacho.
-    **drop_off**: El vendedor despacha el producto en una sucursal de correo autorizado por ML.
-    **xd_drop_off**: Variante mixta: drop off + cross docking.
-    **self_service**: El vendedor organiza y paga su propia logística, sin integración con ML.
-    **not_specified**: No se especifica ningún tipo de logística (por defecto).
-    """
+        ("fulfillment", "Fulfillment (Mercado Libre Full)"),
+        ("cross_docking", "Cross Docking"),
+        ("drop_off", "Drop Off (Sucursal de correo)"),
+        ("xd_drop_off", "Cross Docking + Drop Off"),
+        ("self_service", "Self Service (Logística propia)"),
+        ("not_specified", "No especificado"),
+    ],
+        default="not_specified",
+        string="Tipo de logística",
+        required=True,
+        help="""
+        fulfillment: El producto está en los almacenes de Mercado Libre (Full).
+        cross_docking: El vendedor lleva la mercadería a una estación de Mercado Libre y desde ahí se despacha.
+        drop_off: El vendedor despacha el producto en una sucursal de correo autorizado por ML.
+        xd_drop_off: Variante mixta: drop off + cross docking.
+        self_service: El vendedor organiza y paga su propia logística.
+        not_specified: No se especifica ningún tipo de logística.
+        """
+    )
+
+    # Relaciones
+    meli_pictures_ids = fields.One2many(
+        "vex.publish.product.wizard.image", 
+        "wizard_id", 
+        string="Imágenes", 
+        required=True
+    )
+    meli_attribute_ids = fields.One2many(
+        "vex.publish.product.wizard.attribute", 
+        "wizard_id", 
+        string="Atributos", 
+        required=True
     )
 
     @api.model
