@@ -4,33 +4,40 @@
         <field name="model">vex.publish.product.wizard</field>
         <field name="arch" type="xml">
             <form string="Publicar Producto en MercadoLibre">
+                <!-- Información principal del producto -->
                 <group>
                     <field name="instance_id"/>
                     <field name="name" readonly="1"/>
                     <field name="image_1920" widget="image" readonly="1"/>
-                    <field name="meli_thumbnail" />
+                    <field name="meli_thumbnail"/>
                 </group>
-                <group string="Datos requeridos ML">
+                
+                <!-- Datos requeridos para Mercado Libre -->
+                <group string="Datos requeridos ML" col="4">
                     <group>
                         <field name="meli_title"/>
                         <field name="meli_category_vex"/>
                         <field name="meli_currency_id"/>
+                        <field name="meli_base_price"/>
                         <field name="meli_available_quantity"/>
-                        <field name="meli_buying_mode"/>
-                        <field name="meli_condition"/>
                     </group>
                     <group>
+                        <field name="meli_buying_mode"/>
+                        <field name="meli_condition"/>
                         <field name="meli_listing_type"/>
-                        <field name="meli_base_price" />
-                        <field name="meli_warranty_type" />
-                        <field name="meli_warranty_time" />
-                        <field name="meli_logistic_type" />
+                        <field name="meli_logistic_type"/>
+                        <field name="meli_warranty_type"/>
+                        <field name="meli_warranty_time"/>
                     </group>
                 </group>
+                
+                <!-- Descripción -->
                 <group string="Descripción MercadoLibre">
                     <field name="meli_description" widget="text" placeholder="Agrega la descripción del producto"/>
                 </group>
-                <group string="Imágenes MercadoLibre 1">
+                
+                <!-- Imágenes -->
+                <group string="Imágenes MercadoLibre">
                     <field name="meli_pictures_ids">
                         <tree>
                             <field name="url" invisible="1"/>
@@ -38,7 +45,9 @@
                         </tree>
                     </field>
                 </group>
-                <group string="Atributos MercadoLibre 2">
+                
+                <!-- Atributos -->
+                <group string="Atributos MercadoLibre">
                     <field name="meli_attribute_ids">
                         <tree editable="bottom">
                             <field name="meli_attribute_id"/>
@@ -48,6 +57,8 @@
                         </tree>
                     </field>
                 </group>
+                
+                <!-- Botones -->
                 <footer>
                     <button string="Publicar" type="object" name="action_publish" class="btn-primary"/>
                     <button string="Cancelar" special="cancel"/>
