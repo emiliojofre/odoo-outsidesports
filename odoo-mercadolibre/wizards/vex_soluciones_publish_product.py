@@ -170,7 +170,7 @@ class VexPublishProductWizard(models.TransientModel):
             wizard.meli_available_quantity = qty
             _logger.info(f"Logistic Type: {wizard.meli_logistic_type} | Location: {location.display_name if location else 'N/A'} | Qty: {qty}")
 
-    @api.onechange('meli_base_price', 'meli_category_vex')
+    @api.onchange('meli_base_price', 'meli_category_vex')
     def _onchange_meli_base_price_or_category(self):
         for wizard in self:
             price = self.meli_base_price
