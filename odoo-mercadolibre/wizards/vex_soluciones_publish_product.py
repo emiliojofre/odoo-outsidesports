@@ -284,6 +284,7 @@ class VexPublishProductWizard(models.TransientModel):
             'meli_warranty_time': self.meli_warranty_time,
             'meli_description': self.meli_description,
             'meli_thumbnail': self.meli_thumbnail,
+            'meli_logistic_type': self.meli_logistic_type,
         }
         self.product_id.write(vals)
         _logger.info(f"Campos simples sincronizados con product.template: {vals}")
@@ -412,8 +413,8 @@ class VexPublishProductWizard(models.TransientModel):
 
         return {
             'type': 'ir.actions.act_window',
-            "res_model": 'product.tempaate',
-            "view_model": 'form',
+            "res_model": 'product.template',
+            "view_mode": 'form',
             "res_id": self.product_id.id
         }
 

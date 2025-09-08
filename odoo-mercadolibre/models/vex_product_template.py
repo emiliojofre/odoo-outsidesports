@@ -56,7 +56,6 @@ class ProductTemplate(models.Model):
     meli_accepts_mp = fields.Boolean(string="Accepts MercadoPago", help="Whether MercadoPago is accepted")
     meli_shipping_mode = fields.Char(string="Shipping Mode", help="Shipping mode used (e.g., me2)")
     meli_free_shipping = fields.Boolean(string="Free Shipping", help="Indicates if the item has free shipping")
-    meli_logistic_type = fields.Char(string="Logistic Type", help="Logistics used for shipping")
     meli_store_pick_up = fields.Boolean(string="Store Pickup", help="Indicates if store pickup is allowed")
     meli_local_pick_up = fields.Boolean(string="Local Pickup", help="Indicates if local pickup is allowed")
     meli_shipping_tags = fields.Char(string="Shipping Tags", help="Tags related to shipping features")
@@ -127,6 +126,26 @@ class ProductTemplate(models.Model):
     ], string="Tipo de Garantía")
     meli_warranty_time = fields.Char(string="Tiempo de Garantía (días)", help="Duración de la garantía en días")
     meli_description = fields.Text(string="Descripción en MercadoLibre")
+    meli_logistic_type = fields.Selection([
+        ("fulfillment", "Fulfillment (Mercado Libre Full)"),
+        ("cross_docking", "Cross Docking"),
+        ("drop_off", "Drop Off (Sucursal de correo)"),
+        ("xd_drop_off", "Cross Docking + Drop Off"),
+        ("self_service", "Self Service (Logística propia)"),
+        ("not_specified", "No especificado"),
+    ],
+        default="not_specified",
+        string="Tipo de logística",
+        required=True,
+        help="""
+        fulfillment: El producto está en los almacenes de Mercado Libre (Full).
+        cross_docking: El vendedor lleva la mercadería a una estación de Mercado Libre y desde ahí se despacha.
+        drop_off: El vendedor despacha el producto en una sucursal de correo autorizado por ML.
+        xd_drop_off: Variante mixta: drop off + cross docking.
+        self_service: El vendedor organiza y paga su propia logística.
+        not_specified: No se especifica ningún tipo de logística.
+        """
+    )
 
     @api.depends(
         'meli_title', 'meli_category_vex', 'meli_currency_id', 'meli_available_quantity',
