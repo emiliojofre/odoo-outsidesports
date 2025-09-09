@@ -187,6 +187,11 @@ class VexProductCategory(models.Model):
         string="Status",
         help="Status of this category."
     )
+    instance_id = fields.Many2one('vex.instance', string='instance')
+    meli_category_id = fields.Char(
+        string='Meli Category ID',
+        help='ID of the category in Mercado Libre',
+        copy=False)
 
 
     def action_get_details(self):
