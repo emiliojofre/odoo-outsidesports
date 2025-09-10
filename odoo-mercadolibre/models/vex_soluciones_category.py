@@ -292,18 +292,65 @@ class VexProductCategory(models.Model):
         })
 
     def action_view_attributes(self):
-        pass
+        self.ensure_one()
+        instance = self.instance_id
+        if not instance or not instance.meli_access_token:
+            raise UserError("No se encontró el token de acceso en la instancia asociada.")
+
+        url = f"https://api.mercadolibre.com/categories/{self.meli_category_id}/attributes"
+        headers = {
+            'Authorization': f'Bearer {instance.meli_access_token}'
+        }
+
+        try:
+            response = requests.get(url, headers=headers, timeout=15)
+            response.raise_for_status()
+            attributes = response.json()
+        except Exception as e:
+            raise UserError(f"Error al consultar la API de atributos de MercadoLibre:\n{str(e)}")
+
+        # Elimina atributos anteriores para evitar duplicados
+        self.env['vex.meli.attribute'].search([('meli_category_id', '=', self.id)]).unlink()
+
+        for attr in attributes:
+            # Crea el atributo
+            attribute = self.env['vex.meli.attribute'].create({
+                'meli_attribute_id': attr.get('id'),
+                'meli_attribute_name': attr.get('name'),
+                'meli_attribute_required': attr.get('tags', {}).get('required', False),
+                'meli_category_id': self.id,
+            })
+            # Si tiene valores, los crea
+            for val in attr.get('values', []):
+                self.env['vex.meli.attribute.value'].create({
+                    'meli_value_id': val.get('id'),
+                    'meli_value_name': val.get('name'),
+                    'attribute_id': attribute.id,
+                })
+                
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Atributos MercadoLibre',
+            'res_model': 'vex.meli.attribute',
+            'view_mode': 'tree,form',
+            'domain': [('meli_category_id', '=', self.id)],
+            'target': 'current',
+        }
 
     class MeliAttribute(models.Model):
         _name = 'vex.meli.attribute'
         _description = 'MercadoLibre Category Attribute'
 
-        meli_attribute_id = fields.Char(string='Attribute ID')
+        meli_attribute_id = fields.Char(string='Attribute ID', required=True)
+        meli_attribute_name = fields.Char(string='Attribute Name')
         meli_attribute_required = fields.Boolean(string='Required')
+        meli_category_id = fields.Many2one('product.category', string='Categoría MercadoLibre')
+        value_ids = fields.One2many('vex.meli.attribute.value', 'attribute_id', string='Valores')
 
     class MeliAttributeValue(models.Model):
         _name = 'vex.meli.attribute.value'
         _description = 'MercadoLibre Category Attribute Value'
 
-        meli_value_id = fields.Char(string='Value ID')
+        meli_value_id = fields.Char(string='Value ID', required=True)
         meli_value_name = fields.Char(string='Value Name')
+        attribute_id = fields.Many2one('vex.meli.attribute', string='Atributo')
