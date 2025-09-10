@@ -345,15 +345,15 @@ class VexProductCategory(models.Model):
 
         return True
 
-    class MeliAttribute(models.Model):
-        _name = 'vex.meli.attribute'
-        _description = 'MercadoLibre Category Attribute'
+class MeliAttribute(models.Model):
+    _name = 'vex.meli.attribute'
+    _description = 'MercadoLibre Category Attribute'
 
-        meli_attribute_id = fields.Char(string='Attribute ID', required=True)
-        meli_attribute_name = fields.Char(string='Attribute Name')
-        meli_attribute_required = fields.Boolean(string='Required')
-        meli_category_id = fields.Many2one('product.category', string='Categoría MercadoLibre')
-        value_ids = fields.One2many('vex.meli.attribute.value', 'attribute_id', string='Valores')
+    meli_attribute_id = fields.Char(string='Attribute ID', required=True)
+    meli_attribute_name = fields.Char(string='Attribute Name')
+    meli_attribute_required = fields.Boolean(string='Required')
+    meli_category_id = fields.Many2one('product.category', string='Categoría MercadoLibre')
+    value_ids = fields.One2many('vex.meli.attribute.value', 'attribute_id', string='Valores')
 
     def name_get(self):
         result = []
@@ -362,10 +362,10 @@ class VexProductCategory(models.Model):
             result.append((rec.id, name))
         return result
 
-    class MeliAttributeValue(models.Model):
-        _name = 'vex.meli.attribute.value'
-        _description = 'MercadoLibre Category Attribute Value'
+class MeliAttributeValue(models.Model):
+    _name = 'vex.meli.attribute.value'
+    _description = 'MercadoLibre Category Attribute Value'
 
-        meli_value_id = fields.Char(string='Value ID', required=True)
-        meli_value_name = fields.Char(string='Value Name')
-        attribute_id = fields.Many2one('vex.meli.attribute', string='Atributo')
+    meli_value_id = fields.Char(string='Value ID', required=True)
+    meli_value_name = fields.Char(string='Value Name')
+    attribute_id = fields.Many2one('vex.meli.attribute', string='Atributo')
