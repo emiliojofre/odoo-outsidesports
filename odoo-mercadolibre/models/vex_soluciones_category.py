@@ -197,8 +197,17 @@ class VexProductCategory(models.Model):
     meli_attribute_ids = fields.One2many('vex.meli.attribute', 'meli_category_id', string='Atributos MercadoLibre')
     
     # Valores de Atributos
-    meli_attribute_value_ids = fields.Many2many('vex.meli.attribute.value', string='Meli Attribute Value')
+    meli_attribute_value_ids = fields.One2many(
+        'vex.meli.attribute.value',
+        compute='_compute_meli_attribute_value_ids',
+        string='Valores de Atributos',
+        store=False
+    )
 
+    @api.depends('meli_attribute_ids.value_ids')
+    def _compute_meli_attribute_value_ids(self):
+        for rec in self:
+            rec.meli_attribute_value_ids = rec.meli_attribute_ids.mapped('value_ids')
 
     def action_get_details(self):
         """Fetches details from Mercado Libre API for the selected category."""
@@ -334,14 +343,7 @@ class VexProductCategory(models.Model):
                     'attribute_id': attribute.id,
                 })
 
-        return {
-            'type': 'ir.actions.act_window',
-            'name': 'Atributos MercadoLibre',
-            'res_model': 'vex.meli.attribute',
-            'view_mode': 'tree,form',
-            'domain': [('meli_category_id', '=', self.id)],
-            'target': 'current',
-        }
+        return True
 
     class MeliAttribute(models.Model):
         _name = 'vex.meli.attribute'
