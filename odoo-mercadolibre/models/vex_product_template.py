@@ -1048,9 +1048,11 @@ class ProductTemplateMeliAttribute(models.Model):
     _description = 'MercadoLibre Product Attributes'
 
     product_tmpl_id = fields.Many2one('product.template', ondelete="cascade")
-    meli_category_vex = fields.Char(related="product_tmpl_id.meli_category_vex", store=True)
-    meli_attribute_id = fields.Many2one('vex.meli.attribute', string='Atributo')
-    meli_value_id = fields.Many2one('vex.meli.attribute.value', string='Valor')
+    # meli_attribute_id = fields.Char(string="Attribute ID", help="Attribute identifier")  # <-- Comenta o elimina
+    meli_attribute_ref_id = fields.Many2one('vex.meli.attribute', string="Atributo ML")  # <-- Nuevo campo
+    meli_attribute_name = fields.Char(string="Attribute Name", help="Name of the attribute")
+    meli_value_id = fields.Char(string="Value ID", help="Identifier of the attribute value")
+    meli_value_name = fields.Char(string="Value Name", help="Name of the attribute value")
 
 class ProductMeliTag(models.Model):
     _name = 'product.meli.tag'
@@ -1083,9 +1085,11 @@ class VexPublishProductWizardImage(models.TransientModel):
 
 class VexPublishProductWizardAttribute(models.TransientModel):
     _name = 'vex.publish.product.wizard.attribute'
-    _description = 'Atributo para publicación ML'
-
-    wizard_id = fields.Many2one('vex.publish.product.wizard', string="Wizard")
+    _description = 'Atributo temporal para el wizard de publicación'
+    
+    wizard_id = fields.Many2one('vex.publish.product.wizard', string='Wizard')
     meli_category_vex = fields.Char(related="wizard_id.meli_category_vex", store=False)
-    meli_attribute_id = fields.Many2one('vex.meli.attribute', string='Atributo')
-    meli_value_id = fields.Many2one('vex.meli.attribute.value', string='Valor')
+    meli_attribute_ref_id = fields.Many2one('vex.meli.attribute', string="Atributo ML")
+    meli_value_id = fields.Many2one('vex.meli.attribute.value', string="Valor ML")
+    meli_attribute_name = fields.Char(related='meli_attribute_ref_id.meli_attribute_name', string="Attribute Name", store=True)
+    meli_value_name = fields.Char(related='meli_value_id.meli_value_name', string="Value Name", store=True)
