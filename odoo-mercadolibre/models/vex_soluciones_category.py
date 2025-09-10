@@ -194,7 +194,7 @@ class VexProductCategory(models.Model):
         copy=False)
 
     # Campos de Atributos
-    meli_attribute_id = fields.Many2one('vex.meli.attribute', string='Meli Attribute')
+    meli_attribute_ids = fields.One2many('vex.meli.attribute', 'meli_category_id', string='Atributos MercadoLibre')
     
     # Valores de Atributos
     meli_attribute_value_ids = fields.Many2many('vex.meli.attribute.value', string='Meli Attribute Value')
@@ -327,7 +327,7 @@ class VexProductCategory(models.Model):
                     'meli_value_name': val.get('name'),
                     'attribute_id': attribute.id,
                 })
-                
+
         return {
             'type': 'ir.actions.act_window',
             'name': 'Atributos MercadoLibre',
