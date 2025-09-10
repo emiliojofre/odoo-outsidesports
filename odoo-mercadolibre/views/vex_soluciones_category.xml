@@ -133,8 +133,9 @@
                     </page>
                     <page name="values_info" string="Valores de Atributos">
                         <group string="Valores de Atributos" colspan="2">
-                            <field name="meli_attribute_value_ids">
+                            <field name="meli_attribute_value_ids" domain="[('attribute_id.meli_category_id','=',id)]">
                                 <tree editable="bottom">
+                                    <field name="attribute_id"/>
                                     <field name="meli_value_id"/>
                                     <field name="meli_value_name"/>
                                 </tree>
