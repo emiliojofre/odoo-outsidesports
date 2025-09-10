@@ -293,8 +293,14 @@ class VexProductCategory(models.Model):
 
     def action_view_attributes(self):
         self.ensure_one()
-        instance = self.instance_id
-        if not instance or not instance.meli_access_token:
+        # Buscar instancia asociada o una por defecto
+        instance = self.env['vex.instance'].search([('name', 'ilike', 'RIFCIF ODOO')], limit=1)
+        if not instance:
+            raise UserError("No se encontró la instancia asociada ni una instancia por defecto (RIFCIF ODOO).")
+
+        # ACTUALIZA EL TOKEN ANTES DE CONSUMIR LA API
+        instance.get_access_token()
+        if not instance.meli_access_token:
             raise UserError("No se encontró el token de acceso en la instancia asociada.")
 
         url = f"https://api.mercadolibre.com/categories/{self.meli_category_id}/attributes"
