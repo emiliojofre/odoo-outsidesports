@@ -355,6 +355,13 @@ class VexProductCategory(models.Model):
         meli_category_id = fields.Many2one('product.category', string='Categoría MercadoLibre')
         value_ids = fields.One2many('vex.meli.attribute.value', 'attribute_id', string='Valores')
 
+    def name_get(self):
+        result = []
+        for rec in self:
+            name = f"{rec.meli_attribute_id or ''} - {rec.meli_attribute_name or ''}"
+            result.append((rec.id, name))
+        return result
+
     class MeliAttributeValue(models.Model):
         _name = 'vex.meli.attribute.value'
         _description = 'MercadoLibre Category Attribute Value'
