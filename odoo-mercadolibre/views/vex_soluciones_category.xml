@@ -15,7 +15,10 @@
                     <page string="MercadoLibre Info" name="meli_info">
                         <button name="action_get_details" type="object" string="Sync Details"
                             class="btn-primary" icon="fa-info-circle" style="margin-right:10px;"
-                            help="Press to sync all details of this Category from Mercadolibre"/>                    
+                            help="Press to sync all details of this Category from Mercadolibre"/>   
+                        <button name="action_view_attributes" type="object" string="View Attributes"
+                            class="btn-secondary" icon="fa-list" style="margin-right:10px;"
+                            help="Press to view all Attributes of this Category from Mercadolibre"/>              
                         <!-- Grupo básico -->
                         <group string="Información General de la Categoría" colspan="4">
                             <group>
@@ -110,22 +113,17 @@
                             </group>
                         </group>
                     </page>
+                    <page name="attribute_info" string="Atributos">
+                        <group string="Información General de la Categoría" colspan="4">
+                            <group>
+                                <field name="meli_category_id"/>
+                                <field name="meli_status"/>
+                            </group>
+                        </group>
+                    </page>
                 </notebook>
             </xpath>            
         </field>
     </record>
 
-    <!-- <record id="view_product_category_search_inherit" model="ir.ui.view">
-        <field name="name">product.category.search.inherit</field>
-        <field name="model">product.category</field>
-        <field name="inherit_id" ref="product.product_category_search_view"/>
-        <field name="arch" type="xml">
-            <xpath expr="//search" position="inside">
-                <field name="instance_id"/>
-                <filter name="instance_filter" string="MercadoLibre Instance Active "
-                domain="[('instance_id', '=', context.get('default_instance_id', False))]"
-            />         
-            </xpath>
-        </field>
-    </record> -->
 </odoo>

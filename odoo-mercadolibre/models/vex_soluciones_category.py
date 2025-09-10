@@ -284,3 +284,6 @@ class VexProductCategory(models.Model):
             'meli_buyer_protection_programs': ','.join(settings.get('buyer_protection_programs', [])),
             'meli_status': settings.get('status'),
         })
+
+    def action_view_attributes(self):
+        pass
