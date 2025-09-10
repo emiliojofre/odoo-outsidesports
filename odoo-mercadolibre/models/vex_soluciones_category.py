@@ -193,6 +193,12 @@ class VexProductCategory(models.Model):
         help='ID of the category in Mercado Libre',
         copy=False)
 
+    # Campos de Atributos
+    meli_attribute_id = fields.Many2one('vex.meli.attribute', string='Meli Attribute')
+    
+    # Valores de Atributos
+    meli_attribute_value_ids = fields.Many2many('vex.meli.attribute.value', string='Meli Attribute Value')
+
 
     def action_get_details(self):
         """Fetches details from Mercado Libre API for the selected category."""
@@ -287,3 +293,17 @@ class VexProductCategory(models.Model):
 
     def action_view_attributes(self):
         pass
+
+    class MeliAttribute(models.Model):
+        _name = 'vex.meli.attribute'
+        _description = 'MercadoLibre Category Attribute'
+
+        meli_attribute_id = fields.Char(string='Attribute ID')
+        meli_attribute_required = fields.Boolean(string='Required')
+
+    class MeliAttributeValue(models.Model):
+        _name = 'vex.meli.attribute.value'
+        _description = 'MercadoLibre Category Attribute Value'
+
+        meli_value_id = fields.Char(string='Value ID')
+        meli_value_name = fields.Char(string='Value Name')
