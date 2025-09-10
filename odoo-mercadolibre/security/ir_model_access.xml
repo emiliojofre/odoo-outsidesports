@@ -731,4 +731,24 @@
         <field name="perm_unlink" eval="1"/>
     </record>
 
+    <record id="access_vex_meli_attribute" model="ir.model.access">
+        <field name="name">vex.meli.attribute access</field>
+        <field name="model_id" ref="model_vex_meli_attribute"/>
+        <field name="group_id" eval="False"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="1"/>
+        <field name="perm_create" eval="1"/>
+        <field name="perm_unlink" eval="1"/>
+    </record>
+
+    <record id="access_vex_meli_attribute_value" model="ir.model.access">
+        <field name="name">vex.meli.attribute.value access</field>
+        <field name="model_id" ref="model_vex_meli_attribute_value"/>
+        <field name="group_id" eval="False"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="1"/>
+        <field name="perm_create" eval="1"/>
+        <field name="perm_unlink" eval="1"/>
+    </record>
+
 </odoo>
