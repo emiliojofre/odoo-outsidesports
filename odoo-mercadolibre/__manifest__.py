@@ -30,7 +30,7 @@
         'views/vex_soluciones_restapi_list.xml',
         'views/vex_meli_action_list_view.xml',
         'views/vex_product_category.xml',
-        #'views/vex_soluciones_category.xml',
+        'views/vex_soluciones_category.xml',
         #'views/vex_soluciones_product_template.xml',
         'views/vex_soluciones_group_product_view.xml',
         'views/vex_soluciones_import_line.xml',       
