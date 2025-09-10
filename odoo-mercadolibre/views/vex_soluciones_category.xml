@@ -10,7 +10,7 @@
                 <field name="meli_category_id"></field>
                 <!-- <field name="server_meli"></field> -->
             </xpath>
-            <xpath expr="//group[@name='first']" position="after">
+            <xpath expr="//sheet" position="inside">
                 <notebook>
                     <page string="MercadoLibre Info" name="meli_info">
                         <button name="action_get_details" type="object" string="Sync Details"
