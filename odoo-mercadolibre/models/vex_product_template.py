@@ -1048,10 +1048,9 @@ class ProductTemplateMeliAttribute(models.Model):
     _description = 'MercadoLibre Product Attributes'
 
     product_tmpl_id = fields.Many2one('product.template', ondelete="cascade")
-    meli_attribute_id = fields.Char(string="Attribute ID", help="Attribute identifier")
-    meli_attribute_name = fields.Char(string="Attribute Name", help="Name of the attribute")
-    meli_value_id = fields.Char(string="Value ID", help="Identifier of the attribute value")
-    meli_value_name = fields.Char(string="Value Name", help="Name of the attribute value")
+    meli_category_vex = fields.Char(related="product_tmpl_id.meli_category_vex", store=True)
+    meli_attribute_id = fields.Many2one('vex.meli.attribute', string='Atributo')
+    meli_value_id = fields.Many2one('vex.meli.attribute.value', string='Valor')
 
 class ProductMeliTag(models.Model):
     _name = 'product.meli.tag'
@@ -1087,8 +1086,6 @@ class VexPublishProductWizardAttribute(models.TransientModel):
     _description = 'Atributo para publicación ML'
 
     wizard_id = fields.Many2one('vex.publish.product.wizard', string="Wizard")
-    meli_attribute_id = fields.Many2one('vex.meli.attribute', string='Atributo', required=True)
+    meli_category_vex = fields.Char(related="wizard_id.meli_category_vex", store=False)
+    meli_attribute_id = fields.Many2one('vex.meli.attribute', string='Atributo')
     meli_value_id = fields.Many2one('vex.meli.attribute.value', string='Valor')
-    meli_attribute_name = fields.Char(related='meli_attribute_id.meli_attribute_name', string='Nombre')
-    meli_value_name = fields.Char(related='meli_value_id.meli_value_name', string='Nombre Valor')
-    required = fields.Boolean(related='meli_attribute_id.meli_attribute_required', string='Requerido')

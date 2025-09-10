@@ -125,8 +125,8 @@
 
                                 <field name="meli_attribute_ids">
                                     <tree editable="bottom">
-                                        <field name="meli_attribute_id" domain="[('meli_category_id','=',product_tmpl_id.meli_category_vex)]"/>
-                                        <field name="meli_value_id" domain="[('attribute_id','=',meli_attribute_id)]"/>
+                                        <field name="meli_attribute_id" domain="[('meli_category_id','=', meli_category_vex)]"/>
+                                        <field name="meli_value_id" domain="[('attribute_id','=', meli_attribute_id)]"/>
                                         <field name="required"/>
                                     </tree>
                                 </field>
