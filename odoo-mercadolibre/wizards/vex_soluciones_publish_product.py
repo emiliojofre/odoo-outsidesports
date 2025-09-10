@@ -154,13 +154,13 @@ class VexPublishProductWizard(models.TransientModel):
 
         # --- Calcular gross_amount con API de ML ---
         price = product.list_price
-        category = product.meli_category_vex
+        ml_category_id = product.meli_category_vex
         instance = product.instance_id or self.env['vex.instance'].search([('name', 'ilike', 'RIFCIF ODOO')], limit=1)
         if instance:
             res['instance_id'] = instance.id
-        if price and category:
+        if price and ml_category_id:
             try:
-                url = f"https://api.mercadolibre.com/sites/MLC/listing_prices?price={int(price)}&category_id={category}"
+                url = f"https://api.mercadolibre.com/sites/MLC/listing_prices?price={int(price)}&category_id={ml_category_id}"
                 headers = {"Authorization": f"Bearer {instance.meli_access_token}"}
                 response = requests.get(url, headers=headers)
                 if response.status_code == 200:
@@ -182,6 +182,16 @@ class VexPublishProductWizard(models.TransientModel):
                     _logger.warning(f"[default_get] Error al consultar la API de ML: {response.status_code} - {response.text}")
             except Exception as e:
                 _logger.error(f"[default_get] Error al consumir la API de ML: {e}")
+
+        odoo_category = self.env['product.category'].search([('meli_category_vex', '=', res.get('meli_category_vex'))], limit=1)
+        if odoo_category:
+            atributos = []
+            for attr in odoo_category.meli_attribute_ids.filtered(lambda a: a.meli_attribute_required):
+                atributos.append((0, 0, {
+                    'meli_attribute_id': attr.id,
+                    'meli_value_id': attr.value_ids[0].id if len(attr.value_ids) == 1 else False,
+                }))
+            res['meli_attribute_ids'] = atributos
 
         # --- Imágenes secundarias ---
         pictures = [
@@ -339,12 +349,12 @@ class VexPublishProductWizard(models.TransientModel):
         # --- ATRIBUTOS ---
         attributes = [
             {
-                "id": attr.meli_attribute_id,
-                "value_id": attr.meli_value_id if attr.meli_value_id else None,
-                "value_name": attr.meli_value_name if attr.meli_value_name else None,
+                "id": attr.meli_attribute_id.meli_attribute_id,
+                "value_id": attr.meli_value_id.meli_value_id if attr.meli_value_id else None,
+                "value_name": attr.meli_value_id.meli_value_name if attr.meli_value_id else None,
             }
             for attr in self.meli_attribute_ids
-            if attr.meli_attribute_id and (attr.meli_value_id or attr.meli_value_name)
+            if attr.meli_attribute_id and (attr.meli_value_id or attr.meli_value_id.meli_value_name)
         ]
         _logger.info(f"Atributos preparados para ML: {attributes}")
 

@@ -57,17 +57,13 @@
                 </group>
 
                 <!-- Atributos -->
-                <group string="Atributos">
-                    <field name="meli_attribute_ids">
-                        <tree editable="bottom">
-                            <field name="meli_attribute_id"/>
-                            <field name="meli_attribute_name"/>
-                            <field name="meli_value_id"/>
-                            <field name="meli_value_name"/>
-                        </tree>
-                    </field>
-                </group>
-
+                <field name="meli_attribute_ids">
+                    <tree editable="bottom">
+                        <field name="meli_attribute_id" domain="[('meli_category_id','=',parent.meli_category_vex)]"/>
+                        <field name="meli_value_id" domain="[('attribute_id','=',m2o.meli_attribute_id)]"/>
+                        <field name="required"/>
+                    </tree>
+                </field>
                 <!-- Botones -->
                 <footer>
                     <button string="Publicar" type="object" 
