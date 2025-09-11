@@ -189,7 +189,7 @@ class VexPublishProductWizard(models.TransientModel):
             for attr in odoo_category.meli_attribute_ids.filtered(lambda a: a.meli_attribute_required):
                 atributos.append((0, 0, {
                     'meli_attribute_id': attr.id,
-                    'meli_value_id': attr.value_ids[0].id if len(attr.value_ids) == 1 else False,
+                    'meli_values_id': attr.value_ids[0].id if len(attr.value_ids) == 1 else False,
                 }))
             res['meli_attribute_ids'] = atributos
 
@@ -206,7 +206,7 @@ class VexPublishProductWizard(models.TransientModel):
             (0, 0, {
                 'meli_attribute_id': attr.meli_attribute_id,
                 'meli_attribute_name': attr.meli_attribute_name,
-                'meli_value_id': attr.meli_value_id,
+                'meli_values_id': attr.meli_values_id,
                 'meli_value_name': attr.meli_value_name,
             })
             for attr in product.meli_attribute_ids
@@ -318,7 +318,7 @@ class VexPublishProductWizard(models.TransientModel):
                 'product_tmpl_id': self.product_id.id,
                 'meli_attribute_id': attr.meli_attribute_id,
                 'meli_attribute_name': attr.meli_attribute_name,
-                'meli_value_id': attr.meli_value_id,
+                'meli_values_id': attr.meli_values_id,
                 'meli_value_name': attr.meli_value_name,
             })
         _logger.info(f"Atributos sincronizados: {len(self.meli_attribute_ids)}")
@@ -350,11 +350,11 @@ class VexPublishProductWizard(models.TransientModel):
         attributes = [
             {
                 "id": attr.meli_attribute_id.meli_attribute_id,
-                "value_id": attr.meli_value_id.meli_value_id if attr.meli_value_id else None,
-                "value_name": attr.meli_value_id.meli_value_name if attr.meli_value_id else None,
+                "value_id": attr.meli_values_id.meli_values_id if attr.meli_values_id else None,
+                "value_name": attr.meli_values_id.meli_value_name if attr.meli_values_id else None,
             }
             for attr in self.meli_attribute_ids
-            if attr.meli_attribute_id and (attr.meli_value_id or attr.meli_value_id.meli_value_name)
+            if attr.meli_attribute_id and (attr.meli_values_id or attr.meli_values_id.meli_value_name)
         ]
         _logger.info(f"Atributos preparados para ML: {attributes}")
 

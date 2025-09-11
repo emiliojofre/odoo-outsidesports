@@ -1052,12 +1052,13 @@ class ProductTemplateMeliAttribute(models.Model):
     meli_attribute_name = fields.Char(string="Attribute Name", help="Name of the attribute")
 
     # Cambiar de Char -> Many2one
-    meli_value_id = fields.Many2one(
+    meli_value_id = fields.Char(string="Value ID", help="Identifier of the attribute value")
+    meli_values_id = fields.Many2one(
         'vex.meli.attribute.value', 
         string="Valor ML"
     )
     meli_value_name = fields.Char(
-        related='meli_value_id.meli_value_name', 
+        related='meli_values_id.meli_value_name', 
         string="Value Name", 
         store=True
     )
@@ -1103,6 +1104,6 @@ class VexPublishProductWizardAttribute(models.TransientModel):
     wizard_id = fields.Many2one('vex.publish.product.wizard', string='Wizard')
     meli_category_vex = fields.Char(related="wizard_id.meli_category_vex", store=False)
     meli_attribute_ref_id = fields.Many2one('vex.meli.attribute', string="Atributo ML")
-    meli_value_id = fields.Many2one('vex.meli.attribute.value', string="Valor ML")
+    meli_values_id = fields.Many2one('vex.meli.attribute.value', string="Valor ML")
     meli_attribute_name = fields.Char(related='meli_attribute_ref_id.meli_attribute_name', string="Attribute Name", store=True)
-    meli_value_name = fields.Char(related='meli_value_id.meli_value_name', string="Value Name", store=True)
+    meli_value_name = fields.Char(related='meli_values_id.meli_value_name', string="Value Name", store=True)

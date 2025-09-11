@@ -128,7 +128,7 @@
                                         <field name="meli_category_vex" invisible="1"/>
                                         <field name="meli_attribute_ref_id"/>
                                         <field name="meli_attribute_name" readonly="1"/>
-                                        <field name="meli_value_id" domain="[('attribute_id','=', meli_attribute_ref_id)]"/>
+                                        <field name="meli_values_id" domain="[('attribute_id','=', meli_attribute_ref_id)]"/>
                                         <field name="meli_value_name" readonly="1"/>
                                     </tree>
                                 </field>
