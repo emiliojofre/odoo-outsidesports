@@ -172,7 +172,7 @@ class ProductTemplate(models.Model):
             imagenes_ok = bool(rec.meli_pictures_ids)
             # Validar atributos (al menos uno y que estén completos)
             atributos_ok = any(
-                attr.meli_attribute_id and (attr.meli_value_id or attr.meli_value_name)
+                attr.meli_attribute_ref_id and (attr.meli_values_id or attr.meli_value_name)
                 for attr in rec.meli_attribute_ids
             )
             rec.ready_create = campos_ok and imagenes_ok and atributos_ok
