@@ -349,10 +349,10 @@ class MeliAttribute(models.Model):
     _name = 'vex.meli.attribute'
     _description = 'MercadoLibre Category Attribute'
 
+    meli_category_id = fields.Many2one('product.category', string='Categoría MercadoLibre')
     meli_attribute_id = fields.Char(string='Attribute ID', required=True)
     meli_attribute_name = fields.Char(string='Attribute Name')
     meli_attribute_required = fields.Boolean(string='Required')
-    meli_category_id = fields.Many2one('product.category', string='Categoría MercadoLibre')
     value_ids = fields.One2many('vex.meli.attribute.value', 'attribute_id', string='Valores')
 
     def name_get(self):
@@ -369,3 +369,10 @@ class MeliAttributeValue(models.Model):
     meli_value_id = fields.Char(string='Value ID', required=True)
     meli_value_name = fields.Char(string='Value Name')
     attribute_id = fields.Many2one('vex.meli.attribute', string='Atributo')
+
+    def name_get(self):
+            result = []
+            for rec in self:
+                name = rec.meli_value_name or rec.meli_value_id or ''
+                result.append((rec.id, name))
+            return result
