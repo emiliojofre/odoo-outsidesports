@@ -34,12 +34,12 @@
                                 class="btn-primary" icon="fa-image"/>
                     </div>
                     <notebook>
-                        <header>
+                        <group>
                             <button name="action_get_category_meli_form_name"
                                     type="object"
                                     string="Buscar Categoría ML"
                                     class="oe_highlight"/>
-                        </header>
+                        </group>
                         <page name="general_info" string="General Information">
                             <group  string="General Info">
                                 <group col="2">
