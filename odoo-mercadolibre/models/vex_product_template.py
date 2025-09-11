@@ -1053,6 +1053,7 @@ class ProductTemplateMeliAttribute(models.Model):
     meli_attribute_name = fields.Char(string="Attribute Name", help="Name of the attribute")
     meli_value_id = fields.Char(string="Value ID", help="Identifier of the attribute value")
     meli_value_name = fields.Char(string="Value Name", help="Name of the attribute value")
+    meli_category_vex = fields.Char(related="product_tmpl_id.meli_category_vex", store=False)
 
 class ProductMeliTag(models.Model):
     _name = 'product.meli.tag'
