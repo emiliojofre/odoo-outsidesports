@@ -204,6 +204,8 @@ class VexProductCategory(models.Model):
         store=False
     )
 
+    meli_description = fields.Char(string="Descripcion del Atributo")
+
     @api.depends('meli_attribute_ids.value_ids')
     def _compute_meli_attribute_value_ids(self):
         for rec in self:

@@ -8,6 +8,7 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='parent_id']" position="after">
                 <field name="meli_category_id"></field>
+                <field name="meli_description" />
                 <!-- <field name="server_meli"></field> -->
             </xpath>
             <xpath expr="//sheet" position="inside">
@@ -24,6 +25,7 @@
                         <group string="Información General de la Categoría" colspan="4">
                             <group>
                                 <field name="meli_category_id"/>
+                                <field name="meli_description"/>
                                 <field name="meli_status"/>
                                 <field name="meli_sub_vertical"/>
                                 <field name="meli_vertical"/>

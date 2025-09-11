@@ -1060,7 +1060,7 @@ class ProductTemplate(models.Model):
                     'name': category_name,
                     'meli_category_id': category_id,
                     'parent_id': parent.id if parent else False,
-                    'description': domain_name or '',
+                    'meli_description': domain_name or '',
                 })
                 category.action_view_attributes()
 
