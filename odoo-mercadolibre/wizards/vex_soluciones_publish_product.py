@@ -183,7 +183,7 @@ class VexPublishProductWizard(models.TransientModel):
             except Exception as e:
                 _logger.error(f"[default_get] Error al consumir la API de ML: {e}")
 
-        odoo_category = self.env['product.category'].search([('meli_category_vex', '=', res.get('meli_category_vex'))], limit=1)
+        odoo_category = self.env['product.category'].search([('meli_category_id', '=', res.get('meli_category_vex'))], limit=1)
         if odoo_category:
             atributos = []
             for attr in odoo_category.meli_attribute_ids.filtered(lambda a: a.meli_attribute_required):
