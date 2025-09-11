@@ -35,7 +35,7 @@
                     </div>
                     <notebook>
                         <header>
-                            <button name="action_get_category_from_name"
+                            <button name="action_get_category_meli_form_name"
                                     type="object"
                                     string="Buscar Categoría ML"
                                     class="oe_highlight"/>
