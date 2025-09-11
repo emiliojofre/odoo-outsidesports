@@ -46,6 +46,11 @@ class ProductTemplate(models.Model):
     meli_thumbnail = fields.Char(string="Thumbnail URL", help="URL of the product thumbnail")
     meli_inventory_id = fields.Char(string="Inventory ID", help="Inventory identifier in MercadoLibre")
     meli_category_vex = fields.Char(string="ML Category ID", help="MercadoLibre category identifier")
+    meli_category_id = fields.Many2one(
+        'product.category',  # Cambia por el modelo correcto si usas otro
+        string="ML Category",
+        help="MercadoLibre category identifier"
+    )
     meli_catalog_product_id = fields.Char(string="Catalog Product ID", help="Catalog product reference from MercadoLibre")
     meli_domain_id = fields.Char(string="Domain ID", help="Domain classification of the product")
     meli_start_time = fields.Datetime(string="Start Time", help="Start date of listing")
@@ -1024,6 +1029,43 @@ class ProductTemplate(models.Model):
                     _logger.error(f"Error fetching price for {product.ml_publication_code}: {str(e)}")
             _logger.info(f"END CRON cron_update_recommended_prices for instance: {instance.name}")
 
+    def action_get_category_meli_form_name(self):
+        for rec in self:
+            if not rec.name:
+                raise UserError("El producto debe tener un nombre para buscar su categoria")
+
+            url = f"https://api.mercadolibre.com/sites/MLA/domain_discovery/search?limit=1&q={rec.name}"
+            response = requests.get(url)
+
+            if response.status_code != 200:
+                _logger.error(f"Error al consumir la api de mercado libre: status-code: {response.status_code} - {response.text}")
+                raise UserError("Error al consultar la API de MercadoLibre.")
+
+            data = response.json()
+            if not data:
+                raise UserError("No se encontró ninguna categoría sugerida para este producto.")
+            category_id = data[0].get('category_id')
+            category_name = data[0].get('category_name')
+            domain_name = data[0].get('domain_name')
+            if not category_id or not category_name:
+                raise UserError("No se pudo obtener la información de la categoría de la respuesta de MercadoLibre.")
+
+            # Buscar la categoría en product.category
+            category = self.env['product.category'].search([('meli_category_id', '=', category_id)], limit=1)
+            if not category:
+                # Buscar la categoría padre "All"
+                parent = self.env['product.category'].search([('name', '=', 'All')], limit=1)
+                # Crear la categoría si no existe
+                category = self.env['product.category'].create({
+                    'name': category_name,
+                    'meli_category_id': category_id,
+                    'parent_id': parent.id if parent else False,
+                    'description': domain_name or '',
+                })
+                category.action_view_attributes()
+
+            rec.meli_category_id = category.id  # Asigna el ID del registro Many2one
+            
 class ProductTemplateMeliImage(models.Model):
     _name = 'product.template.meli.image'
     _description = 'MercadoLibre Product Images'

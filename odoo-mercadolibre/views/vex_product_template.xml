@@ -34,6 +34,7 @@
                                 class="btn-primary" icon="fa-image"/>
                     </div>
                     <notebook>
+                        <button name="action_get_category_from_name" type="object" string="Buscar Categoría ML" class="oe_highlight"/>
                         <page name="general_info" string="General Information">
                             <group  string="General Info">
                                 <group col="2">
@@ -53,6 +54,7 @@
                                     <field name="meli_domain_id"/>
                                     <field name="meli_catalog_product_id"/>
                                     <field name="meli_category_vex"/>
+                                    <field name="meli_category_id"/>
                                     <field name="meli_inventory_id"/>
                                     <field name="meli_tag_ids" widget="many2many_tags" placeholder="Agregar etiquetas..."/>
                                     <field name="meli_channel_ids" widget="many2many_tags" placeholder="Agregar canales..."/>
