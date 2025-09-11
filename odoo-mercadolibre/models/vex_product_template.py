@@ -1048,12 +1048,24 @@ class ProductTemplateMeliAttribute(models.Model):
     _description = 'MercadoLibre Product Attributes'
 
     product_tmpl_id = fields.Many2one('product.template', ondelete="cascade")
-    # meli_attribute_id = fields.Char(string="Attribute ID", help="Attribute identifier")  # <-- Comenta o elimina
-    meli_attribute_ref_id = fields.Many2one('vex.meli.attribute', string="Atributo ML")  # <-- Nuevo campo
+    meli_attribute_ref_id = fields.Many2one('vex.meli.attribute', string="Atributo ML")
     meli_attribute_name = fields.Char(string="Attribute Name", help="Name of the attribute")
-    meli_value_id = fields.Char(string="Value ID", help="Identifier of the attribute value")
-    meli_value_name = fields.Char(string="Value Name", help="Name of the attribute value")
-    meli_category_vex = fields.Char(related="product_tmpl_id.meli_category_vex", store=False)
+
+    # Cambiar de Char -> Many2one
+    meli_value_id = fields.Many2one(
+        'vex.meli.attribute.value', 
+        string="Valor ML"
+    )
+    meli_value_name = fields.Char(
+        related='meli_value_id.meli_value_name', 
+        string="Value Name", 
+        store=True
+    )
+
+    meli_category_vex = fields.Char(
+        related="product_tmpl_id.meli_category_vex", 
+        store=False
+    )
 
 class ProductMeliTag(models.Model):
     _name = 'product.meli.tag'
