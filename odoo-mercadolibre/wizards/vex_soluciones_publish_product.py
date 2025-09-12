@@ -170,7 +170,7 @@ class VexPublishProductWizard(models.TransientModel):
         res['name'] = product.name
         res['image_1920'] = product.image_1920
         res['meli_title'] = product.name
-        
+
         # --- Generar URL imagen principal ---
         base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
         variant = product.product_variant_id
@@ -190,7 +190,7 @@ class VexPublishProductWizard(models.TransientModel):
 
         # --- Calcular gross_amount con API de ML ---
         price = product.list_price
-        ml_category_id = product.meli_category_vex
+        ml_category_id = product.meli_category_id.meli_category_id if product.meli_category_id else None
         instance = product.instance_id or self.env['vex.instance'].search([('name', 'ilike', 'RIFCIF ODOO')], limit=1)
         if instance:
             res['instance_id'] = instance.id
