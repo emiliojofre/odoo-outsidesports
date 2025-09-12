@@ -46,7 +46,6 @@ class ProductTemplate(models.Model):
             ('gold_special', 'Clásica'),
         ],
         string="Tipo de publicación",
-        required=True,
         help="Tipo de publicación en Mercado Libre"
     )
     meli_condition = fields.Selection(
@@ -1065,9 +1064,14 @@ class ProductTemplate(models.Model):
             if not category_id or not category_name:
                 raise UserError("No se pudo obtener la información de la categoría de la respuesta de MercadoLibre.")
 
-            # Buscar la categoría en product.category
+            # Buscar la categoría por meli_category_id y nombre exacto
             instance = rec.instance_id
-            category = self.env['product.category'].search([('meli_category_id', '=', category_id)], limit=1)
+            category = self.env['product.category'].search([
+                ('meli_category_id', '=', category_id),
+                ('name', '=', category_name),
+                ('instance_id', '=', instance.id if instance else False)
+            ], limit=1)
+
             if not category:
                 # Buscar la categoría padre "All"
                 parent = self.env['product.category'].search([('name', '=', 'All')], limit=1)
@@ -1083,6 +1087,19 @@ class ProductTemplate(models.Model):
 
             rec.meli_category_id = category.id  # Asigna el ID del registro Many2one
             
+    @api.onchange('meli_category_id')
+    def _onchange_meli_category_id_precargar_atributos(self):
+        if self.meli_category_id:
+            atributos = []
+            for attr in self.meli_category_id.meli_attribute_ids.filtered('meli_attribute_required'):
+                atributos.append((0, 0, {
+                    'meli_attribute_ref_id': attr.id,
+                    'meli_attribute_name': attr.meli_attribute_name,
+                    # # Si solo hay un valor posible, lo selecciona automáticamente
+                    # 'meli_values_id': attr.value_ids[0].id if len(attr.value_ids) == 1 else False,
+                }))
+            self.meli_attribute_ids = atributos
+
 class ProductTemplateMeliImage(models.Model):
     _name = 'product.template.meli.image'
     _description = 'MercadoLibre Product Images'
