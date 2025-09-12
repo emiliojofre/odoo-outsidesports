@@ -1170,6 +1170,12 @@ class VexPublishProductWizardAttribute(models.TransientModel):
     _description = 'Atributo temporal para el wizard de publicación'
     
     wizard_id = fields.Many2one('vex.publish.product.wizard', string='Wizard')
+    meli_category_id = fields.Many2one(
+        'product.category',
+        related="wizard_id.meli_category_id",
+        store=False,
+        string="Categoría MercadoLibre"
+    )
     meli_category_vex = fields.Char(related="wizard_id.meli_category_vex", store=False)
     meli_attribute_ref_id = fields.Many2one('vex.meli.attribute', string="Atributo ML")
     meli_values_id = fields.Many2one('vex.meli.attribute.value', string="Valor ML")

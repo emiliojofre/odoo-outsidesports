@@ -132,7 +132,6 @@
 
                                 <field name="meli_attribute_ids">
                                     <tree editable="bottom">
-                                        <!-- <field name="meli_category_id_char" invisible="1"/> -->
                                         <field name="meli_attribute_ref_id"/>
                                         <field name="meli_attribute_name" readonly="1"/>
                                         <field name="meli_values_id" domain="[('attribute_id','=', meli_attribute_ref_id)]"/>
