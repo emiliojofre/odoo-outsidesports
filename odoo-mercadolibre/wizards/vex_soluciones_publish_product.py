@@ -183,16 +183,6 @@ class VexPublishProductWizard(models.TransientModel):
             except Exception as e:
                 _logger.error(f"[default_get] Error al consumir la API de ML: {e}")
 
-        odoo_category = self.env['product.category'].search([('meli_category_id', '=', res.get('meli_category_vex'))], limit=1)
-        if odoo_category:
-            atributos = []
-            for attr in odoo_category.meli_attribute_ids.filtered(lambda a: a.meli_attribute_required):
-                atributos.append((0, 0, {
-                    'meli_attribute_id': attr.id,
-                    'meli_values_id': attr.value_ids[0].id if len(attr.value_ids) == 1 else False,
-                }))
-            res['meli_attribute_ids'] = atributos
-
         # --- Imágenes secundarias ---
         pictures = [
             (0, 0, {'url': img.url, 'secure_url': img.secure_url})
@@ -201,17 +191,29 @@ class VexPublishProductWizard(models.TransientModel):
         ]
         res['meli_pictures_ids'] = pictures
 
-        # --- Atributos ---
-        res['meli_attribute_ids'] = [
-            (0, 0, {
-                'meli_attribute_id': attr.meli_attribute_id,
-                'meli_attribute_name': attr.meli_attribute_name,
-                'meli_values_id': attr.meli_values_id,
-                'meli_value_name': attr.meli_value_name,
-            })
-            for attr in product.meli_attribute_ids
-        ]
-
+        # Precargar atributos requeridos de la categoría si el producto no tiene atributos
+        if not product.meli_attribute_ids:
+            odoo_category = self.env['product.category'].search([('meli_category_id', '=', res.get('meli_category_vex'))], limit=1)
+            if odoo_category:
+                atributos = []
+                for attr in odoo_category.meli_attribute_ids.filtered(lambda a: a.meli_attribute_required):
+                    atributos.append((0, 0, {
+                        'meli_attribute_ref_id': attr.id,
+                        'meli_attribute_name': attr.meli_attribute_name,
+                        'meli_values_id': attr.value_ids[0].id if len(attr.value_ids) == 1 else False,
+                    }))
+                res['meli_attribute_ids'] = atributos
+        else:
+            res['meli_attribute_ids'] = [
+                (0, 0, {
+                    'meli_attribute_ref_id': attr.meli_attribute_ref_id.id,
+                    'meli_attribute_name': attr.meli_attribute_ref_id.meli_attribute_name,
+                    'meli_values_id': attr.meli_values_id.id,
+                    'meli_value_name': attr.meli_values_id.meli_value_name or attr.meli_value_name,
+                })
+                for attr in product.meli_attribute_ids
+            ]
+            
         # --- Instancia por defecto ---
         instance = self.env['vex.instance'].search([('name', 'ilike', 'RIFCIF ODOO')], limit=1)
         if instance:
@@ -316,9 +318,9 @@ class VexPublishProductWizard(models.TransientModel):
         for attr in self.meli_attribute_ids:
             self.product_id.meli_attribute_ids.create({
                 'product_tmpl_id': self.product_id.id,
-                'meli_attribute_id': attr.meli_attribute_id,
+                'meli_attribute_ref_id': attr.meli_attribute_ref_id.id,
                 'meli_attribute_name': attr.meli_attribute_name,
-                'meli_values_id': attr.meli_values_id,
+                'meli_values_id': attr.meli_values_id.id,
                 'meli_value_name': attr.meli_value_name,
             })
         _logger.info(f"Atributos sincronizados: {len(self.meli_attribute_ids)}")
@@ -347,15 +349,17 @@ class VexPublishProductWizard(models.TransientModel):
         _logger.info(f"Total imágenes preparadas para ML: {len(pictures)}")
 
         # --- ATRIBUTOS ---
-        attributes = [
-            {
-                "id": attr.meli_attribute_id.meli_attribute_id,
-                "value_id": attr.meli_values_id.meli_values_id if attr.meli_values_id else None,
-                "value_name": attr.meli_values_id.meli_value_name if attr.meli_values_id else None,
-            }
-            for attr in self.meli_attribute_ids
-            if attr.meli_attribute_id and (attr.meli_values_id or attr.meli_values_id.meli_value_name)
-        ]
+        attributes = []
+        for attr in self.meli_attribute_ids:
+            attribute_id = attr.meli_attribute_ref_id.meli_attribute_id
+            value_id = attr.meli_values_id.meli_value_id if attr.meli_values_id else None
+            value_name = attr.meli_values_id.meli_value_name if attr.meli_values_id else attr.meli_value_name
+            attribute = {"id": attribute_id}
+            if value_id:
+                attribute["value_id"] = value_id
+            if value_name and not value_id:
+                attribute["value_name"] = value_name
+            attributes.append(attribute)
         _logger.info(f"Atributos preparados para ML: {attributes}")
 
         # --- TÉRMINOS DE VENTA ---
@@ -370,6 +374,10 @@ class VexPublishProductWizard(models.TransientModel):
         if not self.meli_category_vex or not self.meli_category_vex.startswith('ML'):
             _logger.error("Categoría inválida detectada.")
             raise UserError("Debes ingresar un ID de categoría válido de MercadoLibre, por ejemplo: MLA1055.")
+        
+        required_attrs = [a for a in self.meli_attribute_ids if a.meli_attribute_ref_id.meli_attribute_required and not (a.meli_values_id or a.meli_value_name)]
+        if required_attrs:
+            raise UserError("Faltan valores para algunos atributos requeridos.")
 
         # --- PAYLOAD ---
         payload = {
