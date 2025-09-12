@@ -49,7 +49,7 @@ class VexPublishProductWizard(models.TransientModel):
     meli_currency = fields.Selection([
         ('CLP', 'Peso Chileno (CLP)'),
         ('USD', 'Dólar Americano (USD)'),
-    ])
+    ], default='CLP', string="Moneda", required=True)
     meli_available_quantity = fields.Integer(string="Cantidad disponible", required=True)
     meli_buying_mode = fields.Selection(
         [
@@ -178,7 +178,7 @@ class VexPublishProductWizard(models.TransientModel):
 
         # --- Copiar campos simples ---
         for field in [
-            'meli_currency_id',
+            # 'meli_currency_id',
             'meli_buying_mode',
             'meli_condition', 'meli_listing_type',
             'meli_warranty_time', 'meli_warranty_type',
