@@ -35,7 +35,7 @@ class VexPublishProductWizard(models.TransientModel):
     meli_title = fields.Char(string="Título", required=True)
     meli_category_vex = fields.Char(
         string="Categoría ID",
-        related="product_id.meli_category_id",
+        related="product_id.categ_id.meli_category_id",
         store=False
     )
     # meli_category_id_char = fields.Char(
@@ -151,7 +151,7 @@ class VexPublishProductWizard(models.TransientModel):
         res['product_id'] = product.id
         res['name'] = product.name
         res['image_1920'] = product.image_1920
-        res['meli_category_vex'] = product.meli_category_id
+        res['meli_category_vex'] = product.categ_id.meli_category_id
 
         # --- Generar URL imagen principal ---
         base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
