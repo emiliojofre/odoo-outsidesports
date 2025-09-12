@@ -360,21 +360,9 @@ class MeliAttribute(models.Model):
     def name_get(self):
         result = []
         for rec in self:
-            name = rec.meli_value_name or rec.meli_value_id
-            if rec.attribute_id:
-                # opcional: mostrar también el atributo al que pertenece
-                name = f"{rec.attribute_id.meli_attribute_name}: {name}"
+            name = f"{rec.meli_attribute_id or ''} - {rec.meli_attribute_name or ''}"
             result.append((rec.id, name))
         return result
-
-    @api.model
-    def name_search(self, name='', args=None, operator='ilike', limit=100):
-        args = args or []
-        domain = []
-        if name:
-            domain = ['|', ('meli_value_name', operator, name), ('id', operator, name)]
-        recs = self.search(domain + args, limit=limit)
-        return recs.name_get()
 
 class MeliAttributeValue(models.Model):
     _name = 'vex.meli.attribute.value'
@@ -384,6 +372,16 @@ class MeliAttributeValue(models.Model):
     meli_value_id = fields.Char(string='Value ID', required=True)
     meli_value_name = fields.Char(string='Value Name')
     attribute_id = fields.Many2one('vex.meli.attribute', string='Atributo')
+
+    def name_get(self):
+        result = []
+        for rec in self:
+            name = rec.meli_value_name or rec.meli_value_id
+            if rec.attribute_id:
+                # opcional: mostrar también el atributo al que pertenece
+                name = f"{rec.attribute_id.meli_attribute_name}: {name}"
+            result.append((rec.id, name))
+        return result
 
     @api.model
     def name_search(self, name='', args=None, operator='ilike', limit=100):
