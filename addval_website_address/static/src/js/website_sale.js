@@ -90,7 +90,7 @@ WebsiteSale.include({
     _onChangeCountry: function (ev) {
         this._super.apply(this, arguments)
         this._rpc({
-            route: "/shop/country_infos/" + $("#country_id").val(),
+            route: "/shop/country_infos/" + 46, // Hard coded Chile
             params: {
                 mode: $("#country_id").attr('mode'),
             },
