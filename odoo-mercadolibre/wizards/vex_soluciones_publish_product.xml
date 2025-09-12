@@ -5,7 +5,7 @@
         <field name="arch" type="xml">
             <form string="Publicar en MercadoLibre">
                 <!-- Campo invisible para que el domain funcione -->
-                    <field name="meli_category_id_char" invisible="1"/>
+                    
 
                 <!-- Información del producto -->
                 <group col="2">
