@@ -166,10 +166,11 @@ class VexPublishProductWizard(models.TransientModel):
         product = self.env['product.template'].browse(self.env.context.get('active_id'))
 
         res['product_id'] = product.id
+        res['meli_category_id'] = product.meli_category_id.id if product.meli_category_id else False
         res['name'] = product.name
         res['image_1920'] = product.image_1920
-        # res['meli_category_id'] = product.categ_id.id
-
+        res['meli_title'] = product.name
+        
         # --- Generar URL imagen principal ---
         base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
         variant = product.product_variant_id
@@ -177,7 +178,7 @@ class VexPublishProductWizard(models.TransientModel):
 
         # --- Copiar campos simples ---
         for field in [
-            'meli_title', 'meli_currency_id',
+            'meli_currency_id',
             'meli_buying_mode',
             'meli_condition', 'meli_listing_type',
             'meli_warranty_time', 'meli_warranty_type',
