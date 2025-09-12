@@ -38,11 +38,11 @@ class VexPublishProductWizard(models.TransientModel):
         related="product_id.meli_category_vex",
         store=False
     )
-    meli_category_id_char = fields.Char(
-        string="ID Categoría ML",
-        compute="_compute_meli_category_id_char",
-        store=False
-    )
+    # meli_category_id_char = fields.Char(
+    #     string="ID Categoría ML",
+    #     compute="_compute_meli_category_id_char",
+    #     store=False
+    # )
     meli_currency_id = fields.Char(string="Moneda", required=True)
     meli_available_quantity = fields.Integer(string="Cantidad disponible", required=True)
     meli_buying_mode = fields.Selection(
@@ -129,10 +129,10 @@ class VexPublishProductWizard(models.TransientModel):
         required=True
     )
 
-    @api.depends('product_id')
-    def _compute_meli_category_id_char(self):
-        for rec in self:
-            rec.meli_category_id_char = rec.product_id.categ_id.meli_category_id or ''
+    # @api.depends('product_id')
+    # def _compute_meli_category_id_char(self):
+    #     for rec in self:
+    #         rec.meli_category_id_char = rec.product_id.categ_id.meli_category_id or ''
 
     @api.model
     def set_odoo_image_url_as_thumbnail(self, product):
