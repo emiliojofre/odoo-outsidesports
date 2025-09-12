@@ -430,7 +430,7 @@ class VexPublishProductWizard(models.TransientModel):
             "pictures": pictures,
             "attributes": attributes,
             "sale_terms": sale_terms,
-            "logistic_type": self.meli_logistic_type,
+            # "logistic_type": self.meli_logistic_type,
             "description": {
                 "plain_text": self.meli_description,
             }
