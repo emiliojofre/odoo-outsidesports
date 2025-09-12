@@ -133,7 +133,7 @@
                                 <field name="meli_attribute_ids">
                                     <tree editable="bottom">
                                         <field name="meli_category_vex" invisible="1"/>
-                                        <field name="meli_attribute_ref_id" domain="[('meli_category_id','=', meli_category_vex)]"/>
+                                        <field name="meli_attribute_ref_id" domain="[('meli_category_id','=', meli_category_id)]"/>
                                         <field name="meli_attribute_name" readonly="1"/>
                                         <field name="meli_values_id" domain="[('attribute_id','=', meli_attribute_ref_id)]"/>
                                         <field name="meli_value_name" readonly="1"/>

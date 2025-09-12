@@ -1051,6 +1051,7 @@ class ProductTemplate(models.Model):
                 raise UserError("No se pudo obtener la información de la categoría de la respuesta de MercadoLibre.")
 
             # Buscar la categoría en product.category
+            instance = rec.instance_id
             category = self.env['product.category'].search([('meli_category_id', '=', category_id)], limit=1)
             if not category:
                 # Buscar la categoría padre "All"
@@ -1061,6 +1062,7 @@ class ProductTemplate(models.Model):
                     'meli_category_id': category_id,
                     'parent_id': parent.id if parent else False,
                     'meli_description': domain_name or '',
+                    'instance_id': instance.id if instance else False,
                 })
                 category.action_view_attributes()
 
@@ -1107,6 +1109,12 @@ class ProductTemplateMeliAttribute(models.Model):
 
     meli_category_vex = fields.Char(
         related="product_tmpl_id.meli_category_vex", 
+        store=False
+    )
+
+    meli_category_id = fields.Many2one(
+        related="product_tmpl_id.meli_category_id",
+        string="ML Category",
         store=False
     )
 
