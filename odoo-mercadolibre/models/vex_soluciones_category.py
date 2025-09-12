@@ -367,14 +367,17 @@ class MeliAttribute(models.Model):
 class MeliAttributeValue(models.Model):
     _name = 'vex.meli.attribute.value'
     _description = 'MercadoLibre Category Attribute Value'
+    _order = 'meli_value_name'
 
     meli_value_id = fields.Char(string='Value ID', required=True)
     meli_value_name = fields.Char(string='Value Name')
     attribute_id = fields.Many2one('vex.meli.attribute', string='Atributo')
 
     def name_get(self):
-            result = []
-            for rec in self:
-                name = rec.meli_value_name or rec.meli_value_id or ''
-                result.append((rec.id, name))
-            return result
+        result = []
+        for rec in self:
+            name = rec.meli_value_name or rec.meli_value_id or ''
+            # Opcional: mostrar también el atributo
+            # name = f"{rec.meli_value_name} ({rec.attribute_id.meli_attribute_name})"
+            result.append((rec.id, name))
+        return result
