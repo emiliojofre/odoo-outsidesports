@@ -36,11 +36,11 @@ class ProductTemplate(models.Model):
     meli_listing_type = fields.Char(string="Listing Type", help="Type of MercadoLibre listing")
     meli_condition = fields.Selection(
         [
-            ('2230284', 'Nuevo'),
-            ('2230581', 'Usado'),
+            ('new', 'Nuevo'),
+            ('used', 'Usado'),
+            ('not_specified', 'No especificado'),
         ],
-        string="Condición",
-        help="Condición del ítem para Mercado Libre"
+        string="Condición ML"
     )
     meli_permalink = fields.Char(string="Product URL", help="Permanent link to the product on MercadoLibre")
     meli_thumbnail = fields.Char(string="Thumbnail URL", help="URL of the product thumbnail")
