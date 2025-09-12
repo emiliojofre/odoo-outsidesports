@@ -151,6 +151,10 @@ class ProductTemplate(models.Model):
         not_specified: No se especifica ningún tipo de logística.
         """
     )
+    meli_category_id_char = fields.Char(
+        compute="_compute_meli_category_id_char",
+        store=False
+    )
 
     @api.depends(
         'meli_title', 'meli_category_vex', 'meli_currency_id', 'meli_available_quantity',
@@ -181,6 +185,11 @@ class ProductTemplate(models.Model):
                 for attr in rec.meli_attribute_ids
             )
             rec.ready_create = campos_ok and imagenes_ok and atributos_ok
+
+    @api.depends('meli_category_id')
+    def _compute_meli_category_id_char(self):
+        for rec in self:
+            rec.meli_category_id_char = rec.meli_category_id or ''
 
     def _compute_meli_type_item_logistc(self):
         """
@@ -1092,6 +1101,10 @@ class ProductTemplateMeliAttribute(models.Model):
     _description = 'MercadoLibre Product Attributes'
 
     product_tmpl_id = fields.Many2one('product.template', ondelete="cascade")
+    meli_category_id_char = fields.Char(
+        related="product_tmpl_id.meli_category_id_char",
+        store=False
+    )
     meli_attribute_ref_id = fields.Many2one('vex.meli.attribute', string="Atributo ML")
     meli_attribute_name = fields.Char(string="Attribute Name", help="Name of the attribute")
 
