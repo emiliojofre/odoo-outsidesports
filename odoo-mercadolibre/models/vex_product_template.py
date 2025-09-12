@@ -1122,6 +1122,18 @@ class ProductTemplateMeliAttribute(models.Model):
     def _onchange_meli_attribute_ref_id(self):
         if self.meli_attribute_ref_id:
             self.meli_attribute_name = self.meli_attribute_ref_id.meli_attribute_name
+            # Si el atributo no tiene valores, limpiar el campo Many2one y permitir escribir
+            values = self.env['vex.meli.attribute.value'].search([('attribute_id', '=', self.meli_attribute_ref_id.id)])
+            if not values:
+                self.meli_values_id = False
+                # Aquí puedes mostrar un mensaje o habilitar el campo meli_value_name
+            else:
+                self.meli_value_name = False  # Limpiar si hay valores predefinidos
+
+    @api.onchange('meli_attribute_ref_id')
+    def _onchange_meli_attribute_ref_id(self):
+        if self.meli_attribute_ref_id:
+            self.meli_attribute_name = self.meli_attribute_ref_id.meli_attribute_name
             self.meli_values_id = False  # Limpiar valor anterior si cambia el atributo
 
     @api.onchange('meli_values_id')
