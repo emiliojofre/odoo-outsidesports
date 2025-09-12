@@ -136,11 +136,6 @@ class VexPublishProductWizard(models.TransientModel):
         required=True
     )
 
-    # @api.depends('product_id')
-    # def _compute_meli_category_id_char(self):
-    #     for rec in self:
-    #         rec.meli_category_id_char = rec.product_id.categ_id.meli_category_id or ''
-
     @api.onchange('product_id')
     def _onchange_product_id_set_category(self):
         if self.product_id and self.product_id.meli_category_id:
@@ -210,8 +205,8 @@ class VexPublishProductWizard(models.TransientModel):
                         res['gross_amount'] = info.get('sale_fee_details', {}).get('gross_amount', 0)
 
                         # Si gross_amount viene con valor, lo usamos como precio
-                        if res['gross_amount']:
-                            res['meli_base_price'] = res['gross_amount']
+                        # if res['gross_amount']:
+                        #     res['meli_base_price'] = res['gross_amount']
 
                         _logger.info(f"[default_get] API ML precios: {info}")
                     else:
@@ -307,9 +302,9 @@ class VexPublishProductWizard(models.TransientModel):
                             wizard.percentaje_fee = info.get('sale_fee_details', {}).get('percentage_fee', 0)
                             wizard.fixed_fee = info.get('sale_fee_details', {}).get('fixed_fee', 0)
                             wizard.gross_amount = info.get('sale_fee_details', {}).get('gross_amount', 0)
-                            if wizard.gross_amount:
-                                wizard.meli_base_price = wizard.gross_amount
-                                _logger.info(f"API ML precios: {info}")
+                            # if wizard.gross_amount:
+                            #     wizard.meli_base_price = wizard.gross_amount
+                            #     _logger.info(f"API ML precios: {info}")
                         else:
                             _logger.warning("Respuesta vacía o inesperada de la API de Mercado Libre.")
                     else:
@@ -376,9 +371,8 @@ class VexPublishProductWizard(models.TransientModel):
         if self.meli_thumbnail:
             pictures.append({"source": self.meli_thumbnail})
 
-        # Agregar imágenes secundarias
         for pic in self.meli_pictures_ids:
-            if pic.secure_url:
+            if pic.secure_url and pic.secure_url != self.meli_thumbnail:
                 pictures.append({"source": pic.secure_url})
 
         if not pictures:

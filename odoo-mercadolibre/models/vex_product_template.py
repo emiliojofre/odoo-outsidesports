@@ -32,8 +32,23 @@ class ProductTemplate(models.Model):
     meli_initial_quantity = fields.Integer(string="Initial Quantity", help="Quantity at time of listing")
     meli_available_quantity = fields.Integer(string="Available Quantity", help="Units currently available")
     meli_sold_quantity = fields.Integer(string="Sold Quantity", help="Total units sold")
-    meli_buying_mode = fields.Char(string="Buying Mode", help="Buying mode used (e.g., buy_it_now)")
-    meli_listing_type = fields.Char(string="Listing Type", help="Type of MercadoLibre listing")
+    meli_buying_mode = fields.Selection(
+        [
+            ('buy_it_now', 'Compra inmediata'),
+        ],
+        string="Modo de compra",
+        required=True,
+        help="Modo de compra permitido por Mercado Libre"
+    )
+    meli_listing_type = fields.Selection(
+        [
+            ('gold_pro', 'Premium'),
+            ('gold_special', 'Clásica'),
+        ],
+        string="Tipo de publicación",
+        required=True,
+        help="Tipo de publicación en Mercado Libre"
+    )
     meli_condition = fields.Selection(
         [
             ('new', 'Nuevo'),

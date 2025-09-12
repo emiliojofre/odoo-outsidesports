@@ -64,9 +64,8 @@
                                     <field name="meli_tag_ids" widget="many2many_tags" placeholder="Agregar etiquetas..."/>
                                     <field name="meli_channel_ids" widget="many2many_tags" placeholder="Agregar canales..."/>
                                     <field name="meli_health"/>
-                                    <field name="meli_buying_mode" />
                                     <field name="meli_warranty_type" />
-                                    <field name="meli_warranty_time" />                       
+                                    <field name="meli_warranty_time" placeholder="Escribe el tiempo de garantía (30 días o 1 mes)"/>                       
                                 </group>
                             </group>
                         </page>
