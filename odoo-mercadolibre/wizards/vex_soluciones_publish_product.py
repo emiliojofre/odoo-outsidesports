@@ -177,7 +177,7 @@ class VexPublishProductWizard(models.TransientModel):
 
         # --- Copiar campos simples ---
         for field in [
-            'meli_title', 'meli_currency',
+            'meli_title', 'meli_currency_id',
             'meli_buying_mode',
             'meli_condition', 'meli_listing_type',
             'meli_warranty_time', 'meli_warranty_type',
