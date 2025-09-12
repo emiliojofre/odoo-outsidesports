@@ -34,9 +34,7 @@ class VexPublishProductWizard(models.TransientModel):
     # Campos requeridos por la API
     meli_title = fields.Char(string="Título", required=True)
     meli_category_vex = fields.Char(
-        string="ID Categoría ML",
-        related="meli_category_id.meli_category_id",
-        store=False
+        string="ID Categoría ML"
     )
     meli_category_id = fields.Many2one(
         'product.category',
@@ -48,7 +46,7 @@ class VexPublishProductWizard(models.TransientModel):
     #     compute="_compute_meli_category_id_char",
     #     store=False
     # )
-    meli_currency_id = fields.Selection([
+    meli_currency = fields.Selection([
         ('CLP', 'Peso Chileno (CLP)'),
         ('USD', 'Dólar Americano (USD)'),
     ])
@@ -142,6 +140,20 @@ class VexPublishProductWizard(models.TransientModel):
     #     for rec in self:
     #         rec.meli_category_id_char = rec.product_id.categ_id.meli_category_id or ''
 
+    @api.onchange('product_id')
+    def _onchange_product_id_set_category(self):
+        if self.product_id and self.product_id.meli_category_id:
+            self.meli_category_id = self.product_id.meli_category_id
+        else:
+            self.meli_category_id = False
+
+    @api.onchange('meli_category_id')
+    def _onchange_meli_category_id_set_vex(self):
+        if self.meli_category_id and self.meli_category_id.meli_category_id:
+            self.meli_category_vex = self.meli_category_id.meli_category_id
+        else:
+            self.meli_category_vex = False
+
     @api.model
     def set_odoo_image_url_as_thumbnail(self, product):
         base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
@@ -156,7 +168,7 @@ class VexPublishProductWizard(models.TransientModel):
         res['product_id'] = product.id
         res['name'] = product.name
         res['image_1920'] = product.image_1920
-        res['meli_category_id'] = product.categ_id.id
+        # res['meli_category_id'] = product.categ_id.id
 
         # --- Generar URL imagen principal ---
         base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
@@ -165,7 +177,7 @@ class VexPublishProductWizard(models.TransientModel):
 
         # --- Copiar campos simples ---
         for field in [
-            'meli_title', 'meli_currency_id',
+            'meli_title', 'meli_currency',
             'meli_buying_mode',
             'meli_condition', 'meli_listing_type',
             'meli_warranty_time', 'meli_warranty_type',
@@ -311,7 +323,7 @@ class VexPublishProductWizard(models.TransientModel):
         vals = {
             'meli_title': self.meli_title,
             'meli_category_vex': self.meli_category_vex,
-            'meli_currency_id': self.meli_currency_id,
+            'meli_currency_id': self.meli_currency,
             'meli_available_quantity': self.meli_available_quantity,
             'meli_buying_mode': self.meli_buying_mode,
             'meli_condition': self.meli_condition,
@@ -408,7 +420,7 @@ class VexPublishProductWizard(models.TransientModel):
         payload = {
             "title": self.meli_title,
             "category_id": self.meli_category_vex,
-            "currency_id": self.meli_currency_id,
+            "currency_id": self.meli_currency,
             "available_quantity": self.meli_available_quantity,
             "buying_mode": self.meli_buying_mode,
             "condition": self.meli_condition,

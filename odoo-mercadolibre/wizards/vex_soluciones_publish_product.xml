@@ -30,7 +30,7 @@
                         <field name="meli_title"/>
                         <field name="meli_category_vex"/>
                         <field name="meli_category_id"/>
-                        <field name="meli_currency_id"/>
+                        <field name="meli_currency"/>
                         <field name="meli_available_quantity"/>
                         <field name="meli_buying_mode"/>
                         <field name="meli_condition"/>
