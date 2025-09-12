@@ -198,7 +198,7 @@ class VexPublishProductWizard(models.TransientModel):
         if price and ml_category_id:
             try:
                 instance.get_access_token()
-                url = f"https://api.mercadolibre.com/sites/MLC/listing_prices?price={int(price)}&category_id={ml_category_id}"
+                url = f"https://api.mercadolibre.com/sites/MLC/listing_prices?price={int(self.meli_base_price)}&category_id={ml_category_id}"
                 headers = {"Authorization": f"Bearer {instance.meli_access_token}"}
                 response = requests.get(url, headers=headers)
                 if response.status_code == 200:
