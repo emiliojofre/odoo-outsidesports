@@ -35,7 +35,7 @@ class VexPublishProductWizard(models.TransientModel):
     meli_title = fields.Char(string="Título", required=True)
     meli_category_vex = fields.Char(
         string="Categoría ID",
-        related="product_id.meli_category_vex",
+        related="product_id.categ_id.meli_category_id",
         store=False
     )
     # meli_category_id_char = fields.Char(
@@ -174,6 +174,7 @@ class VexPublishProductWizard(models.TransientModel):
             res['instance_id'] = instance.id
         if price and ml_category_id:
             try:
+                instance.get_access_token()
                 url = f"https://api.mercadolibre.com/sites/MLC/listing_prices?price={int(price)}&category_id={ml_category_id}"
                 headers = {"Authorization": f"Bearer {instance.meli_access_token}"}
                 response = requests.get(url, headers=headers)
@@ -272,6 +273,7 @@ class VexPublishProductWizard(models.TransientModel):
                 access_token = False
             if price and category:
                 try:
+                    instance.get_access_token()
                     url = f"https://api.mercadolibre.com/sites/MLC/listing_prices?price={int(price)}&category_id={category}"
                     headers = {"Authorization": f"Bearer {access_token}"}
                     response = requests.get(url, headers=headers)
