@@ -61,8 +61,9 @@ class VexPublishProductWizard(models.TransientModel):
     )
     meli_condition = fields.Selection(
         [
-            ('2230284', 'Nuevo'),
-            ('2230581', 'Usado'),
+            ('new', 'Nuevo'),
+            ('used', 'Usado'),
+            ('not_specified', 'No especificado'),
         ],
         string="Condición",
         required=True,
@@ -426,7 +427,7 @@ class VexPublishProductWizard(models.TransientModel):
             "buying_mode": self.meli_buying_mode,
             "condition": self.meli_condition,
             "listing_type_id": self.meli_listing_type,
-            "price": self.meli_base_price,
+            "price": int(self.meli_base_price),
             "pictures": pictures,
             "attributes": attributes,
             "sale_terms": sale_terms,
