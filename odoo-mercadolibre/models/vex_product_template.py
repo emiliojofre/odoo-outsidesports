@@ -1136,11 +1136,6 @@ class ProductTemplateMeliAttribute(models.Model):
             self.meli_attribute_name = self.meli_attribute_ref_id.meli_attribute_name
             self.meli_values_id = False  # Limpiar valor anterior si cambia el atributo
 
-    @api.onchange('meli_values_id')
-    def _onchange_meli_values_id(self):
-        # Si quieres hacer algo extra cuando cambia el valor, aquí
-        pass
-
 class ProductMeliTag(models.Model):
     _name = 'product.meli.tag'
     _description = 'MercadoLibre Tag'
