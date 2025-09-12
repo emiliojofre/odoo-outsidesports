@@ -34,9 +34,14 @@ class VexPublishProductWizard(models.TransientModel):
     # Campos requeridos por la API
     meli_title = fields.Char(string="Título", required=True)
     meli_category_vex = fields.Char(
-        string="Categoría ID",
-        related="product_id.categ_id.meli_category_id",
+        string="ID Categoría ML",
+        related="meli_category_id.meli_category_id",
         store=False
+    )
+    meli_category_id = fields.Many2one(
+        'product.category',
+        string="Categoría MercadoLibre",
+        required=True
     )
     # meli_category_id_char = fields.Char(
     #     string="ID Categoría ML",
@@ -151,7 +156,7 @@ class VexPublishProductWizard(models.TransientModel):
         res['product_id'] = product.id
         res['name'] = product.name
         res['image_1920'] = product.image_1920
-        res['meli_category_vex'] = product.categ_id.meli_category_id
+        res['meli_category_id'] = product.categ_id.id
 
         # --- Generar URL imagen principal ---
         base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
@@ -160,7 +165,7 @@ class VexPublishProductWizard(models.TransientModel):
 
         # --- Copiar campos simples ---
         for field in [
-            'meli_title', 'meli_category_vex', 'meli_currency_id',
+            'meli_title', 'meli_currency_id',
             'meli_buying_mode',
             'meli_condition', 'meli_listing_type',
             'meli_warranty_time', 'meli_warranty_type',
