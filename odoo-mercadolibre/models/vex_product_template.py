@@ -1034,7 +1034,7 @@ class ProductTemplate(models.Model):
             if not rec.name:
                 raise UserError("El producto debe tener un nombre para buscar su categoria")
 
-            url = f"https://api.mercadolibre.com/sites/MLA/domain_discovery/search?limit=1&q={rec.name}"
+            url = f"https://api.mercadolibre.com/sites/MLC/domain_discovery/search?limit=1&q={rec.name}"
             response = requests.get(url)
 
             if response.status_code != 200:
