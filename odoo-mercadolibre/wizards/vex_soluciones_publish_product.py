@@ -33,7 +33,11 @@ class VexPublishProductWizard(models.TransientModel):
 
     # Campos requeridos por la API
     meli_title = fields.Char(string="Título", required=True)
-    meli_category_vex = fields.Char(string="Categoría ID", required=True)
+    meli_category_vex = fields.Char(
+        string="Categoría ID",
+        related="product_id.meli_category_vex",
+        store=False
+    )
     meli_currency_id = fields.Char(string="Moneda", required=True)
     meli_available_quantity = fields.Integer(string="Cantidad disponible", required=True)
     meli_buying_mode = fields.Selection(
