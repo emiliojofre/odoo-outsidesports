@@ -224,6 +224,18 @@
         </field>
     </record>
 
+    <record id="view_vex_meli_attribute_value_tree" model="ir.ui.view">
+        <field name="name">vex.meli.attribute.value.tree</field>
+        <field name="model">vex.meli.attribute.value</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="meli_value_name"/>
+                <field name="attribute_id"/>
+                <field name="meli_value_id"/>
+            </tree>
+        </field>
+    </record>
+
     <record id="product_template_tree_view_product_mercadolibre" model="ir.ui.view">
         <field name="name">product_template.tree.view.product.meli</field>
         <field name="model">product.template</field>
