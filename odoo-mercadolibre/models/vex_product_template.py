@@ -166,19 +166,6 @@ class ProductTemplate(models.Model):
         """
     )
 
-    @api.onchange('meli_category_id')
-    def _onchange_meli_category_id_precargar_atributos(self):
-        if self.meli_category_id:
-            atributos = []
-            for attr in self.meli_category_id.meli_attribute_ids.filtered('meli_attribute_required'):
-                atributos.append((0, 0, {
-                    'meli_attribute_ref_id': attr.id,
-                    'meli_attribute_name': attr.meli_attribute_name,
-                    # # Si solo hay un valor posible, lo selecciona automáticamente
-                    # 'meli_values_id': attr.value_ids[0].id if len(attr.value_ids) == 1 else False,
-                }))
-            self.meli_attribute_ids = atributos
-
     @api.depends(
         'meli_title', 'meli_category_vex', 'meli_currency_id', 'meli_available_quantity',
         'meli_buying_mode', 'meli_condition', 'meli_listing_type', 'meli_base_price',
@@ -1056,6 +1043,35 @@ class ProductTemplate(models.Model):
                     _logger.error(f"Error fetching price for {product.ml_publication_code}: {str(e)}")
             _logger.info(f"END CRON cron_update_recommended_prices for instance: {instance.name}")
 
+    def get_or_create_meli_category(self, meli_category_id, instance_id):
+        Category = self.env['product.category']
+        # Llama la API de ML
+        url = f"https://api.mercadolibre.com/categories/{meli_category_id}"
+        response = requests.get(url)
+        if response.status_code != 200:
+            raise UserError(f"No se pudo obtener la categoría ML {meli_category_id}: {response.text}")
+        data = response.json()
+        path = data.get('path_from_root', [])
+        parent_id = False
+        last_category = None
+        for cat in path:
+            # Busca si ya existe la categoría en Odoo
+            category = Category.search([
+                ('meli_category_id', '=', cat['id']),
+                ('instance_id', '=', instance_id)
+            ], limit=1)
+            if not category:
+                vals = {
+                    'name': cat['name'],
+                    'meli_category_id': cat['id'],
+                    'parent_id': parent_id,
+                    'instance_id': instance_id,
+                }
+                category = Category.create(vals)
+            parent_id = category.id
+            last_category = category
+        return last_category
+
     def action_get_category_meli_form_name(self):
         for rec in self:
             if not rec.name:
@@ -1063,42 +1079,19 @@ class ProductTemplate(models.Model):
 
             url = f"https://api.mercadolibre.com/sites/MLC/domain_discovery/search?limit=1&q={rec.name}"
             response = requests.get(url)
-
             if response.status_code != 200:
-                _logger.error(f"Error al consumir la api de mercado libre: status-code: {response.status_code} - {response.text}")
                 raise UserError("Error al consultar la API de MercadoLibre.")
 
             data = response.json()
             if not data:
                 raise UserError("No se encontró ninguna categoría sugerida para este producto.")
             category_id = data[0].get('category_id')
-            category_name = data[0].get('category_name')
-            domain_name = data[0].get('domain_name')
-            if not category_id or not category_name:
-                raise UserError("No se pudo obtener la información de la categoría de la respuesta de MercadoLibre.")
-
-            # Buscar la categoría por meli_category_id y nombre exacto
             instance = rec.instance_id
-            category = self.env['product.category'].search([
-                ('meli_category_id', '=', category_id),
-                ('name', '=', category_name),
-                ('instance_id', '=', instance.id if instance else False)
-            ], limit=1)
 
-            if not category:
-                # Buscar la categoría padre "All"
-                parent = self.env['product.category'].search([('name', '=', 'All')], limit=1)
-                # Crear la categoría si no existe
-                category = self.env['product.category'].create({
-                    'name': category_name,
-                    'meli_category_id': category_id,
-                    'parent_id': parent.id if parent else False,
-                    'meli_description': domain_name or '',
-                    'instance_id': instance.id if instance else False,
-                })
-                category.action_view_attributes()
+            # Crea toda la jerarquía de categorías
+            category = self.get_or_create_meli_category(category_id, instance.id)
 
-            rec.meli_category_id = category.id  # Asigna el ID del registro Many2one
+            rec.meli_category_id = category.id
             rec.meli_category_vex = category.meli_category_id
 
     @api.onchange('meli_category_id')
@@ -1108,6 +1101,19 @@ class ProductTemplate(models.Model):
                 rec.meli_category_vex = rec.meli_category_id.meli_category_id
             else:
                 rec.meli_category_vex = False
+
+    @api.onchange('meli_category_id')
+    def _onchange_meli_category_id_precargar_atributos(self):
+        if self.meli_category_id:
+            atributos = []
+            for attr in self.meli_category_id.meli_attribute_ids.filtered('meli_attribute_required'):
+                atributos.append((0, 0, {
+                    'meli_attribute_ref_id': attr.id,
+                    'meli_attribute_name': attr.meli_attribute_name,
+                    # # Si solo hay un valor posible, lo selecciona automáticamente
+                    # 'meli_values_id': attr.value_ids[0].id if len(attr.value_ids) == 1 else False,
+                }))
+            self.meli_attribute_ids = atributos
 
 class ProductTemplateMeliImage(models.Model):
     _name = 'product.template.meli.image'
