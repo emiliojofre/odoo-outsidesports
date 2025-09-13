@@ -166,6 +166,19 @@ class ProductTemplate(models.Model):
         """
     )
 
+    @api.onchange('meli_category_id')
+    def _onchange_meli_category_id_precargar_atributos(self):
+        if self.meli_category_id:
+            atributos = []
+            for attr in self.meli_category_id.meli_attribute_ids.filtered('meli_attribute_required'):
+                atributos.append((0, 0, {
+                    'meli_attribute_ref_id': attr.id,
+                    'meli_attribute_name': attr.meli_attribute_name,
+                    # # Si solo hay un valor posible, lo selecciona automáticamente
+                    # 'meli_values_id': attr.value_ids[0].id if len(attr.value_ids) == 1 else False,
+                }))
+            self.meli_attribute_ids = atributos
+
     @api.depends(
         'meli_title', 'meli_category_vex', 'meli_currency_id', 'meli_available_quantity',
         'meli_buying_mode', 'meli_condition', 'meli_listing_type', 'meli_base_price',
@@ -1086,19 +1099,15 @@ class ProductTemplate(models.Model):
                 category.action_view_attributes()
 
             rec.meli_category_id = category.id  # Asigna el ID del registro Many2one
-            
+            rec.meli_category_vex = category.meli_category_id
+
     @api.onchange('meli_category_id')
-    def _onchange_meli_category_id_precargar_atributos(self):
-        if self.meli_category_id:
-            atributos = []
-            for attr in self.meli_category_id.meli_attribute_ids.filtered('meli_attribute_required'):
-                atributos.append((0, 0, {
-                    'meli_attribute_ref_id': attr.id,
-                    'meli_attribute_name': attr.meli_attribute_name,
-                    # # Si solo hay un valor posible, lo selecciona automáticamente
-                    # 'meli_values_id': attr.value_ids[0].id if len(attr.value_ids) == 1 else False,
-                }))
-            self.meli_attribute_ids = atributos
+    def _onchange_meli_category_id_set_vex(self):
+        for rec in self:
+            if rec.meli_category_id and rec.meli_category_id.meli_category_id:
+                rec.meli_category_vex = rec.meli_category_id.meli_category_id
+            else:
+                rec.meli_category_vex = False
 
 class ProductTemplateMeliImage(models.Model):
     _name = 'product.template.meli.image'
