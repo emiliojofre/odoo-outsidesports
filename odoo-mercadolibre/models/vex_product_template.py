@@ -1095,25 +1095,24 @@ class ProductTemplate(models.Model):
             rec.meli_category_vex = category.meli_category_id
 
     @api.onchange('meli_category_id')
-    def _onchange_meli_category_id_set_vex(self):
+    def _onchange_meli_category_id(self):
         for rec in self:
+            # Sincronizar el ID ML
             if rec.meli_category_id and rec.meli_category_id.meli_category_id:
                 rec.meli_category_vex = rec.meli_category_id.meli_category_id
             else:
                 rec.meli_category_vex = False
 
-    @api.onchange('meli_category_id')
-    def _onchange_meli_category_id_precargar_atributos(self):
-        if self.meli_category_id:
-            atributos = []
-            for attr in self.meli_category_id.meli_attribute_ids.filtered('meli_attribute_required'):
-                atributos.append((0, 0, {
-                    'meli_attribute_ref_id': attr.id,
-                    'meli_attribute_name': attr.meli_attribute_name,
-                    # # Si solo hay un valor posible, lo selecciona automáticamente
-                    # 'meli_values_id': attr.value_ids[0].id if len(attr.value_ids) == 1 else False,
-                }))
-            self.meli_attribute_ids = atributos
+            # Precargar atributos requeridos
+            if rec.meli_category_id:
+                atributos = []
+                for attr in rec.meli_category_id.meli_attribute_ids.filtered('meli_attribute_required'):
+                    atributos.append((0, 0, {
+                        'meli_attribute_ref_id': attr.id,
+                        'meli_attribute_name': attr.meli_attribute_name,
+                        # 'meli_values_id': attr.value_ids[0].id if len(attr.value_ids) == 1 else False,
+                    }))
+                rec.meli_attribute_ids = atributos
 
 class ProductTemplateMeliImage(models.Model):
     _name = 'product.template.meli.image'

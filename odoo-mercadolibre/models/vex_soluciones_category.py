@@ -341,7 +341,7 @@ class VexProductCategory(models.Model):
             for val in attr.get('values', []):
                 self.env['vex.meli.attribute.value'].create({
                     'meli_value_id': val.get('id'),
-                    'meli_value_name': val.get('name'),
+                    'meli_value_name': val.get('name'), 
                     'attribute_id': attribute.id,
                 })
 
@@ -377,9 +377,6 @@ class MeliAttributeValue(models.Model):
         result = []
         for rec in self:
             name = rec.meli_value_name or rec.meli_value_id
-            if rec.attribute_id:
-                # opcional: mostrar también el atributo al que pertenece
-                name = f"{rec.attribute_id.meli_attribute_name}: {name}"
             result.append((rec.id, name))
         return result
 
