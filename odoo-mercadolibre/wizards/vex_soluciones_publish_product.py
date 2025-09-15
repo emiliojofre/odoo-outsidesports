@@ -127,13 +127,13 @@ class VexPublishProductWizard(models.TransientModel):
         "vex.publish.product.wizard.image", 
         "wizard_id", 
         string="Imágenes", 
-        required=True
+        required=False
     )
     meli_attribute_ids = fields.One2many(
         "vex.publish.product.wizard.attribute", 
         "wizard_id", 
         string="Atributos", 
-        required=True
+        required=False
     )
 
     @api.onchange('meli_category_id')
@@ -492,4 +492,3 @@ class VexPublishProductWizard(models.TransientModel):
             "view_mode": 'form',
             "res_id": self.product_id.id
         }
-

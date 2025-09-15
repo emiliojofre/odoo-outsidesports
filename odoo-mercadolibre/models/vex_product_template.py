@@ -1072,6 +1072,36 @@ class ProductTemplate(models.Model):
             last_category = category
         return last_category
 
+    def _set_required_attrs_from_category(self):
+        """Crear líneas en meli_attribute_ids con los atributos requeridos de la categoría del producto."""
+        for rec in self:
+            # limpiar líneas actuales
+            rec.meli_attribute_ids = [(5, 0, 0)]
+            if not rec.meli_category_id:
+                continue
+
+            # Tomar los atributos requeridos de la categoría
+            required_attrs = rec.meli_category_id.meli_attribute_ids.filtered(lambda a: a.meli_attribute_required)
+            cmds = []
+            for a in required_attrs:
+                # Si el atributo tiene exactamente un valor posible, lo preseleccionamos
+                preselected_value = False
+                if hasattr(a, 'value_ids'):
+                    values = a.value_ids
+                    if len(values) == 1:
+                        preselected_value = values.id
+
+                vals = {
+                    'meli_attribute_ref_id': a.id,
+                    'meli_attribute_name': a.meli_attribute_name,
+                }
+                if preselected_value:
+                    vals['meli_values_id'] = preselected_value
+                cmds.append((0, 0, vals))
+
+            if cmds:
+                rec.meli_attribute_ids = cmds
+
     def action_get_category_meli_form_name(self):
         for rec in self:
             if not rec.name:
@@ -1091,29 +1121,15 @@ class ProductTemplate(models.Model):
             # Crea toda la jerarquía de categorías
             category = self.get_or_create_meli_category(category_id, instance.id)
 
-            rec.meli_category_id = category.id
-            rec.meli_category_vex = category.meli_category_id
+            # 1) Actualiza/crea atributos de la categoría en Odoo
             category.action_view_attributes()
 
-    @api.onchange('meli_category_id')
-    def _onchange_meli_category_id(self):
-        for rec in self:
-            # Sincronizar el ID ML
-            if rec.meli_category_id and rec.meli_category_id.meli_category_id:
-                rec.meli_category_vex = rec.meli_category_id.meli_category_id
-            else:
-                rec.meli_category_vex = False
+            # 2) Asigna la categoría al producto y crea sus líneas de atributos requeridos
+            rec.meli_category_id = category.id
+            rec.meli_category_vex = category.meli_category_id
+            rec._set_required_attrs_from_category()
 
-            # Precargar atributos requeridos
-            if rec.meli_category_id:
-                atributos = []
-                for attr in rec.meli_category_id.meli_attribute_ids.filtered('meli_attribute_required'):
-                    atributos.append((0, 0, {
-                        'meli_attribute_ref_id': attr.id,
-                        'meli_attribute_name': attr.meli_attribute_name,
-                        # 'meli_values_id': attr.value_ids[0].id if len(attr.value_ids) == 1 else False,
-                    }))
-                rec.meli_attribute_ids = atributos
+        return True
 
 class ProductTemplateMeliImage(models.Model):
     _name = 'product.template.meli.image'
