@@ -47,11 +47,12 @@ class VexPublishProductWizard(models.TransientModel):
         string="Categoría MercadoLibre",
         required=True
     )
-    # meli_category_id_char = fields.Char(
-    #     string="ID Categoría ML",
-    #     compute="_compute_meli_category_id_char",
-    #     store=False
-    # )
+    last_populated_category_id = fields.Many2one(
+        'product.category',
+        string='Última categoría usada para poblar',
+        readonly=True
+    )
+    
     meli_currency = fields.Selection([
         ('CLP', 'Peso Chileno (CLP)'),
         ('USD', 'Dólar Americano (USD)'),
@@ -145,8 +146,6 @@ class VexPublishProductWizard(models.TransientModel):
     @api.onchange('product_id')
     def _onchange_product_id_set_category(self):
         for w in self:
-            # Solo establece la categoría desde el producto si aún no está definida
-            # (evita disparar onchange de categoría en la carga inicial del wizard).
             if w.product_id and not w.meli_category_id:
                 w.meli_category_id = w.product_id.meli_category_id
             elif not w.product_id:
@@ -155,34 +154,38 @@ class VexPublishProductWizard(models.TransientModel):
     @api.onchange('meli_category_id')
     def _onchange_meli_category_id(self):
         for w in self:
-            # Mantén sincronizado el ID ML
+            # Sincroniza ID ML siempre
             w.meli_category_vex = w.meli_category_id.meli_category_id if w.meli_category_id else False
 
             if not w.meli_category_id:
                 w.meli_attribute_ids = [(5, 0, 0)]
+                w.last_populated_category_id = False
                 continue
 
-            # Si ya hay líneas y la categoría es la misma del producto (carga inicial), no hagas nada
-            if w.meli_attribute_ids and w.product_id and (w.meli_category_id == w.product_id.meli_category_id):
+            # Si la categoría NO cambió realmente, no repobles ni toques lo que el usuario ya puso
+            if w.last_populated_category_id and (w.last_populated_category_id == w.meli_category_id):
                 continue
 
-            # Cambio real de categoría dentro del wizard: reemplaza por los requeridos de la nueva categoría
+            # Cambio real de categoría: repoblar SOLO con requeridos y conservar valores existentes si coinciden
+            existing = {line.meli_attribute_ref_id.id: line for line in w.meli_attribute_ids}
             atributos = []
             for attr in w.meli_category_id.meli_attribute_ids.filtered('meli_attribute_required'):
-                atributos.append((0, 0, {
+                line_vals = {
                     'meli_attribute_ref_id': attr.id,
                     'meli_attribute_name': attr.meli_attribute_name,
-                }))
+                }
+                # Conserva el valor si existía para el mismo atributo
+                if attr.id in existing:
+                    old = existing[attr.id]
+                    line_vals.update({
+                        'meli_values_id': old.meli_values_id.id if old.meli_values_id else False,
+                        'meli_value_name': old.meli_value_name,
+                    })
+                atributos.append((0, 0, line_vals))
 
-            # Reemplaza completamente (no apendes para evitar duplicados)
+            # Reemplaza completamente para evitar duplicados
             w.meli_attribute_ids = [(5, 0, 0)] + atributos
-
-    @api.onchange('meli_category_id')
-    def _onchange_meli_category_id_set_vex(self):
-        if self.meli_category_id and self.meli_category_id.meli_category_id:
-            self.meli_category_vex = self.meli_category_id.meli_category_id
-        else:
-            self.meli_category_vex = False
+            w.last_populated_category_id = w.meli_category_id
 
     @api.model
     def set_odoo_image_url_as_thumbnail(self, product):
@@ -324,6 +327,8 @@ class VexPublishProductWizard(models.TransientModel):
 
         res['product_id'] = product.id
         res['meli_category_id'] = product.meli_category_id.id if product.meli_category_id else False
+        res['meli_category_vex'] = product.meli_category_id.meli_category_id if product.meli_category_id else False
+        res['last_populated_category_id'] = product.meli_category_id.id if product.meli_category_id else False
         res['name'] = product.name
         res['image_1920'] = product.image_1920
         res['meli_title'] = product.name
@@ -387,10 +392,8 @@ class VexPublishProductWizard(models.TransientModel):
 
         # --- Atributos para el wizard ---
         if product.meli_attribute_ids:
-            # Crear líneas nuevas del wizard copiando las del producto (NO usar (6,0,ids))
             res['meli_attribute_ids'] = self._copy_product_attrs_to_wizard_cmds(product)
         else:
-            # Precarga desde la categoría si el producto no tiene atributos
             odoo_category = product.meli_category_id
             if odoo_category:
                 atributos = []
@@ -462,50 +465,7 @@ class VexPublishProductWizard(models.TransientModel):
         self.ensure_one()
         _logger.info(f"=== Iniciando publicación del producto {self.product_id.name} (ID {self.product_id.id}) ===")
 
-        # --- ACTUALIZAR CAMPOS SIMPLES EN product.template ---
-        vals = {
-            'meli_title': self.meli_title,
-            'meli_category_vex': self.meli_category_vex,
-            'meli_currency_id': self.meli_currency,
-            'meli_available_quantity': self.meli_available_quantity,
-            'meli_buying_mode': self.meli_buying_mode,
-            'meli_condition': self.meli_condition,
-            'meli_listing_type': self.meli_listing_type,
-            'meli_base_price': self.meli_base_price,
-            'meli_warranty_type': self.meli_warranty_type,
-            'meli_warranty_time': self.meli_warranty_time,
-            'meli_description': self.meli_description,
-            'meli_thumbnail': self.meli_thumbnail,
-            'meli_logistic_type': self.meli_logistic_type,
-        }
-        self.product_id.write(vals)
-        _logger.info(f"Campos simples sincronizados con product.template: {vals}")
-
-        # --- SINCRONIZAR IMÁGENES ---
-        self.product_id.meli_pictures_ids.unlink()
-        _logger.info("Imágenes previas eliminadas en product.template.")
-        for img in self.meli_pictures_ids:
-            self.product_id.meli_pictures_ids.create({
-                'product_tmpl_id': self.product_id.id,
-                'url': img.url,
-                'secure_url': img.secure_url,
-            })
-        _logger.info(f"Imágenes secundarias sincronizadas: {len(self.meli_pictures_ids)}")
-
-        # --- SINCRONIZAR ATRIBUTOS ---
-        self.product_id.meli_attribute_ids.unlink()
-        _logger.info("Atributos previos eliminados en product.template.")
-        for attr in self.meli_attribute_ids:
-            self.product_id.meli_attribute_ids.create({
-                'product_tmpl_id': self.product_id.id,
-                'meli_attribute_ref_id': attr.meli_attribute_ref_id.id,
-                'meli_attribute_name': attr.meli_attribute_name,
-                'meli_values_id': attr.meli_values_id.id,
-                'meli_value_name': attr.meli_value_name,
-            })
-        _logger.info(f"Atributos sincronizados: {len(self.meli_attribute_ids)}")
-
-        # --- TOKEN ---
+        # --- TOKEN (necesario antes de subir imágenes) ---
         instance = self.instance_id
         access_token = instance.meli_access_token
         if not access_token or len(access_token) < 20:
@@ -579,6 +539,7 @@ class VexPublishProductWizard(models.TransientModel):
 
         if not pictures:
             raise UserError("Debes agregar al menos una imagen válida para publicar en MercadoLibre. No fue posible subir ni reutilizar ninguna imagen. Revisa que las URLs sean públicas o que el producto tenga image_1920.")
+        # Quitar duplicados
         seen, unique = set(), []
         for p in pictures:
             src = p.get('source')
@@ -586,21 +547,20 @@ class VexPublishProductWizard(models.TransientModel):
                 seen.add(src)
                 unique.append(p)
         pictures = unique
-
         _logger.info(f"Total imágenes preparadas para ML: {len(pictures)}")
 
-        # --- ATRIBUTOS ---
+        # --- ATRIBUTOS (tomados del wizard) ---
         attributes = []
         for attr in self.meli_attribute_ids:
             attribute_id = attr.meli_attribute_ref_id.meli_attribute_id
             value_id = attr.meli_values_id.meli_value_id if attr.meli_values_id else None
             value_name = attr.meli_values_id.meli_value_name if attr.meli_values_id else attr.meli_value_name
-            attribute = {"id": attribute_id}
+            data = {"id": attribute_id}
             if value_id:
-                attribute["value_id"] = value_id
+                data["value_id"] = value_id
             if value_name and not value_id:
-                attribute["value_name"] = value_name
-            attributes.append(attribute)
+                data["value_name"] = value_name
+            attributes.append(data)
         _logger.info(f"Atributos preparados para ML: {attributes}")
 
         # --- TÉRMINOS DE VENTA ---
@@ -611,14 +571,57 @@ class VexPublishProductWizard(models.TransientModel):
             sale_terms.append({"id": "WARRANTY_TIME", "value_name": self.meli_warranty_time})
         _logger.info(f"Términos de venta: {sale_terms}")
 
-        # --- VALIDACIÓN ---
+        # --- VALIDACIÓN (antes de tocar product.template) ---
         if not self.meli_category_vex or not self.meli_category_vex.startswith('ML'):
             _logger.error("Categoría inválida detectada.")
             raise UserError("Debes ingresar un ID de categoría válido de MercadoLibre, por ejemplo: MLA1055.")
-        
-        required_attrs = [a for a in self.meli_attribute_ids if a.meli_attribute_ref_id.meli_attribute_required and not (a.meli_values_id or a.meli_value_name)]
-        if required_attrs:
+
+        missing = [a for a in self.meli_attribute_ids if a.meli_attribute_ref_id.meli_attribute_required and not (a.meli_values_id or a.meli_value_name)]
+        if missing:
             raise UserError("Faltan valores para algunos atributos requeridos.")
+
+        # --- ACTUALIZAR CAMPOS SIMPLES EN product.template (solo si todo validó) ---
+        vals = {
+            'meli_title': self.meli_title,
+            'meli_category_vex': self.meli_category_vex,
+            'meli_currency_id': self.meli_currency,
+            'meli_available_quantity': self.meli_available_quantity,
+            'meli_buying_mode': self.meli_buying_mode,
+            'meli_condition': self.meli_condition,
+            'meli_listing_type': self.meli_listing_type,
+            'meli_base_price': self.meli_base_price,
+            'meli_warranty_type': self.meli_warranty_type,
+            'meli_warranty_time': self.meli_warranty_time,
+            'meli_description': self.meli_description,
+            'meli_thumbnail': self.meli_thumbnail,
+            'meli_logistic_type': self.meli_logistic_type,
+        }
+        self.product_id.write(vals)
+        _logger.info(f"Campos simples sincronizados con product.template: {vals}")
+
+        # --- SINCRONIZAR IMÁGENES SECUNDARIAS EN product.template ---
+        self.product_id.meli_pictures_ids.unlink()
+        _logger.info("Imágenes previas eliminadas en product.template.")
+        for img in self.meli_pictures_ids:
+            self.product_id.meli_pictures_ids.create({
+                'product_tmpl_id': self.product_id.id,
+                'url': img.url,
+                'secure_url': img.secure_url,
+            })
+        _logger.info(f"Imágenes secundarias sincronizadas: {len(self.meli_pictures_ids)}")
+
+        # --- SINCRONIZAR ATRIBUTOS EN product.template ---
+        self.product_id.meli_attribute_ids.unlink()
+        _logger.info("Atributos previos eliminados en product.template.")
+        for attr in self.meli_attribute_ids:
+            self.product_id.meli_attribute_ids.create({
+                'product_tmpl_id': self.product_id.id,
+                'meli_attribute_ref_id': attr.meli_attribute_ref_id.id,
+                'meli_attribute_name': attr.meli_attribute_name,
+                'meli_values_id': attr.meli_values_id.id,
+                'meli_value_name': attr.meli_value_name,
+            })
+        _logger.info(f"Atributos sincronizados: {len(self.meli_attribute_ids)}")
 
         # --- PAYLOAD ---
         payload = {
@@ -629,7 +632,7 @@ class VexPublishProductWizard(models.TransientModel):
             "buying_mode": self.meli_buying_mode,
             "condition": self.meli_condition,
             "listing_type_id": self.meli_listing_type,
-            "price": int(self.meli_base_price),
+            "price": int(self.meli_base_price),  # si usas USD, cámbialo por float redondeado
             "pictures": pictures,
             "attributes": attributes,
             "sale_terms": sale_terms,

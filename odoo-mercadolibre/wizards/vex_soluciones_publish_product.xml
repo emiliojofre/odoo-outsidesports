@@ -28,6 +28,7 @@
                 <group string="Datos requeridos" col="2">
                     <group>
                         <field name="meli_title"/>
+                        <field name="last_populated_category_id"/>
                         <field name="meli_category_vex"/>
                         <field name="meli_category_id"/>
                         <field name="meli_currency"/>
