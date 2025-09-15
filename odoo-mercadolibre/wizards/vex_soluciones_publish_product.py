@@ -374,15 +374,33 @@ class VexPublishProductWizard(models.TransientModel):
 
         # --- ARMAR IMÁGENES CON SUBIDA PREVIA A ML ---
         pictures = []
-        if self.meli_thumbnail:
-            pictures.append({"source": self.meli_thumbnail})
+        def upload_image_to_meli(url):
+            """Sube una imagen de Odoo a MercadoLibre y devuelve la secure_url"""
+            img_resp = requests.post(
+                "https://api.mercadolibre.com/pictures",
+                headers={"Authorization": f"Bearer {access_token}"},
+                json={"source": url}
+            )
+            if img_resp.status_code == 201:
+                return img_resp.json().get("secure_url")
+            else:
+                _logger.error(f"Error al subir imagen {url}: {img_resp.text}")
+                return None
 
+        # Imagen principal
+        if self.meli_thumbnail:
+            uploaded = upload_image_to_meli(self.meli_thumbnail)
+            if uploaded:
+                pictures.append({"source": uploaded})
+
+        # Imágenes secundarias
         for pic in self.meli_pictures_ids:
             if pic.secure_url and pic.secure_url != self.meli_thumbnail:
-                pictures.append({"source": pic.secure_url})
+                uploaded = upload_image_to_meli(pic.secure_url)
+                if uploaded:
+                    pictures.append({"source": uploaded})
 
         if not pictures:
-            _logger.warning("No se encontraron imágenes válidas para publicar en ML.")
             raise UserError("Debes agregar al menos una imagen válida para publicar en MercadoLibre.")
 
         _logger.info(f"Total imágenes preparadas para ML: {len(pictures)}")
