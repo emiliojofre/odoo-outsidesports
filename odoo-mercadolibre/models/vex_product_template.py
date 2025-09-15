@@ -418,19 +418,44 @@ class ProductTemplate(models.Model):
             # Procesar atributos
             attribute_ids = []
             for attr in data.get('attributes', []):
-                attr_rec = Attribute.search([
-                    ('meli_attribute_id', '=', attr.get('id')),
-                    ('meli_value_name', '=', attr.get('value_name')),
-                    ('product_tmpl_id', '=', record.id)
-                ], limit=1)
+                attr_id_ml = attr.get('id')
+                attr_name = attr.get('name')
+                val_id_ml = attr.get('value_id')
+                val_name = attr.get('value_name')
+
+                # Referencia del atributo en catálogo (vex.meli.attribute)
+                ref = self.env['vex.meli.attribute'].search([('meli_attribute_id', '=', attr_id_ml)], limit=1)
+
+                # Valor del atributo (vex.meli.attribute.value)
+                val = False
+                if ref and val_id_ml:
+                    val = self.env['vex.meli.attribute.value'].search([
+                        ('attribute_id', '=', ref.id),
+                        ('meli_value_id', '=', val_id_ml),
+                    ], limit=1)
+
+                # Buscar línea existente del producto
+                domain = [
+                    ('product_tmpl_id', '=', record.id),
+                    ('meli_attribute_ref_id', '=', ref.id if ref else False),
+                ]
+                if val:
+                    domain.append(('meli_values_id', '=', val.id))
+                elif val_id_ml:
+                    # usar el Char auxiliar cuando no exista el valor en catálogo
+                    domain.append(('meli_value_id', '=', val_id_ml))
+
+                attr_rec = Attribute.search(domain, limit=1)
                 if not attr_rec:
-                    attr_rec = Attribute.create({
+                    vals = {
                         'product_tmpl_id': record.id,
-                        'meli_attribute_id': attr.get('id'),
-                        'meli_attribute_name': attr.get('name'),
-                        'meli_value_id': attr.get('value_id'),
-                        'meli_value_name': attr.get('value_name'),
-                    })
+                        'meli_attribute_ref_id': ref.id if ref else False,
+                        'meli_attribute_name': attr_name,
+                        'meli_values_id': val.id if val else False,
+                        'meli_value_id': val_id_ml or False,  # guarda el ID crudo si no hay registro de valor
+                    }
+                    attr_rec = Attribute.create(vals)
+
                 attribute_ids.append(attr_rec.id)
 
             # Procesar variantes
