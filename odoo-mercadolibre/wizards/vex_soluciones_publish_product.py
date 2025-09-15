@@ -169,6 +169,19 @@ class VexPublishProductWizard(models.TransientModel):
         product.meli_thumbnail = image_url
 
     @api.model
+    def _copy_product_attrs_to_wizard_cmds(self, product):
+        """Convierte product.meli_attribute_ids en comandos (0,0,vals) para el wizard."""
+        cmds = []
+        for pa in product.meli_attribute_ids:
+            cmds.append((0, 0, {
+                'meli_attribute_ref_id': pa.meli_attribute_ref_id.id,
+                'meli_attribute_name': pa.meli_attribute_name,
+                'meli_values_id': pa.meli_values_id.id if pa.meli_values_id else False,
+                'meli_value_name': pa.meli_value_name,
+            }))
+        return cmds
+
+    @api.model
     def default_get(self, fields_list):
         res = super().default_get(fields_list)
         product = self.env['product.template'].browse(self.env.context.get('active_id'))
@@ -236,20 +249,20 @@ class VexPublishProductWizard(models.TransientModel):
         ]
         res['meli_pictures_ids'] = pictures
 
-        # Precargar atributos requeridos de la categoría si el producto no tiene atributos
+        # --- Atributos para el wizard ---
         if product.meli_attribute_ids:
-        # Relaciona los atributos existentes del producto al wizard
-            res['meli_attribute_ids'] = [(6, 0, product.meli_attribute_ids.ids)]
+            # Crear líneas nuevas del wizard copiando las del producto (NO usar (6,0,ids))
+            res['meli_attribute_ids'] = self._copy_product_attrs_to_wizard_cmds(product)
         else:
-            # Precarga desde la categoría si no hay atributos en el producto
-            odoo_category = self.env['product.category'].search([('meli_category_id', '=', res.get('meli_category_vex'))], limit=1)
+            # Precarga desde la categoría si el producto no tiene atributos
+            odoo_category = product.meli_category_id
             if odoo_category:
                 atributos = []
                 for attr in odoo_category.meli_attribute_ids.filtered(lambda a: a.meli_attribute_required):
                     atributos.append((0, 0, {
                         'meli_attribute_ref_id': attr.id,
                         'meli_attribute_name': attr.meli_attribute_name,
-                        'meli_values_id': attr.value_ids[0].id if len(attr.value_ids) == 1 else False,
+                        'meli_values_id': attr.value_ids.id if len(attr.value_ids) == 1 else False,
                     }))
                 res['meli_attribute_ids'] = atributos
             
@@ -288,18 +301,14 @@ class VexPublishProductWizard(models.TransientModel):
     @api.onchange('meli_base_price', 'meli_category_vex')
     def _onchange_meli_base_price_or_category(self):
         for wizard in self:
-            price = self.meli_base_price
-            category = self.meli_category_vex
+            price = wizard.meli_base_price
+            category = wizard.meli_category_vex
             instance = wizard.instance_id
-            if instance and instance.meli_access_token:
-                access_token = instance.meli_access_token
-            else:
-                access_token = False
-            if price and category:
+            if price and category and instance:
                 try:
                     instance.get_access_token()
+                    headers = {"Authorization": f"Bearer {instance.meli_access_token}"}
                     url = f"https://api.mercadolibre.com/sites/MLC/listing_prices?price={int(price)}&category_id={category}"
-                    headers = {"Authorization": f"Bearer {access_token}"}
                     response = requests.get(url, headers=headers)
                     if response.status_code == 200:
                         data = response.json()
@@ -308,15 +317,10 @@ class VexPublishProductWizard(models.TransientModel):
                             wizard.percentaje_fee = info.get('sale_fee_details', {}).get('percentage_fee', 0)
                             wizard.fixed_fee = info.get('sale_fee_details', {}).get('fixed_fee', 0)
                             wizard.gross_amount = info.get('sale_fee_details', {}).get('gross_amount', 0)
-                            # if wizard.gross_amount:
-                            #     wizard.meli_base_price = wizard.gross_amount
-                            #     _logger.info(f"API ML precios: {info}")
-                        else:
-                            _logger.warning("Respuesta vacía o inesperada de la API de Mercado Libre.")
                     else:
-                        _logger.warning(f"Error al consultar la API de ML: {response.status_code} - {response.text}")
+                        _logger.warning(f"Error ML listing_prices: {response.status_code} - {response.text}")
                 except Exception as e:
-                    _logger.error(f"Error al consumir la API de ML: {e}")
+                    _logger.error(f"Error ML listing_prices: {e}")
 
     def action_publish(self):
         self.ensure_one()
