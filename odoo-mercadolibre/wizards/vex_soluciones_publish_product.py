@@ -142,24 +142,40 @@ class VexPublishProductWizard(models.TransientModel):
         required=False
     )
 
+    @api.onchange('product_id')
+    def _onchange_product_id_set_category(self):
+        for w in self:
+            # Solo establece la categoría desde el producto si aún no está definida
+            # (evita disparar onchange de categoría en la carga inicial del wizard).
+            if w.product_id and not w.meli_category_id:
+                w.meli_category_id = w.product_id.meli_category_id
+            elif not w.product_id:
+                w.meli_category_id = False
+
     @api.onchange('meli_category_id')
     def _onchange_meli_category_id(self):
-        if self.meli_category_id:
+        for w in self:
+            # Mantén sincronizado el ID ML
+            w.meli_category_vex = w.meli_category_id.meli_category_id if w.meli_category_id else False
+
+            if not w.meli_category_id:
+                w.meli_attribute_ids = [(5, 0, 0)]
+                continue
+
+            # Si ya hay líneas y la categoría es la misma del producto (carga inicial), no hagas nada
+            if w.meli_attribute_ids and w.product_id and (w.meli_category_id == w.product_id.meli_category_id):
+                continue
+
+            # Cambio real de categoría dentro del wizard: reemplaza por los requeridos de la nueva categoría
             atributos = []
-            # Solo los requeridos de la categoría seleccionada
-            for attr in self.meli_category_id.meli_attribute_ids.filtered('meli_attribute_required'):
+            for attr in w.meli_category_id.meli_attribute_ids.filtered('meli_attribute_required'):
                 atributos.append((0, 0, {
                     'meli_attribute_ref_id': attr.id,
                     'meli_attribute_name': attr.meli_attribute_name,
                 }))
-            self.meli_attribute_ids = atributos
 
-    @api.onchange('product_id')
-    def _onchange_product_id_set_category(self):
-        if self.product_id and self.product_id.meli_category_id:
-            self.meli_category_id = self.product_id.meli_category_id
-        else:
-            self.meli_category_id = False
+            # Reemplaza completamente (no apendes para evitar duplicados)
+            w.meli_attribute_ids = [(5, 0, 0)] + atributos
 
     @api.onchange('meli_category_id')
     def _onchange_meli_category_id_set_vex(self):
