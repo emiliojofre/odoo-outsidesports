@@ -1093,6 +1093,7 @@ class ProductTemplate(models.Model):
 
             rec.meli_category_id = category.id
             rec.meli_category_vex = category.meli_category_id
+            category.action_view_attributes()
 
     @api.onchange('meli_category_id')
     def _onchange_meli_category_id(self):
