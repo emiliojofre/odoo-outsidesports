@@ -304,12 +304,10 @@ class VexProductCategory(models.Model):
 
     def action_view_attributes(self):
         self.ensure_one()
-        # Buscar instancia asociada o una por defecto
         instance = self.env['vex.instance'].search([('name', 'ilike', 'RIFCIF ODOO')], limit=1)
         if not instance:
             raise UserError("No se encontró la instancia asociada ni una instancia por defecto (RIFCIF ODOO).")
 
-        # ACTUALIZA EL TOKEN ANTES DE CONSUMIR LA API
         instance.get_access_token()
         if not instance.meli_access_token:
             raise UserError("No se encontró el token de acceso en la instancia asociada.")
@@ -326,25 +324,44 @@ class VexProductCategory(models.Model):
         except Exception as e:
             raise UserError(f"Error al consultar la API de atributos de MercadoLibre:\n{str(e)}")
 
-        # Elimina atributos anteriores para evitar duplicados
-        self.env['vex.meli.attribute'].search([('meli_category_id', '=', self.id)]).unlink()
-
+        Attribute = self.env['vex.meli.attribute']
+        Value = self.env['vex.meli.attribute.value']
         for attr in attributes:
-            # Crea el atributo
-            attribute = self.env['vex.meli.attribute'].create({
-                'meli_attribute_id': attr.get('id'),
+            # Buscar si ya existe el atributo
+            attribute = Attribute.search([
+                ('meli_attribute_id', '=', attr.get('id')),
+                ('meli_category_id', '=', self.id)
+            ], limit=1)
+            vals_attr = {
                 'meli_attribute_name': attr.get('name'),
                 'meli_attribute_required': attr.get('tags', {}).get('required', False),
                 'meli_category_id': self.id,
-            })
-            # Si tiene valores, los crea
-            for val in attr.get('values', []):
-                self.env['vex.meli.attribute.value'].create({
-                    'meli_value_id': val.get('id'),
-                    'meli_value_name': val.get('name'),
-                    'attribute_id': attribute.id,
+            }
+            if attribute:
+                attribute.write(vals_attr)
+            else:
+                attribute = Attribute.create({
+                    'meli_attribute_id': attr.get('id'),
+                    **vals_attr
                 })
 
+            # Manejar valores del atributo
+            for val in attr.get('values', []):
+                value = Value.search([
+                    ('meli_value_id', '=', val.get('id')),
+                    ('attribute_id', '=', attribute.id)
+                ], limit=1)
+                vals_val = {
+                    'meli_value_name': val.get('name'),
+                    'attribute_id': attribute.id,
+                }
+                if value:
+                    value.write(vals_val)
+                else:
+                    Value.create({
+                        'meli_value_id': val.get('id'),
+                        **vals_val
+                    })
         return True
 
 class MeliAttribute(models.Model):
