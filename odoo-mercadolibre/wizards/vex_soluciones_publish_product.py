@@ -5,7 +5,12 @@ import logging
 import json
 import base64
 from io import BytesIO
-from PIL import Image
+from PIL import Image, ImageChops
+
+try:
+    LANCZOS = Image.Resampling.LANCZOS  # Pillow >=10
+except Exception:
+    LANCZOS = Image.LANCZOS             # Pillow <10
 
 _logger = logging.getLogger(__name__)
 
@@ -182,6 +187,57 @@ class VexPublishProductWizard(models.TransientModel):
             }))
         return cmds
 
+    def _is_processing_placeholder(self, url: str) -> bool:
+        return bool(url) and 'resources/frontend/statics/processing-image' in url
+
+    def _crop_white_borders(self, img: Image.Image) -> Image.Image:
+        """Recorta bordes casi blancos (evita que ML haga smartcrop y termine <500px)."""
+        # Aplana alpha sobre blanco si existe
+        if img.mode in ('RGBA', 'LA'):
+            bg = Image.new('RGB', img.size, (255, 255, 255))
+            bg.paste(img, mask=img.split()[-1])
+            img = bg
+        elif img.mode != 'RGB':
+            img = img.convert('RGB')
+
+        # Detecta diferencias respecto a un fondo blanco
+        bg = Image.new('RGB', img.size, (255, 255, 255))
+        diff = ImageChops.difference(img, bg)
+        bbox = diff.getbbox()
+        if bbox:
+            img = img.crop(bbox)
+        return img
+
+    def _normalize_raw_image(self, raw_bytes: bytes) -> bytes | None:
+        """Normaliza a: recorte de bordes blancos, mínimo 500px (uno de los lados) y máximo 1920px."""
+        if not raw_bytes:
+            return None
+        try:
+            img = Image.open(BytesIO(raw_bytes))
+            # Recorta bordes blancos y aplanado de alpha
+            img = self._crop_white_borders(img)
+
+            w, h = img.size
+            max_side = max(w, h)
+
+            # Escala hacia arriba si ambos lados < 500 (deja el lado mayor en 500)
+            if max_side < 500:
+                scale = 500.0 / float(max_side)
+                img = img.resize((int(round(w * scale)), int(round(h * scale))), LANCZOS)
+
+            # Limita a 1920px como máximo
+            w, h = img.size
+            if max(w, h) > 1920:
+                img.thumbnail((1920, 1920), LANCZOS)
+
+            out = BytesIO()
+            img.save(out, format='JPEG', quality=90, optimize=True)
+            out.seek(0)
+            return out.read()
+        except Exception as e:
+            _logger.error(f"Error normalizando imagen: {e}")
+            return None
+
     def _extract_secure_from_pictures_resp(self, data):
         """Devuelve una secure_url válida desde la respuesta de imágenes de ML."""
         # La mayoría de respuestas traen un array de variations con secure_url
@@ -240,16 +296,7 @@ class VexPublishProductWizard(models.TransientModel):
             return None
         try:
             raw = base64.b64decode(b64_data)
-            img = Image.open(BytesIO(raw))
-            if img.mode not in ('RGB', 'L'):
-                img = img.convert('RGB')
-            # Redimensiona a 1920x1920 máx. (ML lo recomienda y reduce tamaño de archivo)
-            max_size = (1920, 1920)
-            img.thumbnail(max_size, Image.LANCZOS)
-            out = BytesIO()
-            img.save(out, format='JPEG', quality=90, optimize=True)
-            out.seek(0)
-            return out.read()
+            return self._normalize_raw_image(raw)  # <- usa la normalización (recorte + min 500 + max 1920)
         except Exception as e:
             _logger.error(f"Error procesando imagen base64: {e}")
             return None
@@ -452,31 +499,34 @@ class VexPublishProductWizard(models.TransientModel):
         # --- ARMAR IMÁGENES (robusto) ---
         pictures = []
 
-        # 1) Principal: intenta con el binario del producto
+        # 1) Principal
         main_bytes = self._image_bytes_from_b64(self.product_id.image_1920 or self.product_id.product_variant_id.image_1920)
         secure = None
         if main_bytes:
             secure = self._upload_binary(main_bytes, self.instance_id, filename=f"{self.product_id.id}.jpg")
-            if not secure:
-                _logger.warning("Fallo upload multipart de imagen principal, probando con URL del thumbnail.")
+            if secure and self._is_processing_placeholder(secure):
+                _logger.warning("ML devolvió placeholder para la imagen principal; se intentará fallback.")
+                secure = None
         else:
             _logger.warning("Sin binario image_1920; probando con URL del thumbnail.")
 
-        # Fallback: usar la URL (source) o descargar y subir
+        # Fallback por URL
         if not secure:
             thumb = (self.meli_thumbnail or "").strip()
             if thumb:
-                if self._is_ml_hosted(thumb):
+                if self._is_ml_hosted(thumb) and not self._is_processing_placeholder(thumb):
                     secure = thumb
                 else:
-                    # 1) intenta que ML consuma la URL
                     secure = self._upload_via_source(thumb, self.instance_id)
-                    # 2) si falla, descarga y sube por multipart
+                    if secure and self._is_processing_placeholder(secure):
+                        _logger.warning("ML devolvió placeholder desde source; intentaremos descarga+multipart.")
+                        secure = None
                     if not secure:
                         try:
                             r = requests.get(thumb, timeout=20)
                             if r.status_code == 200 and r.content:
-                                secure = self._upload_binary(r.content, self.instance_id, filename="main.jpg")
+                                norm = self._normalize_raw_image(r.content)
+                                secure = self._upload_binary(norm, self.instance_id, filename="main.jpg") if norm else None
                             else:
                                 _logger.warning(f"No se pudo descargar thumbnail {thumb}: {r.status_code}")
                         except Exception as e:
@@ -485,27 +535,30 @@ class VexPublishProductWizard(models.TransientModel):
         if secure:
             pictures.append({"source": secure})
 
-        # 2) Secundarias (sin cambios de negocio, pero con mismos fallbacks)
+        # 2) Secundarias
         for pic in self.meli_pictures_ids:
             src = (pic.secure_url or pic.url or "").strip()
             if not src:
                 continue
-            if self._is_ml_hosted(src):
+            if self._is_ml_hosted(src) and not self._is_processing_placeholder(src):
                 pictures.append({"source": src})
                 continue
 
             sec_secure = self._upload_via_source(src, self.instance_id)
+            if sec_secure and self._is_processing_placeholder(sec_secure):
+                sec_secure = None
             if not sec_secure:
                 try:
                     r = requests.get(src, timeout=20)
                     if r.status_code == 200 and r.content:
-                        sec_secure = self._upload_binary(r.content, self.instance_id, filename="extra.jpg")
+                        norm = self._normalize_raw_image(r.content)
+                        sec_secure = self._upload_binary(norm, self.instance_id, filename="extra.jpg") if norm else None
                     else:
                         _logger.warning(f"No se pudo descargar {src}: {r.status_code}")
                 except Exception as e:
                     _logger.error(f"Error descargando {src}: {e}")
 
-            if sec_secure:
+            if sec_secure and not self._is_processing_placeholder(sec_secure):
                 pictures.append({"source": sec_secure})
 
         if not pictures:
