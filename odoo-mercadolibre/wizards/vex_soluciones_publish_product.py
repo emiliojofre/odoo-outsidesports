@@ -4,6 +4,8 @@ import requests
 import logging
 import json
 import base64
+import re
+import html
 from io import BytesIO
 from PIL import Image, ImageChops
 
@@ -319,6 +321,34 @@ class VexPublishProductWizard(models.TransientModel):
         except Exception as e:
             _logger.error(f"Error procesando imagen base64: {e}")
             return None
+        
+    def _prepare_plain_description(self, text: str) -> str:
+        """Normaliza la descripción a texto plano respetando saltos y viñetas."""
+        if not text:
+            return ''
+        # Decodifica entidades HTML por si vienen desde description_sale
+        text = html.unescape(text)
+
+        # Sustituye tags por saltos y elimina el resto
+        text = re.sub(r'<br\s*/?>', '\n', text, flags=re.I)
+        text = re.sub(r'</(p|li|div|h[1-6])\s*>', '\n', text, flags=re.I)
+        text = re.sub(r'<(ul|ol)\b[^>]*>', '\n', text, flags=re.I)
+        text = re.sub(r'<[^>]+>', ' ', text)  # quita cualquier otra etiqueta
+
+        # Normaliza saltos
+        text = text.replace('\r\n', '\n').replace('\r', '\n')
+        # Recorta espacios por línea pero conserva líneas vacías
+        lines = [ln.strip() for ln in text.split('\n')]
+        text = '\n'.join(lines)
+
+        # Colapsa 3+ saltos en solo 2 (mantiene separación de párrafos)
+        text = re.sub(r'\n{3,}', '\n\n', text)
+
+        # Recorta espacios múltiples
+        text = re.sub(r'[ \t]{2,}', ' ', text).strip()
+
+        # Límite de seguridad
+        return text[:50000]
 
     @api.model
     def default_get(self, fields_list):
@@ -636,12 +666,6 @@ class VexPublishProductWizard(models.TransientModel):
             "pictures": pictures,
             "attributes": attributes,
             "sale_terms": sale_terms,
-            'shipping': {
-                "logistic_type": self.meli_logistic_type,
-            },
-            "description": {
-                "plain_text": self.meli_description,
-            }
         }
         _logger.info(f"Payload final enviado a ML: {json.dumps(payload, indent=2, ensure_ascii=False)}")
 
@@ -655,8 +679,35 @@ class VexPublishProductWizard(models.TransientModel):
             _logger.error(f"Error al crear el producto en ML: {response.text}")
             raise UserError(f"Error al crear el producto en MercadoLibre: {response.text}")
 
-        # --- ACTUALIZAR CAMPOS DESDE RESPUESTA ---
         data = response.json()
+        plain_desc = self._prepare_plain_description(self.meli_description)
+        if plain_desc:
+            desc_endpoint = f"https://api.mercadolibre.com/items/{data.get('id')}/description"
+            desc_payload = {"plain_text": plain_desc}
+            desc_resp = requests.post(desc_endpoint, headers=headers, json=desc_payload)
+            if desc_resp.status_code in (200, 201):
+                _logger.info(f"Descripción creada correctamente para {data.get('id')}")
+                # Verificar que quedó en ML
+                try:
+                    ver = requests.get(
+                        f"https://api.mercadolibre.com/items/{data.get('id')}/description",
+                        headers=headers, timeout=15
+                    )
+                    if ver.status_code == 200:
+                        got = ver.json() or {}
+                        _logger.info(f"Descripción en ML confirmada (len={len(got.get('plain_text') or '')}).")
+                    else:
+                        _logger.warning(f"No se pudo verificar descripción: {ver.status_code} - {ver.text}")
+                except Exception as e:
+                    _logger.warning(f"GET descripción falló: {e}")
+            else:
+                # Si ya existe, intenta PUT
+                put_resp = requests.put(desc_endpoint, headers=headers, json=desc_payload)
+                if put_resp.status_code in (200, 201):
+                    _logger.info(f"Descripción actualizada vía PUT para {data.get('id')}")
+                else:
+                    _logger.warning(f"No se pudo crear/actualizar descripción: {desc_resp.status_code}/{put_resp.status_code}")
+
         self.product_id.write({
             'meli_product_id': data.get('id'),
             'meli_site_id': data.get('site_id'),
