@@ -3,6 +3,7 @@ from odoo.exceptions import UserError
 import requests
 import logging
 import json
+import base64
 from io import BytesIO
 from PIL import Image
 
@@ -181,6 +182,78 @@ class VexPublishProductWizard(models.TransientModel):
             }))
         return cmds
 
+    def _extract_secure_from_pictures_resp(self, data):
+        """Devuelve una secure_url válida desde la respuesta de imágenes de ML."""
+        # La mayoría de respuestas traen un array de variations con secure_url
+        variations = data.get('variations') or []
+        if isinstance(variations, list) and variations:
+            for v in variations:
+                if v.get('secure_url'):
+                    return v['secure_url']
+        # Fallback poco frecuente
+        return data.get('secure_url')
+
+    def _is_ml_hosted(self, url: str) -> bool:
+        return bool(url) and ('mlstatic.com' in url or '/pictures/' in url)
+
+    def _upload_via_source(self, url, instance):
+        """Intenta que ML ‘tire’ de la URL. Útil si ya es pública."""
+        try:
+            resp = requests.post(
+                "https://api.mercadolibre.com/pictures",
+                headers={
+                    "Authorization": f"Bearer {instance.meli_access_token}",
+                    "Content-Type": "application/json",
+                },
+                json={"source": url},
+                timeout=30
+            )
+            if resp.status_code in (200, 201):
+                data = resp.json()
+                secure = self._extract_secure_from_pictures_resp(data)
+                if not secure:
+                    _logger.warning(f"[pictures source] Sin secure_url en resp: {data}")
+                return secure
+            _logger.warning(f"[pictures source] {resp.status_code} - {resp.text}")
+        except Exception as e:
+            _logger.error(f"[pictures source] Exception: {e}")
+        return None
+
+    def _upload_binary(self, image_bytes, instance, filename="image.jpg", mimetype="image/jpeg"):
+        try:
+            files = {'file': (filename, image_bytes, mimetype)}
+            resp = requests.post(
+                "https://api.mercadolibre.com/pictures/items/upload",
+                headers={"Authorization": f"Bearer {instance.meli_access_token}"},
+                files=files,
+                timeout=60
+            )
+            if resp.status_code in (200, 201):
+                return self._extract_secure_from_pictures_resp(resp.json())
+            _logger.warning(f"[items/upload] {resp.status_code} - {resp.text}")
+        except Exception as e:
+            _logger.error(f"[items/upload] Exception: {e}")
+        return None
+
+    def _image_bytes_from_b64(self, b64_data):
+        if not b64_data:
+            return None
+        try:
+            raw = base64.b64decode(b64_data)
+            img = Image.open(BytesIO(raw))
+            if img.mode not in ('RGB', 'L'):
+                img = img.convert('RGB')
+            # Redimensiona a 1920x1920 máx. (ML lo recomienda y reduce tamaño de archivo)
+            max_size = (1920, 1920)
+            img.thumbnail(max_size, Image.LANCZOS)
+            out = BytesIO()
+            img.save(out, format='JPEG', quality=90, optimize=True)
+            out.seek(0)
+            return out.read()
+        except Exception as e:
+            _logger.error(f"Error procesando imagen base64: {e}")
+            return None
+
     @api.model
     def default_get(self, fields_list):
         res = super().default_get(fields_list)
@@ -218,7 +291,7 @@ class VexPublishProductWizard(models.TransientModel):
         if price and ml_category_id:
             try:
                 instance.get_access_token()
-                url = f"https://api.mercadolibre.com/sites/MLC/listing_prices?price={int(self.meli_base_price)}&category_id={ml_category_id}"
+                url = f"https://api.mercadolibre.com/sites/MLC/listing_prices?price={int(price)}&category_id={ml_category_id}"
                 headers = {"Authorization": f"Bearer {instance.meli_access_token}"}
                 response = requests.get(url, headers=headers)
                 if response.status_code == 200:
@@ -376,36 +449,74 @@ class VexPublishProductWizard(models.TransientModel):
             raise UserError("Token de acceso no válido.")
         _logger.info(f"Access Token usado: {access_token[:10]}... (ocultado por seguridad)")
 
-        # --- ARMAR IMÁGENES CON SUBIDA PREVIA A ML ---
+        # --- ARMAR IMÁGENES (robusto) ---
         pictures = []
-        def upload_image_to_meli(url):
-            """Sube una imagen de Odoo a MercadoLibre y devuelve la secure_url"""
-            img_resp = requests.post(
-                "https://api.mercadolibre.com/pictures",
-                headers={"Authorization": f"Bearer {access_token}"},
-                json={"source": url}
-            )
-            if img_resp.status_code == 201:
-                return img_resp.json().get("secure_url")
-            else:
-                _logger.error(f"Error al subir imagen {url}: {img_resp.text}")
-                return None
 
-        # Imagen principal
-        if self.meli_thumbnail:
-            uploaded = upload_image_to_meli(self.meli_thumbnail)
-            if uploaded:
-                pictures.append({"source": uploaded})
+        # 1) Principal: intenta con el binario del producto
+        main_bytes = self._image_bytes_from_b64(self.product_id.image_1920 or self.product_id.product_variant_id.image_1920)
+        secure = None
+        if main_bytes:
+            secure = self._upload_binary(main_bytes, self.instance_id, filename=f"{self.product_id.id}.jpg")
+            if not secure:
+                _logger.warning("Fallo upload multipart de imagen principal, probando con URL del thumbnail.")
+        else:
+            _logger.warning("Sin binario image_1920; probando con URL del thumbnail.")
 
-        # Imágenes secundarias
+        # Fallback: usar la URL (source) o descargar y subir
+        if not secure:
+            thumb = (self.meli_thumbnail or "").strip()
+            if thumb:
+                if self._is_ml_hosted(thumb):
+                    secure = thumb
+                else:
+                    # 1) intenta que ML consuma la URL
+                    secure = self._upload_via_source(thumb, self.instance_id)
+                    # 2) si falla, descarga y sube por multipart
+                    if not secure:
+                        try:
+                            r = requests.get(thumb, timeout=20)
+                            if r.status_code == 200 and r.content:
+                                secure = self._upload_binary(r.content, self.instance_id, filename="main.jpg")
+                            else:
+                                _logger.warning(f"No se pudo descargar thumbnail {thumb}: {r.status_code}")
+                        except Exception as e:
+                            _logger.error(f"Error descargando thumbnail {thumb}: {e}")
+
+        if secure:
+            pictures.append({"source": secure})
+
+        # 2) Secundarias (sin cambios de negocio, pero con mismos fallbacks)
         for pic in self.meli_pictures_ids:
-            if pic.secure_url and pic.secure_url != self.meli_thumbnail:
-                uploaded = upload_image_to_meli(pic.secure_url)
-                if uploaded:
-                    pictures.append({"source": uploaded})
+            src = (pic.secure_url or pic.url or "").strip()
+            if not src:
+                continue
+            if self._is_ml_hosted(src):
+                pictures.append({"source": src})
+                continue
+
+            sec_secure = self._upload_via_source(src, self.instance_id)
+            if not sec_secure:
+                try:
+                    r = requests.get(src, timeout=20)
+                    if r.status_code == 200 and r.content:
+                        sec_secure = self._upload_binary(r.content, self.instance_id, filename="extra.jpg")
+                    else:
+                        _logger.warning(f"No se pudo descargar {src}: {r.status_code}")
+                except Exception as e:
+                    _logger.error(f"Error descargando {src}: {e}")
+
+            if sec_secure:
+                pictures.append({"source": sec_secure})
 
         if not pictures:
-            raise UserError("Debes agregar al menos una imagen válida para publicar en MercadoLibre.")
+            raise UserError("Debes agregar al menos una imagen válida para publicar en MercadoLibre. No fue posible subir ni reutilizar ninguna imagen. Revisa que las URLs sean públicas o que el producto tenga image_1920.")
+        seen, unique = set(), []
+        for p in pictures:
+            src = p.get('source')
+            if src and src not in seen:
+                seen.add(src)
+                unique.append(p)
+        pictures = unique
 
         _logger.info(f"Total imágenes preparadas para ML: {len(pictures)}")
 
