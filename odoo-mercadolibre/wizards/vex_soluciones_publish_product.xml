@@ -21,6 +21,7 @@
                         <field name="fixed_fee" />
                         <field name="gross_amount" class="oe_inline oe_bold" readonly="1"/>
                         <field name="meli_base_price" />
+                        <field name="absolve_price"/>
                     </group>
                 </group>
 
