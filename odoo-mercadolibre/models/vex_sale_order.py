@@ -940,7 +940,7 @@ class SaleOrder(models.Model):
         for line in self.order_line:
             product = line.product_id
             _logger.info("ID PRODUCTO DE VARIANTE: %s", product)
-            product._update_stock_tiendanube()
+            product._update_stock_mercadolibre()
         return res
 
 class MeliOrderMediation(models.Model):
