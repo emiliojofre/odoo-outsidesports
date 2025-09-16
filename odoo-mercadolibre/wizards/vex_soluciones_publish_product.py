@@ -198,7 +198,7 @@ class VexPublishProductWizard(models.TransientModel):
     def _onchange_absolve_price(self):
         for w in self:
             if w.absolve_price == True:
-                w.meli_base_price = w.meli_price
+                w.meli_base_price = w.list_price if w.product_id else 0.0
 
     @api.model
     def set_odoo_image_url_as_thumbnail(self, product):
