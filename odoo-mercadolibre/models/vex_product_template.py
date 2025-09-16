@@ -356,12 +356,13 @@ class ProductTemplate(models.Model):
         Fetches product details from MercadoLibre API and updates the product template.
         Also processes tags, channels, pictures, attributes, variations, and marketplace info.
         """
-
+        instance = self.instance_id
+        instance.get_access_token()
         for record in self:
             if not record.meli_product_id:
                 raise UserError("Debe establecer primero el campo ML Product ID.")
 
-            access_token = record.instance_id and record.instance_id.meli_access_token
+            access_token = instance.meli_access_token
             if not access_token:
                 raise UserError("No se ha definido el token de acceso en la instancia vinculada.")
 
@@ -1155,6 +1156,37 @@ class ProductTemplate(models.Model):
             rec._set_required_attrs_from_category()
 
         return True
+
+    def _update_stock_mercadolibre(self):
+        self.ensure_one()
+        instance = self.instance_id
+        instance.get_access_token()
+        ACCESS_TOKEN = instance.meli_access_token
+        ITEM_ID = self.meli_product_id 
+        available_quantity = int(self.qty_available) 
+
+        if not ITEM_ID:
+            _logger.warning("Producto %s sin ITEM_ID de Mercado Libre configurado.", self.name)
+            return False
+
+        url = f"https://api.mercadolibre.com/items/{ITEM_ID}"
+        headers = {
+            "Authorization": f"Bearer {ACCESS_TOKEN}",
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        }
+        data = {
+            "available_quantity": available_quantity
+        }
+
+        response = requests.put(url, headers=headers, json=data)
+
+        if response.status_code == 200:
+            _logger.info("✅ Stock actualizado correctamente en Mercado Libre para %s", self.name)
+            return True
+        else:
+            _logger.error("❌ Error al actualizar stock en Mercado Libre de %s: %s", self.name, response.text)
+            return False
 
 class ProductTemplateMeliImage(models.Model):
     _name = 'product.template.meli.image'
