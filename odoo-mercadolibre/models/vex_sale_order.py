@@ -937,15 +937,13 @@ class SaleOrder(models.Model):
     def action_confirm(self):
         _logger.info("DENTRO DE LA FUNCION CONFIRMAR ORDEN DE VENTA")
         res = super(SaleOrder, self).action_confirm()
-
         for order in self:
-            # evitar llamadas duplicadas por el mismo template
-            tmpl_ids = set()
-            for line in order.order_line:
-                if line.product_id:
-                    tmpl_ids.add(line.product_id.product_tmpl_id.id)
+            tmpl_ids = {l.product_id.product_tmpl_id.id for l in order.order_line if l.product_id}
             for tmpl in self.env['product.template'].browse(list(tmpl_ids)):
                 try:
+                    if not tmpl.meli_product_id or not tmpl.instance_id:
+                        _logger.info("Saltando template %s (sin ML ID o sin instancia)", tmpl.id)
+                        continue
                     tmpl._update_stock_mercadolibre()
                 except Exception as e:
                     _logger.warning("No se pudo actualizar stock ML del template %s: %s", tmpl.id, e)
