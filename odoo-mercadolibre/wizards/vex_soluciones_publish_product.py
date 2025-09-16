@@ -197,8 +197,10 @@ class VexPublishProductWizard(models.TransientModel):
     @api.onchange('absolve_price')
     def _onchange_absolve_price(self):
         for w in self:
-            if w.absolve_price == True:
-                w.meli_base_price = w.list_price if w.product_id else 0.0
+            if w.absolve_price:
+                w.meli_base_price = w.product_id.list_price if w.product_id else 0.0
+            else:
+                pass
 
     @api.model
     def set_odoo_image_url_as_thumbnail(self, product):
@@ -616,10 +618,63 @@ class VexPublishProductWizard(models.TransientModel):
         if not self.meli_category_vex or not self.meli_category_vex.startswith('ML'):
             _logger.error("Categoría inválida detectada.")
             raise UserError("Debes ingresar un ID de categoría válido de MercadoLibre, por ejemplo: MLA1055.")
-
         missing = [a for a in self.meli_attribute_ids if a.meli_attribute_ref_id.meli_attribute_required and not (a.meli_values_id or a.meli_value_name)]
         if missing:
             raise UserError("Faltan valores para algunos atributos requeridos.")
+
+        # --- PAYLOAD ---
+        payload = {
+            "title": self.meli_title,
+            "category_id": self.meli_category_vex,
+            "currency_id": self.meli_currency,
+            "available_quantity": self.meli_available_quantity,
+            "buying_mode": self.meli_buying_mode,
+            "condition": self.meli_condition,
+            "listing_type_id": self.meli_listing_type,
+            "price": int(self.meli_base_price), 
+            "pictures": pictures,
+            "attributes": attributes,
+            "sale_terms": sale_terms,
+        }
+        _logger.info(f"Payload final enviado a ML: {json.dumps(payload, indent=2, ensure_ascii=False)}")
+
+        # --- POST A MERCADO LIBRE ---
+        url = "https://api.mercadolibre.com/items"
+        headers = {"Authorization": f"Bearer {access_token}", "Content-Type": "application/json"}
+        response = requests.post(url, headers=headers, json=payload, timeout=60)
+        _logger.info(f"Respuesta de Mercado Libre [{response.status_code}]: {response.text}")
+        if response.status_code != 201:
+            _logger.error(f"Error al crear el producto en ML: {response.text}")
+            raise UserError(f"Error al crear el producto en MercadoLibre: {response.text}")
+
+        data = response.json()
+        plain_desc = self._prepare_plain_description(self.meli_description)
+        if plain_desc:
+            desc_endpoint = f"https://api.mercadolibre.com/items/{data.get('id')}/description"
+            desc_payload = {"plain_text": plain_desc}
+            desc_resp = requests.post(desc_endpoint, headers=headers, json=desc_payload)
+            if desc_resp.status_code in (200, 201):
+                _logger.info(f"Descripción creada correctamente para {data.get('id')}")
+                # Verificar que quedó en ML
+                try:
+                    ver = requests.get(
+                        f"https://api.mercadolibre.com/items/{data.get('id')}/description",
+                        headers=headers, timeout=15
+                    )
+                    if ver.status_code == 200:
+                        got = ver.json() or {}
+                        _logger.info(f"Descripción en ML confirmada (len={len(got.get('plain_text') or '')}).")
+                    else:
+                        _logger.warning(f"No se pudo verificar descripción: {ver.status_code} - {ver.text}")
+                except Exception as e:
+                    _logger.warning(f"GET descripción falló: {e}")
+            else:
+                # Si ya existe, intenta PUT
+                put_resp = requests.put(desc_endpoint, headers=headers, json=desc_payload)
+                if put_resp.status_code in (200, 201):
+                    _logger.info(f"Descripción actualizada vía PUT para {data.get('id')}")
+                else:
+                    _logger.warning(f"No se pudo crear/actualizar descripción: {desc_resp.status_code}/{put_resp.status_code}")
 
         # --- ACTUALIZAR CAMPOS SIMPLES EN product.template (solo si todo validó) ---
         vals = {
@@ -663,61 +718,6 @@ class VexPublishProductWizard(models.TransientModel):
                 'meli_value_name': attr.meli_value_name,
             })
         _logger.info(f"Atributos sincronizados: {len(self.meli_attribute_ids)}")
-
-        # --- PAYLOAD ---
-        payload = {
-            "title": self.meli_title,
-            "category_id": self.meli_category_vex,
-            "currency_id": self.meli_currency,
-            "available_quantity": self.meli_available_quantity,
-            "buying_mode": self.meli_buying_mode,
-            "condition": self.meli_condition,
-            "listing_type_id": self.meli_listing_type,
-            "price": int(self.meli_base_price), 
-            "pictures": pictures,
-            "attributes": attributes,
-            "sale_terms": sale_terms,
-        }
-        _logger.info(f"Payload final enviado a ML: {json.dumps(payload, indent=2, ensure_ascii=False)}")
-
-        # --- POST A MERCADO LIBRE ---
-        url = "https://api.mercadolibre.com/items"
-        headers = {"Authorization": f"Bearer {access_token}", "Content-Type": "application/json"}
-        response = requests.post(url, headers=headers, json=payload)
-        _logger.info(f"Respuesta de Mercado Libre [{response.status_code}]: {response.text}")
-
-        if response.status_code != 201:
-            _logger.error(f"Error al crear el producto en ML: {response.text}")
-            raise UserError(f"Error al crear el producto en MercadoLibre: {response.text}")
-
-        data = response.json()
-        plain_desc = self._prepare_plain_description(self.meli_description)
-        if plain_desc:
-            desc_endpoint = f"https://api.mercadolibre.com/items/{data.get('id')}/description"
-            desc_payload = {"plain_text": plain_desc}
-            desc_resp = requests.post(desc_endpoint, headers=headers, json=desc_payload)
-            if desc_resp.status_code in (200, 201):
-                _logger.info(f"Descripción creada correctamente para {data.get('id')}")
-                # Verificar que quedó en ML
-                try:
-                    ver = requests.get(
-                        f"https://api.mercadolibre.com/items/{data.get('id')}/description",
-                        headers=headers, timeout=15
-                    )
-                    if ver.status_code == 200:
-                        got = ver.json() or {}
-                        _logger.info(f"Descripción en ML confirmada (len={len(got.get('plain_text') or '')}).")
-                    else:
-                        _logger.warning(f"No se pudo verificar descripción: {ver.status_code} - {ver.text}")
-                except Exception as e:
-                    _logger.warning(f"GET descripción falló: {e}")
-            else:
-                # Si ya existe, intenta PUT
-                put_resp = requests.put(desc_endpoint, headers=headers, json=desc_payload)
-                if put_resp.status_code in (200, 201):
-                    _logger.info(f"Descripción actualizada vía PUT para {data.get('id')}")
-                else:
-                    _logger.warning(f"No se pudo crear/actualizar descripción: {desc_resp.status_code}/{put_resp.status_code}")
 
         self.product_id.write({
             'meli_product_id': data.get('id'),
