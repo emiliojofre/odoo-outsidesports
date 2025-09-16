@@ -171,10 +171,10 @@ class MeliLoginController(http.Controller):
 
             # Mapear eventos a sus handlers
             handlers = {
-                'price_suggestion': self._handle_items_prices,
-                'items': self._handle_items,
+                # 'price_suggestion': self._handle_items_prices,
+                # 'items': self._handle_items,
                 'questions': self._handle_questions,
-                'shipments': self._handle_shipments,
+                # 'shipments': self._handle_shipments,
                 'orders_v2': self._handle_orders
             }
 
