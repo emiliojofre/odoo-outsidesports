@@ -144,6 +144,11 @@ class VexPublishProductWizard(models.TransientModel):
         string="Atributos", 
         required=False
     )
+    absolve_price = fields.Boolean(
+        string="Absolver precio",
+        default=False,
+        help="Marcar si el precio no debe ser comisionado"
+    )
 
     @api.onchange('product_id')
     def _onchange_product_id_set_category(self):
@@ -189,6 +194,12 @@ class VexPublishProductWizard(models.TransientModel):
             w.meli_attribute_ids = [(5, 0, 0)] + atributos
             w.last_populated_category_id = w.meli_category_id
 
+    @api.onchange('absolve_price')
+    def _onchange_absolve_price(self):
+        for w in self:
+            if w.absolve_price == True:
+                w.meli_base_price = w.meli_price
+
     @api.model
     def set_odoo_image_url_as_thumbnail(self, product):
         base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
@@ -207,6 +218,51 @@ class VexPublishProductWizard(models.TransientModel):
                 'meli_value_name': pa.meli_value_name,
             }))
         return cmds
+
+    @api.onchange('meli_logistic_type', 'instance_id', 'product_id')
+    def _onchange_meli_logistic_type(self):
+        for wizard in self:
+            qty = 0
+            instance = wizard.instance_id
+            product = wizard.product_id
+            location = False
+            if instance and product:
+                if wizard.meli_logistic_type == 'fulfillment':
+                    location = instance.ml_full_location_id
+                else:
+                    location = instance.ml_not_full_location_id
+                if location:
+                    quants = self.env['stock.quant'].search([
+                        ('product_id', 'in', product.product_variant_ids.ids),
+                        ('location_id', '=', location.id)
+                    ])
+                    qty = sum(quants.mapped('quantity'))
+            wizard.meli_available_quantity = qty
+            _logger.info(f"Logistic Type: {wizard.meli_logistic_type} | Location: {location.display_name if location else 'N/A'} | Qty: {qty}")
+
+    # @api.onchange('meli_base_price', 'meli_category_vex')
+    # def _onchange_meli_base_price_or_category(self):
+    #     for wizard in self:
+    #         price = wizard.meli_base_price
+    #         category = wizard.meli_category_vex
+    #         instance = wizard.instance_id
+    #         if price and category and instance:
+    #             try:
+    #                 instance.get_access_token()
+    #                 headers = {"Authorization": f"Bearer {instance.meli_access_token}"}
+    #                 url = f"https://api.mercadolibre.com/sites/MLC/listing_prices?price={int(price)}&category_id={category}"
+    #                 response = requests.get(url, headers=headers)
+    #                 if response.status_code == 200:
+    #                     data = response.json()
+    #                     if data and isinstance(data, list):
+    #                         info = data[0]
+    #                         wizard.percentaje_fee = info.get('sale_fee_details', {}).get('percentage_fee', 0)
+    #                         wizard.fixed_fee = info.get('sale_fee_details', {}).get('fixed_fee', 0)
+    #                         wizard.gross_amount = info.get('sale_fee_details', {}).get('gross_amount', 0)
+    #                 else:
+    #                     _logger.warning(f"Error ML listing_prices: {response.status_code} - {response.text}")
+    #             except Exception as e:
+    #                 _logger.error(f"Error ML listing_prices: {e}")
 
     def _is_processing_placeholder(self, url: str) -> bool:
         return bool(url) and 'resources/frontend/statics/processing-image' in url
@@ -399,10 +455,10 @@ class VexPublishProductWizard(models.TransientModel):
                         res['percentaje_fee'] = info.get('sale_fee_details', {}).get('percentage_fee', 0)
                         res['fixed_fee'] = info.get('sale_fee_details', {}).get('fixed_fee', 0)
                         res['gross_amount'] = info.get('sale_fee_details', {}).get('gross_amount', 0)
-
-                        # Si gross_amount viene con valor, lo usamos como precio
-                        # if res['gross_amount']:
-                        #     res['meli_base_price'] = res['gross_amount']
+                        if self.absolve_price:
+                            res['meli_base_price'] = product.list_price
+                        else:
+                            res['meli_base_price'] = info.get('sale_fee_amount')
 
                         _logger.info(f"[default_get] API ML precios: {info}")
                     else:
@@ -445,51 +501,6 @@ class VexPublishProductWizard(models.TransientModel):
         res['meli_logistic_type'] = logistic_type
 
         return res
-
-    @api.onchange('meli_logistic_type', 'instance_id', 'product_id')
-    def _onchange_meli_logistic_type(self):
-        for wizard in self:
-            qty = 0
-            instance = wizard.instance_id
-            product = wizard.product_id
-            location = False
-            if instance and product:
-                if wizard.meli_logistic_type == 'fulfillment':
-                    location = instance.ml_full_location_id
-                else:
-                    location = instance.ml_not_full_location_id
-                if location:
-                    quants = self.env['stock.quant'].search([
-                        ('product_id', 'in', product.product_variant_ids.ids),
-                        ('location_id', '=', location.id)
-                    ])
-                    qty = sum(quants.mapped('quantity'))
-            wizard.meli_available_quantity = qty
-            _logger.info(f"Logistic Type: {wizard.meli_logistic_type} | Location: {location.display_name if location else 'N/A'} | Qty: {qty}")
-
-    @api.onchange('meli_base_price', 'meli_category_vex')
-    def _onchange_meli_base_price_or_category(self):
-        for wizard in self:
-            price = wizard.meli_base_price
-            category = wizard.meli_category_vex
-            instance = wizard.instance_id
-            if price and category and instance:
-                try:
-                    instance.get_access_token()
-                    headers = {"Authorization": f"Bearer {instance.meli_access_token}"}
-                    url = f"https://api.mercadolibre.com/sites/MLC/listing_prices?price={int(price)}&category_id={category}"
-                    response = requests.get(url, headers=headers)
-                    if response.status_code == 200:
-                        data = response.json()
-                        if data and isinstance(data, list):
-                            info = data[0]
-                            wizard.percentaje_fee = info.get('sale_fee_details', {}).get('percentage_fee', 0)
-                            wizard.fixed_fee = info.get('sale_fee_details', {}).get('fixed_fee', 0)
-                            wizard.gross_amount = info.get('sale_fee_details', {}).get('gross_amount', 0)
-                    else:
-                        _logger.warning(f"Error ML listing_prices: {response.status_code} - {response.text}")
-                except Exception as e:
-                    _logger.error(f"Error ML listing_prices: {e}")
 
     def action_publish(self):
         self.ensure_one()
@@ -662,7 +673,7 @@ class VexPublishProductWizard(models.TransientModel):
             "buying_mode": self.meli_buying_mode,
             "condition": self.meli_condition,
             "listing_type_id": self.meli_listing_type,
-            "price": int(self.meli_base_price),  # si usas USD, cámbialo por float redondeado
+            "price": int(self.meli_base_price), 
             "pictures": pictures,
             "attributes": attributes,
             "sale_terms": sale_terms,
