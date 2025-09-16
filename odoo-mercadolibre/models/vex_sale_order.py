@@ -936,7 +936,7 @@ class SaleOrder(models.Model):
 
     def action_confirm(self):
         _logger.info("DENTRO DE LA FUNCION CONFIRMAR ORDEN DE VENTA")
-        res = super(SaleOrderImport, self).action_confirm()
+        res = super(SaleOrder, self).action_confirm()
         for line in self.order_line:
             product = line.product_id
             _logger.info("ID PRODUCTO DE VARIANTE: %s", product)
