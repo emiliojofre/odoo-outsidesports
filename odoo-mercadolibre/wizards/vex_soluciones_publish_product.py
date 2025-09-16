@@ -150,6 +150,11 @@ class VexPublishProductWizard(models.TransientModel):
         help="Marcar si el precio no debe ser comisionado"
     )
 
+    meli_base_price_snapshot = fields.Float(
+        string="Precio base previo",
+        help="Copia del precio antes de marcar 'Absolver precio'. Se usa para restaurar al desmarcar."
+    )
+
     @api.onchange('product_id')
     def _onchange_product_id_set_category(self):
         for w in self:
@@ -198,9 +203,16 @@ class VexPublishProductWizard(models.TransientModel):
     def _onchange_absolve_price(self):
         for w in self:
             if w.absolve_price:
+                # Guarda el valor actual para poder restaurarlo al desmarcar
+                w.meli_base_price_snapshot = w.meli_base_price or 0.0
+                # Asigna el precio de lista del producto
                 w.meli_base_price = w.product_id.list_price if w.product_id else 0.0
             else:
-                pass
+                # Restaura el valor previo si existe
+                if w.meli_base_price_snapshot:
+                    w.meli_base_price = w.meli_base_price_snapshot
+                # Limpia el snapshot para futuras alternancias
+                w.meli_base_price_snapshot = 0.0
 
     @api.model
     def set_odoo_image_url_as_thumbnail(self, product):
@@ -436,6 +448,7 @@ class VexPublishProductWizard(models.TransientModel):
             res[field] = getattr(product, field)
 
         res['meli_base_price'] = product.list_price
+        res['meli_base_price_snapshot'] = res.get('meli_base_price', 0.0)
         res['meli_description'] = product.description_sale
 
         # --- Calcular gross_amount con API de ML ---
