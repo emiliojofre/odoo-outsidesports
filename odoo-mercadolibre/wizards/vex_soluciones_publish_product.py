@@ -194,7 +194,7 @@ class VexPublishProductWizard(models.TransientModel):
     #             atributos.append((0, 0, line_vals))
 
     #         w.meli_attribute_ids = [(5, 0, 0)] + atributos
-    #         w.last_populated_category_id = w.meli_category_id
+    #         w.last_populated_category_id = w.meli_category_id     
 
     @api.onchange('absolve_price')
     def _onchange_absolve_price(self):
@@ -433,7 +433,6 @@ class VexPublishProductWizard(models.TransientModel):
 
         # --- Copiar campos simples ---
         for field in [
-            # 'meli_currency_id',
             'meli_buying_mode',
             'meli_condition', 'meli_listing_type',
             'meli_warranty_time', 'meli_warranty_type',
@@ -721,6 +720,13 @@ class VexPublishProductWizard(models.TransientModel):
                 'meli_value_name': attr.meli_value_name,
             })
         _logger.info(f"Atributos sincronizados: {len(self.meli_attribute_ids)}")
+
+        if self.meli_logistic_type == 'fulfillment':
+            self.product_id.meli_stock_location_id = self.instance_id.ml_full_location_id
+        else:
+            self.product_id.meli_stock_location_id = self.instance_id.ml_not_full_location_id
+
+        _logger.info(f"Bodega ML asignada en product.template: {self.product_id.meli_stock_location_id.display_name}")
 
         self.product_id.write({
             'meli_product_id': data.get('id'),

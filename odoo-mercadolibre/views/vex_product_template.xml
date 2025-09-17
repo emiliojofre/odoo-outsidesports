@@ -50,6 +50,7 @@
                                     <field name="meli_listing_type"/>
                                     <field name="meli_condition"/>
                                     <field name="meli_title"/>
+                                    <field name="meli_stock_location_id"/>
                                     <field name="meli_permalink" widget="url"/>
                                     <field name="ready_create" />
                                 </group>

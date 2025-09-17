@@ -165,6 +165,11 @@ class ProductTemplate(models.Model):
         not_specified: No se especifica ningún tipo de logística.
         """
     )
+    meli_stock_location_id = fields.Many2one(
+        'stock.location',
+        string="Ubicación ML",
+        help="Ubicación de stock usada para sincronizar con Mercado Libre"
+    )
 
     @api.depends(
         'meli_title', 'meli_category_vex', 'meli_currency_id', 'meli_available_quantity',
@@ -1164,13 +1169,8 @@ class ProductTemplate(models.Model):
         ACCESS_TOKEN = instance.meli_access_token
         ITEM_ID = self.meli_product_id
 
-        # Selecciona la ubicación según el tipo de logística
-        if self.meli_logistic_type == 'fulfillment':
-            location = instance.ml_full_location_id
-        else:
-            location = instance.ml_not_full_location_id
-
-        # Suma solo el stock de esa ubicación
+        # Usar la bodega guardada en el producto
+        location = self.meli_stock_location_id
         quants = self.env['stock.quant'].search([
             ('product_id', 'in', self.product_variant_ids.ids),
             ('location_id', '=', location.id)
