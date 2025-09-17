@@ -1163,7 +1163,8 @@ class ProductTemplate(models.Model):
         instance.get_access_token()
         ACCESS_TOKEN = instance.meli_access_token
         ITEM_ID = self.meli_product_id 
-        available_quantity = int(self.qty_available) 
+        # Usar virtual_available para stock pronosticado
+        available_quantity = int(self.virtual_available) 
 
         if not ITEM_ID:
             _logger.warning("Producto %s sin ITEM_ID de Mercado Libre configurado.", self.name)
