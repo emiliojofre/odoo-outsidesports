@@ -1163,8 +1163,14 @@ class ProductTemplate(models.Model):
         instance.get_access_token()
         ACCESS_TOKEN = instance.meli_access_token
         ITEM_ID = self.meli_product_id 
-        # Usar virtual_available para stock pronosticado
-        available_quantity = int(self.virtual_available) 
+
+        # Log de cantidades en Odoo
+        _logger.info("Stock Odoo para %s: qty_available=%s, virtual_available=%s, incoming_qty=%s, outgoing_qty=%s",
+            self.name, self.qty_available, self.virtual_available, self.incoming_qty, self.outgoing_qty)
+
+        # Usar virtual_available para stock pronosticado, nunca menor a 0
+        available_quantity = max(int(self.virtual_available), 0)
+        _logger.info("Cantidad enviada a Mercado Libre para %s (ITEM_ID: %s): %s", self.name, ITEM_ID, available_quantity)
 
         if not ITEM_ID:
             _logger.warning("Producto %s sin ITEM_ID de Mercado Libre configurado.", self.name)
@@ -1179,6 +1185,8 @@ class ProductTemplate(models.Model):
         data = {
             "available_quantity": available_quantity
         }
+
+        _logger.info("Request PUT a Mercado Libre: URL=%s, Headers=%s, Data=%s", url, headers, data)
 
         response = requests.put(url, headers=headers, json=data)
 
