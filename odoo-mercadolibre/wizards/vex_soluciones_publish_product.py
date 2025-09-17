@@ -163,38 +163,38 @@ class VexPublishProductWizard(models.TransientModel):
             elif not w.product_id:
                 w.meli_category_id = False
 
-    @api.onchange('meli_category_id')
-    def _onchange_meli_category_id(self):
-        for w in self:
-            # Sincroniza ID ML siempre
-            w.meli_category_vex = w.meli_category_id.meli_category_id if w.meli_category_id else False
+    # @api.onchange('meli_category_id')
+    # def _onchange_meli_category_id(self):
+    #     for w in self:
+    #         # Sincroniza ID ML siempre
+    #         w.meli_category_vex = w.meli_category_id.meli_category_id if w.meli_category_id else False
 
-            # Si no hay categoría, limpia atributos
-            if not w.meli_category_id:
-                w.meli_attribute_ids = [(5, 0, 0)]
-                w.last_populated_category_id = False
-                continue
+    #         # Si no hay categoría, limpia atributos
+    #         if not w.meli_category_id:
+    #             w.meli_attribute_ids = [(5, 0, 0)]
+    #             w.last_populated_category_id = False
+    #             continue
 
-            # Si la categoría NO cambió realmente, NO repobles
-            if w.last_populated_category_id and (w.last_populated_category_id == w.meli_category_id):
-                continue
+    #         # Si la categoría NO cambió realmente, NO repobles
+    #         if w.last_populated_category_id and (w.last_populated_category_id == w.meli_category_id):
+    #             continue
 
-            # Si ya hay atributos, NO repobles (solo la primera vez)
-            if w.meli_attribute_ids:
-                w.last_populated_category_id = w.meli_category_id
-                continue
+    #         # Si ya hay atributos, NO repobles (solo la primera vez)
+    #         if w.meli_attribute_ids:
+    #             w.last_populated_category_id = w.meli_category_id
+    #             continue
 
-            # Repoblar SOLO si no hay atributos
-            atributos = []
-            for attr in w.meli_category_id.meli_attribute_ids.filtered('meli_attribute_required'):
-                line_vals = {
-                    'meli_attribute_ref_id': attr.id,
-                    'meli_attribute_name': attr.meli_attribute_name,
-                }
-                atributos.append((0, 0, line_vals))
+    #         # Repoblar SOLO si no hay atributos
+    #         atributos = []
+    #         for attr in w.meli_category_id.meli_attribute_ids.filtered('meli_attribute_required'):
+    #             line_vals = {
+    #                 'meli_attribute_ref_id': attr.id,
+    #                 'meli_attribute_name': attr.meli_attribute_name,
+    #             }
+    #             atributos.append((0, 0, line_vals))
 
-            w.meli_attribute_ids = [(5, 0, 0)] + atributos
-            w.last_populated_category_id = w.meli_category_id
+    #         w.meli_attribute_ids = [(5, 0, 0)] + atributos
+    #         w.last_populated_category_id = w.meli_category_id
 
     @api.onchange('absolve_price')
     def _onchange_absolve_price(self):
@@ -463,11 +463,8 @@ class VexPublishProductWizard(models.TransientModel):
                         res['percentaje_fee'] = info.get('sale_fee_details', {}).get('percentage_fee', 0)
                         res['fixed_fee'] = info.get('sale_fee_details', {}).get('fixed_fee', 0)
                         res['gross_amount'] = info.get('sale_fee_details', {}).get('gross_amount', 0)
-                        if self.absolve_price:
-                            res['meli_base_price'] = product.list_price
-                        else:
-                            res['meli_base_price'] = info.get('sale_fee_amount')
-
+                        res['meli_base_price_snapshot'] = info.get('sale_fee_amount', 0.0)
+                        res['meli_base_price'] = info.get('sale_fee_amount', 0.0)
                         _logger.info(f"[default_get] API ML precios: {info}")
                     else:
                         _logger.warning("[default_get] Respuesta vacía o inesperada de la API de Mercado Libre.")

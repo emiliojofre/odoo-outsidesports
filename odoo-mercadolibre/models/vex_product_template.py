@@ -1162,14 +1162,20 @@ class ProductTemplate(models.Model):
         instance = self.instance_id
         instance.get_access_token()
         ACCESS_TOKEN = instance.meli_access_token
-        ITEM_ID = self.meli_product_id 
+        ITEM_ID = self.meli_product_id
 
-        # Log de cantidades en Odoo
-        _logger.info("Stock Odoo para %s: qty_available=%s, virtual_available=%s, incoming_qty=%s, outgoing_qty=%s",
-            self.name, self.qty_available, self.virtual_available, self.incoming_qty, self.outgoing_qty)
+        # Selecciona la ubicación según el tipo de logística
+        if self.meli_logistic_type == 'fulfillment':
+            location = instance.ml_full_location_id
+        else:
+            location = instance.ml_not_full_location_id
 
-        # Usar virtual_available para stock pronosticado, nunca menor a 0
-        available_quantity = max(int(self.virtual_available), 0)
+        # Suma solo el stock de esa ubicación
+        quants = self.env['stock.quant'].search([
+            ('product_id', 'in', self.product_variant_ids.ids),
+            ('location_id', '=', location.id)
+        ])
+        available_quantity = max(int(sum(quants.mapped('quantity'))), 0)
         _logger.info("Cantidad enviada a Mercado Libre para %s (ITEM_ID: %s): %s", self.name, ITEM_ID, available_quantity)
 
         if not ITEM_ID:
