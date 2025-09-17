@@ -169,50 +169,43 @@ class VexPublishProductWizard(models.TransientModel):
             # Sincroniza ID ML siempre
             w.meli_category_vex = w.meli_category_id.meli_category_id if w.meli_category_id else False
 
+            # Si no hay categoría, limpia atributos
             if not w.meli_category_id:
                 w.meli_attribute_ids = [(5, 0, 0)]
                 w.last_populated_category_id = False
                 continue
 
-            # Si la categoría NO cambió realmente, no repobles ni toques lo que el usuario ya puso
+            # Si la categoría NO cambió realmente, NO repobles
             if w.last_populated_category_id and (w.last_populated_category_id == w.meli_category_id):
                 continue
 
-            # Cambio real de categoría: repoblar SOLO con requeridos y conservar valores existentes si coinciden
-            existing = {line.meli_attribute_ref_id.id: line for line in w.meli_attribute_ids}
+            # Si ya hay atributos, NO repobles (solo la primera vez)
+            if w.meli_attribute_ids:
+                w.last_populated_category_id = w.meli_category_id
+                continue
+
+            # Repoblar SOLO si no hay atributos
             atributos = []
             for attr in w.meli_category_id.meli_attribute_ids.filtered('meli_attribute_required'):
                 line_vals = {
                     'meli_attribute_ref_id': attr.id,
                     'meli_attribute_name': attr.meli_attribute_name,
                 }
-                # Conserva el valor si existía para el mismo atributo
-                if attr.id in existing:
-                    old = existing[attr.id]
-                    line_vals.update({
-                        'meli_values_id': old.meli_values_id.id if old.meli_values_id else False,
-                        'meli_value_name': old.meli_value_name,
-                    })
                 atributos.append((0, 0, line_vals))
 
-            # Reemplaza completamente para evitar duplicados
             w.meli_attribute_ids = [(5, 0, 0)] + atributos
             w.last_populated_category_id = w.meli_category_id
 
     @api.onchange('absolve_price')
     def _onchange_absolve_price(self):
         for w in self:
+            # Al abrir el wizard, meli_base_price_snapshot debe tener el valor de la API (ya lo tienes en default_get)
             if w.absolve_price:
-                # Guarda el valor actual para poder restaurarlo al desmarcar
-                w.meli_base_price_snapshot = w.meli_base_price or 0.0
-                # Asigna el precio de lista del producto
+                # Si se marca, poner el precio de lista del producto
                 w.meli_base_price = w.product_id.list_price if w.product_id else 0.0
             else:
-                # Restaura el valor previo si existe
-                if w.meli_base_price_snapshot:
-                    w.meli_base_price = w.meli_base_price_snapshot
-                # Limpia el snapshot para futuras alternancias
-                w.meli_base_price_snapshot = 0.0
+                # Si se desmarca, volver al valor original de la API
+                w.meli_base_price = w.meli_base_price_snapshot or 0.0
 
     @api.model
     def set_odoo_image_url_as_thumbnail(self, product):
