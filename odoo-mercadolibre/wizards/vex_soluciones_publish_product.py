@@ -87,10 +87,15 @@ class VexPublishProductWizard(models.TransientModel):
         required=True,
         help="Tipo de publicación en Mercado Libre"
     )
+    fixed_fee = fields.Float(string="Comisión de ML", help="Comisión fija de MercadoLibre")
     percentaje_fee = fields.Float(string="Porcentaje de comisión", help="Porcentaje de comisión de MercadoLibre")
-    fixed_fee = fields.Float(string="Comisión fija", help="Comisión fija de MercadoLibre")
-    gross_amount = fields.Float(string="Monto bruto", help="Monto bruto antes de comisiones")
-    meli_base_price = fields.Float(string="Precio base", help="Precio original del producto")
+    gross_amount = fields.Float(string="Detalle de comisión", help="Monto total de comisión de MercadoLibre")
+    sale_fee_amount = fields.Float(string="Precio con comisión ML")
+    meli_base_price = fields.Float(string="Precio del Producto", help="Precio original del producto")
+    public_price = fields.Float(
+        string="Precio a Publicar",
+        help="Copia del precio antes de marcar 'Absorver Comisión'. Se usa para restaurar al desmarcar."
+    )
 
     # Garantía
     meli_warranty_type = fields.Selection(
@@ -144,15 +149,10 @@ class VexPublishProductWizard(models.TransientModel):
         string="Atributos", 
         required=False
     )
-    absolve_price = fields.Boolean(
-        string="Absolver precio",
+    absorb_price = fields.Boolean(
+        string="Absorber Comisión",
         default=False,
-        help="Marcar si el precio no debe ser comisionado"
-    )
-
-    meli_base_price_snapshot = fields.Float(
-        string="Precio base previo",
-        help="Copia del precio antes de marcar 'Absolver precio'. Se usa para restaurar al desmarcar."
+        help="Si se marca, el precio base se ajusta para que el precio público final (incluyendo comisiones) sea igual al precio de lista del producto."
     )
 
     @api.onchange('product_id')
@@ -196,16 +196,13 @@ class VexPublishProductWizard(models.TransientModel):
     #         w.meli_attribute_ids = [(5, 0, 0)] + atributos
     #         w.last_populated_category_id = w.meli_category_id     
 
-    @api.onchange('absolve_price')
-    def _onchange_absolve_price(self):
+    @api.onchange('absorb_price')
+    def _onchange_absorb_price(self):
         for w in self:
-            # Al abrir el wizard, meli_base_price_snapshot debe tener el valor de la API (ya lo tienes en default_get)
-            if w.absolve_price:
-                # Si se marca, poner el precio de lista del producto
-                w.meli_base_price = w.product_id.list_price if w.product_id else 0.0
+            if w.absorb_price:
+                w.public_price = w.sale_fee_amount or w.meli_base_price
             else:
-                # Si se desmarca, volver al valor original de la API
-                w.meli_base_price = w.meli_base_price_snapshot or 0.0
+                w.public_price = w.meli_base_price
 
     @api.model
     def set_odoo_image_url_as_thumbnail(self, product):
@@ -459,11 +456,12 @@ class VexPublishProductWizard(models.TransientModel):
                     data = response.json()
                     if data and isinstance(data, list):
                         info = data[0]
-                        res['percentaje_fee'] = info.get('sale_fee_details', {}).get('percentage_fee', 0)
                         res['fixed_fee'] = info.get('sale_fee_details', {}).get('fixed_fee', 0)
+                        res['percentaje_fee'] = info.get('sale_fee_details', {}).get('percentage_fee', 0)
                         res['gross_amount'] = info.get('sale_fee_details', {}).get('gross_amount', 0)
-                        res['meli_base_price_snapshot'] = info.get('sale_fee_amount', 0.0)
-                        res['meli_base_price'] = info.get('sale_fee_amount', 0.0)
+                        res['sale_fee_amount'] = info.get('sale_fee_amount', 0.0)
+                        res['meli_base_price'] = price
+                        res['public_price'] = price
                         _logger.info(f"[default_get] API ML precios: {info}")
                     else:
                         _logger.warning("[default_get] Respuesta vacía o inesperada de la API de Mercado Libre.")

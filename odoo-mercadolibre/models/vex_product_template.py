@@ -354,7 +354,7 @@ class ProductTemplate(models.Model):
             'view_mode': 'form',
             'target': 'new',
             'context': {'active_id': self.id},
-        } 
+        }
 
     def action_get_details(self):
         """
