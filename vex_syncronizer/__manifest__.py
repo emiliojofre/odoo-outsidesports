@@ -1,6 +1,6 @@
 {
     'name': 'Synchronizer Vex',
-    'version': '1.0',
+    'version': '1.1',
     'description': 'Module to synchronize data between Vex and other platforms',
     'summary': 'Data synchronization for Vex',
     'author': 'Vex Soluciones',
