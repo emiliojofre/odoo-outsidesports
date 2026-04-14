@@ -5,6 +5,9 @@ WebsiteSale.include({
     template: "addval_website_address.address_custom",
     events: Object.assign(WebsiteSale.prototype.events, {
         'change select[name="state_id"]': '_onChangeState',
+        'input input[name="phone"]': '_onPhoneInput',
+        'blur input[name="phone"]': '_onPhoneInput',
+        'submit form.checkout_autoformat': '_onSubmitAddressForm',
     }),
 
     /**
@@ -112,5 +115,46 @@ WebsiteSale.include({
             this._changeState()
         });
 
+    },
+
+    _onPhoneInput: function (ev) {
+        const input = ev.currentTarget;
+        let value = input.value.replace(/\s+/g, '');
+        const hasPlus = value.startsWith('+');
+
+        value = value.replace(/[^0-9+]/g, '');
+        value = value.replace(/\+/g, '');
+
+        if (hasPlus) {
+            value = value.slice(0, 11);
+            input.value = `+${value}`;
+        } else {
+            value = value.slice(0, 11);
+            input.value = value;
+        }
+
+        const isValid = value.length === 11;
+        input.setCustomValidity(
+            isValid
+                ? ''
+                : "El teléfono debe tener 12 caracteres incluyendo '+' al inicio, o 11 números sin '+'."
+        );
+        if (ev.type === 'blur') {
+            input.reportValidity();
+        }
+    },
+
+    _onSubmitAddressForm: function (ev) {
+        const form = ev.currentTarget;
+        const input = form.querySelector('input[name="phone"]');
+        if (!input) {
+            return;
+        }
+
+        this._onPhoneInput({ currentTarget: input, type: 'blur' });
+        if (!input.checkValidity()) {
+            ev.preventDefault();
+            ev.stopImmediatePropagation();
+        }
     },
 });

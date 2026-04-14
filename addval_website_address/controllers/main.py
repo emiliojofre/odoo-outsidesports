@@ -2,8 +2,9 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 import logging
+import re
 
-from odoo import http
+from odoo import _, http
 from odoo.addons.portal.controllers.portal import CustomerPortal
 from odoo.addons.website_sale.controllers.main import WebsiteSale
 from odoo.http import request, route
@@ -12,6 +13,8 @@ _logger = logging.getLogger(__name__)
 
 
 class WebsiteSaleAddressInfo(WebsiteSale):
+    PHONE_PATTERN = re.compile(r'^(?:\+[0-9]{11}|[0-9]{11})$')
+
     def _get_country_related_render_values(self, kw, render_values):
         res = super()._get_country_related_render_values(kw, render_values)
         country_state_cities = request.env["res.city"].search([("code", "!=", False)])
@@ -24,6 +27,48 @@ class WebsiteSaleAddressInfo(WebsiteSale):
         # _logger.info(render_values['checkout']['state_id'])
         # _logger.info(render_values['checkout'].id)
         return res
+
+    def _get_mandatory_address_fields(self, country_sudo):
+        fields = super()._get_mandatory_address_fields(country_sudo)
+        fields.discard('zip')
+        return fields
+
+    def _validate_address_values(
+        self,
+        address_values,
+        partner_sudo,
+        address_type,
+        use_delivery_as_billing,
+        required_fields,
+        **kwargs,
+    ):
+        invalid_fields, missing_fields, error_messages = super()._validate_address_values(
+            address_values,
+            partner_sudo,
+            address_type,
+            use_delivery_as_billing,
+            required_fields,
+            **kwargs,
+        )
+
+        phone = (address_values.get('phone') or '').strip()
+        if phone and not self.PHONE_PATTERN.fullmatch(phone):
+            invalid_fields.add('phone')
+            error_messages.append(_("El teléfono debe tener 12 caracteres incluyendo '+' al inicio, o 11 números si no incluye '+'."))
+
+        return invalid_fields, missing_fields, error_messages
+
+    def checkout_form_validate(self, mode, all_form_values, data):
+        error, error_message = super().checkout_form_validate(mode, all_form_values, data)
+
+        phone = (all_form_values.get('phone') or '').strip()
+        if phone and not self.PHONE_PATTERN.fullmatch(phone):
+            error['phone'] = 'error'
+            msg = _("Teléfono inválido. Debe tener 12 caracteres incluyendo '+' al inicio, o 11 números sin '+'. Vuelve a ingresarlo.")
+            if msg not in error_message:
+                error_message.append(msg)
+
+        return error, error_message
 
     @http.route(
         [
