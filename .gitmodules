@@ -2,3 +2,7 @@
 	path = Addval-Connect/odoo-addval-modules
 	url = git@github.com:Addval-Connect/odoo-addval-modules.git
 	branch = Odoo-16
+[submodule "vex_odoo_mercadolibre"]
+	path = vex_odoo_mercadolibre
+	url = git@bitbucket.org:vexsoluciones/vex_odoo_mercadolibre.git
+	branch = v16
