@@ -15,14 +15,32 @@ class AlasxpressService:
             'Content-Type': 'application/json'
         }
 
-    def create_order(self, payload):
-        """ POST /delivery-orders """
+    def create_order(self, picking):
+        """ Prepara el payload con los nombres de campos que la API exige """
+        # Dividimos el nombre del cliente para First y Last Name
+        name_parts = (picking.partner_id.name or "").split(" ", 1)
+        first_name = name_parts[0]
+        last_name = name_parts[1] if len(name_parts) > 1 else "."
+
+        payload = {
+            "deliveryOrderCode": picking.name, # external_id -> deliveryOrderCode
+            "senderCode": picking.company_id.name, # Requerido
+            "partner": "OUTSIDE_SPORTS", # O el codigo de partner que te dio Alas
+            "receiverFirstName": first_name,
+            "receiverLastName": last_name,
+            "receiverMobilePhone": picking.partner_id.mobile or picking.partner_id.phone or "",
+            "destinationStreet": picking.partner_id.street or "",
+            "destinationNumber": "S/N", # Si Odoo no tiene numero aparte, enviamos S/N
+            "destinationCity": picking.partner_id.city or "",
+            "productsCodes": ",".join([line.product_id.default_code or "" for line in picking.move_ids_without_package]),
+        }
+        
+        # Log para verificar antes de enviar
+        _logger.info("### NUEVO PAYLOAD CORREGIDO: %s", json.dumps(payload))
+        
         url = f"{self.base_url}/delivery-orders"
-        # ESTO NOS MOSTRARA EL ERROR REAL EN EL LOG DE ODOO.SH
-        _logger.info("### ALASXPRESS PAYLOAD: %s", json.dumps(payload))
         try:
             res = requests.post(url, headers=self._headers(), json=payload, timeout=20)
-            _logger.info("### ALASXPRESS RESPONSE: %s", res.text)
             return res.json()
         except Exception as e:
             return {'success': False, 'message': str(e)}
