@@ -18,8 +18,11 @@ class AlasxpressService:
     def create_order(self, payload):
         """ POST /delivery-orders """
         url = f"{self.base_url}/delivery-orders"
+        # ESTO NOS MOSTRARA EL ERROR REAL EN EL LOG DE ODOO.SH
+        _logger.info("### ALASXPRESS PAYLOAD: %s", json.dumps(payload))
         try:
             res = requests.post(url, headers=self._headers(), json=payload, timeout=20)
+            _logger.info("### ALASXPRESS RESPONSE: %s", res.text)
             return res.json()
         except Exception as e:
             return {'success': False, 'message': str(e)}
