@@ -10,13 +10,13 @@
                         string="Consultar Estado Alas" 
                         type="object" 
                         attrs="{'invisible': [('alas_delivery_id', '=', False)]}"/>
-
+                
                 <button name="action_alas_cancel" 
                         string="Anular en Alas" 
                         type="object" 
                         class="btn-secondary" 
                         attrs="{'invisible': [('alas_delivery_id', '=', False)]}"
-                        confirm="¿Esta seguro de que desea anular esta orden en Alasxpress?"/>
+                        confirm="Esta seguro de que desea anular esta orden en Alasxpress?"/>
             </xpath>
 
             <xpath expr="//field[@name='origin']" position="after">
