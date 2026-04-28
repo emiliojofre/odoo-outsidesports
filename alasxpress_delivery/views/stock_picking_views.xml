@@ -20,7 +20,7 @@
             </xpath>
 
             <xpath expr="//field[@name='origin']" position="after">
-                <field name="alas_delivery_id" readonly="1" groups="base.group_no_one"/>
+                <field name="alas_delivery_id" readonly="1"/>
             </xpath>
         </field>
     </record>
