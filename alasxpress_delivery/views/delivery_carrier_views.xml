@@ -1,0 +1,17 @@
+<odoo>
+    <record id="view_delivery_carrier_form_alas" model="ir.ui.view">
+        <field name="model">delivery.carrier</field>
+        <field name="inherit_id" ref="delivery.view_delivery_carrier_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='destination']" position="before">
+                <page string="Configuracion Alasxpress" attrs="{'invisible': [('delivery_type', '!=', 'alasxpress')]}">
+                    <group>
+                        <field name="alas_api_key" password="1" attrs="{'required': [('delivery_type', '=', 'alasxpress')]}"/>
+                        <field name="alas_api_url" attrs="{'required': [('delivery_type', '=', 'alasxpress')]}"/>
+                        <field name="alas_use_zpl"/>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

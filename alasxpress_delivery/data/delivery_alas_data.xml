@@ -1,0 +1,7 @@
+<odoo>
+    <record id="delivery_alas_method" model="delivery.carrier">
+        <field name="name">Alasxpress</field>
+        <field name="delivery_type">alasxpress</field>
+        <field name="product_id" ref="delivery.product_product_delivery"/>
+    </record>
+</odoo>

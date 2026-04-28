@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_picking_form_alas_inherit" model="ir.ui.view">
+        <field name="name">stock.picking.form.alas.inherit</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_alas_get_status" 
+                        string="Consultar Estado Alas" 
+                        type="object" 
+                        attrs="{'invisible': [('alas_delivery_id', '=', False)]}"/>
+
+                <button name="action_alas_cancel" 
+                        string="Anular en Alas" 
+                        type="object" 
+                        class="btn-secondary" 
+                        attrs="{'invisible': [('alas_delivery_id', '=', False)]}"
+                        confirm="¿Esta seguro de que desea anular esta orden en Alasxpress?"/>
+            </xpath>
+
+            <xpath expr="//field[@name='origin']" position="after">
+                <field name="alas_delivery_id" readonly="1" groups="base.group_no_one"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
