@@ -7,6 +7,7 @@
         <field name="arch" type="xml">
             <form string="Alas Express - Acciones Masivas">
                 <sheet>
+                    <field name="company_id" invisible="1"/>
                     <div class="oe_title">
                         <h1>Alas Express</h1>
                     </div>
@@ -17,10 +18,9 @@
 
                     <group string="Albaranes seleccionados">
                         <field name="picking_ids" nolabel="1">
-                            <tree editable="bottom">
+                            <tree>
                                 <field name="name"/>
                                 <field name="partner_id"/>
-                                <field name="carrier_id"/>
                                 <field name="alas_delivery_order_id"/>
                                 <field name="alas_status"/>
                                 <field name="state"/>
