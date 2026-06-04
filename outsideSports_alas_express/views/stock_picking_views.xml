@@ -94,17 +94,9 @@
                     <div class="row mb-3"
                          attrs="{'invisible': [('alas_delivery_order_id', '=', False)]}">
                         <div class="col-12">
-                            <div class="alert alert-info d-flex align-items-center" role="alert">
-                                <strong>Estado actual:</strong>
-                                <span class="ms-2 badge rounded-pill"
-                                      attrs="{
-                                          'class': [
-                                              ['alas_status', '=', 'Entregado', 'bg-success text-white'],
-                                              ['alas_status', 'in', ['Rechazado Agendamiento','Rechazado Terreno','No Entregable','Rechazada B2B'], 'bg-danger text-white']
-                                          ]
-                                      }">
-                                    <field name="alas_status" nolabel="1" readonly="1"/>
-                                </span>
+                            <div class="alert alert-info" role="alert">
+                                <strong>Estado actual: </strong>
+                                <field name="alas_status" nolabel="1" readonly="1"/>
                             </div>
                         </div>
                     </div>
