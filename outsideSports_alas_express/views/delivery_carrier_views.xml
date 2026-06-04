@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Hereda la vista del carrier para agregar tab de Alas Express -->
+    <record id="delivery_carrier_form_alas_express" model="ir.ui.view">
+        <field name="name">delivery.carrier.form.alas.express</field>
+        <field name="model">delivery.carrier</field>
+        <field name="inherit_id" ref="delivery.view_delivery_carrier_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//page[@name='advanced']" position="before">
+                <page name="alas_express_config"
+                      string="Alas Express"
+                      attrs="{'invisible': [('delivery_type', '!=', 'alas_express')]}">
+
+                    <group string="Credenciales API">
+                        <group>
+                            <field name="alas_api_key"
+                                   password="True"
+                                   placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"/>
+                            <field name="alas_partner"
+                                   placeholder="Ej: OutsideSports"/>
+                            <field name="alas_sender_code"
+                                   placeholder="Ej: 76543210-2"/>
+                        </group>
+                        <group>
+                            <field name="alas_sender_location"
+                                   placeholder="Código de bodega (opcional)"/>
+                            <field name="alas_lob_type"/>
+                        </group>
+                    </group>
+
+                    <group string="Opciones de Envío">
+                        <group>
+                            <field name="alas_dispatch_labels"/>
+                            <field name="alas_labels_sync"/>
+                        </group>
+                        <group>
+                            <field name="alas_ampm_service"/>
+                            <field name="alas_big_ticket"/>
+                            <field name="alas_add_insurance"/>
+                        </group>
+                    </group>
+
+                    <group string="Información de la API">
+                        <div class="alert alert-info" role="alert">
+                            <strong>Autenticación:</strong> Header <code>x-alas-ce0-api-key</code><br/>
+                            <strong>Base URL:</strong> <code>https://ws.alasxpress.com/api</code><br/>
+                            <strong>Documentación:</strong>
+                            <a href="https://ws.alasxpress.com/api/swagger.json" target="_blank">
+                                swagger.json
+                            </a>
+                        </div>
+                    </group>
+
+                </page>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- Acción para crear carrier Alas Express directamente -->
+    <record id="action_delivery_carrier_alas_express" model="ir.actions.act_window">
+        <field name="name">Alas Express</field>
+        <field name="res_model">delivery.carrier</field>
+        <field name="view_mode">form</field>
+        <field name="context">{'default_delivery_type': 'alas_express'}</field>
+    </record>
+
+</odoo>

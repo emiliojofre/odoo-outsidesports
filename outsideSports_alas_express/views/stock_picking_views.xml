@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ─────────────────────────────────────────────────────────────────── -->
+    <!-- Vista Formulario - Herencia sobre stock.picking                     -->
+    <!-- ─────────────────────────────────────────────────────────────────── -->
+    <record id="stock_picking_form_alas_express" model="ir.ui.view">
+        <field name="name">stock.picking.form.alas.express</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Botones en el encabezado -->
+            <xpath expr="//button[@name='action_cancel']" position="before">
+
+                <!-- Crear Orden de Entrega -->
+                <button name="action_alas_send_order"
+                        string="🚀 Enviar a Alas Express"
+                        type="object"
+                        class="btn-primary"
+                        attrs="{
+                            'invisible': [
+                                '|',
+                                ('carrier_id.delivery_type', '!=', 'alas_express'),
+                                ('alas_delivery_order_id', '!=', False)
+                            ]
+                        }"
+                        confirm="¿Confirmar la creación de la orden de entrega en Alas Express?"/>
+
+                <!-- Actualizar Estado -->
+                <button name="action_alas_get_status"
+                        string="🔄 Estado Alas"
+                        type="object"
+                        class="btn-secondary"
+                        attrs="{
+                            'invisible': [
+                                '|',
+                                ('carrier_id.delivery_type', '!=', 'alas_express'),
+                                ('alas_delivery_order_id', '=', False)
+                            ]
+                        }"/>
+
+                <!-- Obtener Etiqueta PDF -->
+                <button name="action_alas_get_label"
+                        string="🏷️ Etiqueta PDF"
+                        type="object"
+                        class="btn-secondary"
+                        attrs="{
+                            'invisible': [
+                                '|',
+                                ('carrier_id.delivery_type', '!=', 'alas_express'),
+                                ('alas_delivery_order_id', '=', False)
+                            ]
+                        }"/>
+
+                <!-- Obtener Etiqueta ZPL -->
+                <button name="action_alas_get_label_zpl"
+                        string="🖨️ Etiqueta ZPL"
+                        type="object"
+                        class="btn-secondary"
+                        attrs="{
+                            'invisible': [
+                                '|',
+                                ('carrier_id.delivery_type', '!=', 'alas_express'),
+                                ('alas_delivery_order_id', '=', False)
+                            ]
+                        }"/>
+
+                <!-- Rechazar Orden -->
+                <button name="action_alas_reject_order"
+                        string="✖ Rechazar en Alas"
+                        type="object"
+                        class="btn-danger"
+                        attrs="{
+                            'invisible': [
+                                '|',
+                                '|',
+                                ('carrier_id.delivery_type', '!=', 'alas_express'),
+                                ('alas_delivery_order_id', '=', False),
+                                ('alas_status', 'in', ['Entregado','Rechazado Agendamiento','Rechazado Terreno','No Entregable','Rechazada B2B'])
+                            ]
+                        }"
+                        confirm="¿Confirmar el rechazo de la orden en Alas Express? Esta acción puede ser irreversible."/>
+
+            </xpath>
+
+            <!-- Panel de información Alas Express -->
+            <xpath expr="//page[@name='extra']" position="before">
+                <page name="alas_express_info"
+                      string="Alas Express"
+                      attrs="{'invisible': [('carrier_id.delivery_type', '!=', 'alas_express')]}">
+
+                    <!-- Semáforo de estado -->
+                    <div class="row mb-3"
+                         attrs="{'invisible': [('alas_delivery_order_id', '=', False)]}">
+                        <div class="col-12">
+                            <div class="alert alert-info d-flex align-items-center" role="alert">
+                                <strong>Estado actual:</strong>
+                                <span class="ms-2 badge rounded-pill"
+                                      attrs="{
+                                          'class': [
+                                              ['alas_status', '=', 'Entregado', 'bg-success text-white'],
+                                              ['alas_status', 'in', ['Rechazado Agendamiento','Rechazado Terreno','No Entregable','Rechazada B2B'], 'bg-danger text-white']
+                                          ]
+                                      }">
+                                    <field name="alas_status" nolabel="1" readonly="1"/>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <group string="Datos de la Orden Alas Express">
+                        <group>
+                            <field name="alas_delivery_order_id" readonly="1"/>
+                            <field name="alas_status" readonly="1"/>
+                            <field name="alas_delivery_expected" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="alas_labels_url" readonly="1" widget="url"/>
+                            <field name="alas_package_codes" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <!-- Botón para abrir etiqueta adjunta -->
+                    <group attrs="{'invisible': [('alas_delivery_order_id', '=', False)]}">
+                        <div>
+                            <button name="action_alas_open_label_attachment"
+                                    string="📄 Descargar Etiqueta Adjunta"
+                                    type="object"
+                                    class="btn-link"/>
+                        </div>
+                    </group>
+
+                    <!-- Referencia de estados -->
+                    <group string="Estados posibles Alas Express">
+                        <div class="small text-muted">
+                            <ul>
+                                <li><strong>Planificación</strong>: Orden recibida por Alas (estado inicial)</li>
+                                <li><strong>Recepción Física</strong>: Alas recogió las cajas en bodega</li>
+                                <li><strong>Entrega Agendada</strong>: Alas contactó al destinatario</li>
+                                <li><strong>Entrega Ruteada</strong>: Ruta del día siguiente generada</li>
+                                <li><strong>En Ruta</strong>: Mensajero en camino</li>
+                                <li><strong>Entregado</strong>: Entrega exitosa ✅</li>
+                                <li><strong>Rechazado Agendamiento</strong>: Destinatario rechazó en contacto ❌</li>
+                                <li><strong>Rechazado Terreno</strong>: Rechazado en el domicilio ❌</li>
+                                <li><strong>No Entregable</strong>: 3 intentos fallidos ❌</li>
+                            </ul>
+                        </div>
+                    </group>
+
+                </page>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- ─────────────────────────────────────────────────────────────────── -->
+    <!-- Vista Lista - mostrar estado Alas en la lista de albaranes          -->
+    <!-- ─────────────────────────────────────────────────────────────────── -->
+    <record id="stock_picking_tree_alas_express" model="ir.ui.view">
+        <field name="name">stock.picking.tree.alas.express</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.vpicktree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='state']" position="after">
+                <field name="alas_delivery_order_id" optional="show" string="ID Alas"/>
+                <field name="alas_status" optional="show" string="Estado Alas"
+                       decoration-success="alas_status == 'Entregado'"
+                       decoration-danger="alas_status in ('Rechazado Agendamiento','Rechazado Terreno','No Entregable')"
+                       decoration-warning="alas_status in ('Entrega Agendada','Entrega Reagendada','En Ruta')"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ─────────────────────────────────────────────────────────────────── -->
+    <!-- Acción masiva desde la lista (action server)                        -->
+    <!-- ─────────────────────────────────────────────────────────────────── -->
+    <record id="action_alas_express_bulk_wizard" model="ir.actions.server">
+        <field name="name">Alas Express - Acciones masivas</field>
+        <field name="model_id" ref="stock.model_stock_picking"/>
+        <field name="binding_model_id" ref="stock.model_stock_picking"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+action = env['alas.express.label.wizard'].with_context(active_ids=records.ids).action_open_wizard()
+        </field>
+    </record>
+
+</odoo>
