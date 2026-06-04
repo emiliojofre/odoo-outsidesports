@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <record id="delivery_carrier_alas_express" model="delivery.carrier">
+        <field name="name">Alas Express</field>
+        <field name="delivery_type">alas_express</field>
+        <field name="integration_level">rate_and_ship</field>
+        <field name="alas_dispatch_labels">True</field>
+        <field name="alas_labels_sync">True</field>
+        <field name="alas_ampm_service">False</field>
+        <field name="alas_big_ticket">False</field>
+        <field name="alas_add_insurance">False</field>
+        <field name="alas_lob_type">1</field>
+    </record>
+
+</odoo>
