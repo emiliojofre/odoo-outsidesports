@@ -200,8 +200,6 @@ class ProviderAlasExpress(models.Model):
         # Opcionales
         if self.alas_sender_location:
             payload['senderLocation'] = self.alas_sender_location
-        if partner.street2:
-            payload['destinationReference'] = partner.street2[:1000]
         if partner.email:
             payload['receiverEmail'] = partner.email
         if partner.vat:
