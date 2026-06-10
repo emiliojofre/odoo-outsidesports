@@ -276,8 +276,15 @@ class ProviderAlasExpress(models.Model):
         result = self._alas_call('GET', f'/delivery-orders/{picking.alas_delivery_order_id}')
 
         status = result.get('status', '')
-        description = result.get('description', '')
-        delivery_expected = result.get('deliveryExpected', '')
+        delivery_expected_raw = result.get('deliveryExpected', '')
+
+        # Convertir fecha ISO 8601 (2026-06-11T13:00:00) al formato Odoo (2026-06-11 13:00:00)
+        delivery_expected = False
+        if delivery_expected_raw:
+            try:
+                delivery_expected = delivery_expected_raw.replace('T', ' ')[:19]
+            except Exception:
+                delivery_expected = False
 
         picking.write({
             'alas_status': status,

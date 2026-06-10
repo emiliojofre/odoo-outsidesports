@@ -181,7 +181,7 @@ class StockPicking(models.Model):
         }
 
     def action_alas_open_label_attachment(self):
-        """Abre el adjunto de la etiqueta PDF del picking."""
+        """Abre el adjunto de la etiqueta PDF del picking, descargándolo si no existe."""
         self.ensure_one()
         attachment = self.env['ir.attachment'].search([
             ('res_model', '=', 'stock.picking'),
@@ -189,8 +189,17 @@ class StockPicking(models.Model):
             ('name', 'like', 'alas_label_'),
         ], order='create_date desc', limit=1)
 
+        # Si no existe adjunto, intentar descargarlo ahora
         if not attachment:
-            raise UserError(_('No hay etiqueta de Alas Express adjunta a este albarán.'))
+            self.carrier_id.alas_get_label(self)
+            attachment = self.env['ir.attachment'].search([
+                ('res_model', '=', 'stock.picking'),
+                ('res_id', '=', self.id),
+                ('name', 'like', 'alas_label_'),
+            ], order='create_date desc', limit=1)
+
+        if not attachment:
+            raise UserError(_('No se pudo obtener la etiqueta de Alas Express.'))
 
         return {
             'type': 'ir.actions.act_url',

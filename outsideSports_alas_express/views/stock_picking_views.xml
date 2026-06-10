@@ -122,9 +122,9 @@
                     <group attrs="{'invisible': [('alas_delivery_order_id', '=', False)]}">
                         <div>
                             <button name="action_alas_open_label_attachment"
-                                    string="📄 Descargar Etiqueta Adjunta"
+                                    string="📄 Descargar Etiqueta PDF"
                                     type="object"
-                                    class="btn-link"/>
+                                    class="btn-secondary"/>
                         </div>
                     </group>
 
