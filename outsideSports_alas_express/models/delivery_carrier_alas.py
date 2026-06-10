@@ -197,6 +197,7 @@ class ProviderAlasExpress(models.Model):
             'lobType': self.alas_lob_type or 1,
             'bigTicket': self.alas_big_ticket,
             'addInsurance': self.alas_add_insurance,
+            'destinationReference': (partner.street2 or '')[:1000],
         }
 
         # Opcionales
