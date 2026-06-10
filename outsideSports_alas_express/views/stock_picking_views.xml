@@ -130,18 +130,23 @@
 
                     <!-- Referencia de estados -->
                     <group string="Estados posibles Alas Express">
-                        <div class="small text-muted">
-                            <ul>
-                                <li><strong>Planificación</strong>: Orden recibida por Alas (estado inicial)</li>
-                                <li><strong>Recepción Física</strong>: Alas recogió las cajas en bodega</li>
-                                <li><strong>Entrega Agendada</strong>: Alas contactó al destinatario</li>
-                                <li><strong>Entrega Ruteada</strong>: Ruta del día siguiente generada</li>
-                                <li><strong>En Ruta</strong>: Mensajero en camino</li>
-                                <li><strong>Entregado</strong>: Entrega exitosa ✅</li>
-                                <li><strong>Rechazado Agendamiento</strong>: Destinatario rechazó en contacto ❌</li>
-                                <li><strong>Rechazado Terreno</strong>: Rechazado en el domicilio ❌</li>
-                                <li><strong>No Entregable</strong>: 3 intentos fallidos ❌</li>
-                            </ul>
+                        <div class="o_field_widget o_wrap_field">
+                            <table class="table table-sm table-bordered small" style="margin-top:8px;">
+                                <thead class="table-light">
+                                    <tr><th>Estado</th><th>Descripción</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td><strong>Planificación</strong></td><td>Orden recibida por Alas (estado inicial)</td></tr>
+                                    <tr><td><strong>Recepción Física</strong></td><td>Alas recogió las cajas en bodega</td></tr>
+                                    <tr><td><strong>Entrega Agendada</strong></td><td>Alas contactó al destinatario</td></tr>
+                                    <tr><td><strong>Entrega Ruteada</strong></td><td>Ruta del día siguiente generada</td></tr>
+                                    <tr><td><strong>En Ruta</strong></td><td>Mensajero en camino</td></tr>
+                                    <tr class="table-success"><td><strong>Entregado</strong></td><td>Entrega exitosa ✅</td></tr>
+                                    <tr class="table-danger"><td><strong>Rechazado Agendamiento</strong></td><td>Destinatario rechazó en contacto ❌</td></tr>
+                                    <tr class="table-danger"><td><strong>Rechazado Terreno</strong></td><td>Rechazado en el domicilio ❌</td></tr>
+                                    <tr class="table-danger"><td><strong>No Entregable</strong></td><td>3 intentos fallidos ❌</td></tr>
+                                </tbody>
+                            </table>
                         </div>
                     </group>
 

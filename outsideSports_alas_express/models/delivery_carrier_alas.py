@@ -242,10 +242,12 @@ class ProviderAlasExpress(models.Model):
 
         result = self._alas_call('POST', '/delivery-orders', payload)
 
-        alas_id = result.get('deliveryOrderId', '')
-        labels_url = result.get('labelsUrl', '')
-        label_b64 = result.get('deliveryLabelsBase64', '')
-        package_codes = result.get('deliveryOrderPackageCodes', '')
+        _logger.info('Alas Express - Respuesta creación orden: %s', result)
+
+        alas_id = result.get('deliveryOrderId') or ''
+        labels_url = result.get('labelsUrl') or ''
+        label_b64 = result.get('deliveryLabelsBase64') or ''
+        package_codes = str(result.get('deliveryOrderPackageCodes') or '')
 
         picking.write({
             'alas_delivery_order_id': alas_id,
@@ -253,6 +255,7 @@ class ProviderAlasExpress(models.Model):
             'alas_package_codes': package_codes,
             'alas_status': 'Planificación',
         })
+        picking.env.cr.commit()
 
         # Guardar etiqueta si viene en la respuesta
         if label_b64:
