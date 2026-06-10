@@ -9,6 +9,18 @@ _logger = logging.getLogger(__name__)
 class StockPicking(models.Model):
     _inherit = 'stock.picking'
 
+    # ── Campo auxiliar para visibilidad en vistas (attrs no acepta x.y en Odoo 16) ──
+    alas_is_carrier = fields.Boolean(
+        string='Es Alas Express',
+        compute='_compute_alas_is_carrier',
+        store=False,
+    )
+
+    @api.depends('carrier_id', 'carrier_id.delivery_type')
+    def _compute_alas_is_carrier(self):
+        for rec in self:
+            rec.alas_is_carrier = rec.carrier_id.delivery_type == 'alas_express'
+
     # ── Campos Alas Express ──────────────────────────────────────────────────
     alas_delivery_order_id = fields.Char(
         string='ID Alas Express',

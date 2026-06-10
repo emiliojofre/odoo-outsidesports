@@ -19,6 +19,11 @@ class AlasExpressLabelWizard(models.TransientModel):
         string='Albaranes',
         required=True,
     )
+    company_id = fields.Many2one(
+        'res.company',
+        string='Empresa',
+        default=lambda self: self.env.company,
+    )
     action_type = fields.Selection([
         ('create_order', 'Crear Órdenes de Entrega'),
         ('get_labels', 'Obtener Etiquetas'),

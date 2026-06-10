@@ -10,6 +10,11 @@
         <field name="inherit_id" ref="stock.view_picking_form"/>
         <field name="arch" type="xml">
 
+            <!-- Campo auxiliar invisible para condiciones de visibilidad -->
+            <xpath expr="//field[@name='is_locked']" position="after">
+                <field name="alas_is_carrier" invisible="1"/>
+            </xpath>
+
             <!-- Botones en el encabezado -->
             <xpath expr="//button[@name='action_cancel']" position="before">
 
@@ -21,7 +26,7 @@
                         attrs="{
                             'invisible': [
                                 '|',
-                                ('carrier_id.delivery_type', '!=', 'alas_express'),
+                                ('alas_is_carrier', '=', False),
                                 ('alas_delivery_order_id', '!=', False)
                             ]
                         }"
@@ -35,7 +40,7 @@
                         attrs="{
                             'invisible': [
                                 '|',
-                                ('carrier_id.delivery_type', '!=', 'alas_express'),
+                                ('alas_is_carrier', '=', False),
                                 ('alas_delivery_order_id', '=', False)
                             ]
                         }"/>
@@ -48,7 +53,7 @@
                         attrs="{
                             'invisible': [
                                 '|',
-                                ('carrier_id.delivery_type', '!=', 'alas_express'),
+                                ('alas_is_carrier', '=', False),
                                 ('alas_delivery_order_id', '=', False)
                             ]
                         }"/>
@@ -61,7 +66,7 @@
                         attrs="{
                             'invisible': [
                                 '|',
-                                ('carrier_id.delivery_type', '!=', 'alas_express'),
+                                ('alas_is_carrier', '=', False),
                                 ('alas_delivery_order_id', '=', False)
                             ]
                         }"/>
@@ -75,7 +80,7 @@
                             'invisible': [
                                 '|',
                                 '|',
-                                ('carrier_id.delivery_type', '!=', 'alas_express'),
+                                ('alas_is_carrier', '=', False),
                                 ('alas_delivery_order_id', '=', False),
                                 ('alas_status', 'in', ['Entregado','Rechazado Agendamiento','Rechazado Terreno','No Entregable','Rechazada B2B'])
                             ]
@@ -88,23 +93,15 @@
             <xpath expr="//page[@name='extra']" position="before">
                 <page name="alas_express_info"
                       string="Alas Express"
-                      attrs="{'invisible': [('carrier_id.delivery_type', '!=', 'alas_express')]}">
+                      attrs="{'invisible': [('alas_is_carrier', '=', False)]}">
 
                     <!-- Semáforo de estado -->
                     <div class="row mb-3"
                          attrs="{'invisible': [('alas_delivery_order_id', '=', False)]}">
                         <div class="col-12">
-                            <div class="alert alert-info d-flex align-items-center" role="alert">
-                                <strong>Estado actual:</strong>
-                                <span class="ms-2 badge rounded-pill"
-                                      attrs="{
-                                          'class': [
-                                              ['alas_status', '=', 'Entregado', 'bg-success text-white'],
-                                              ['alas_status', 'in', ['Rechazado Agendamiento','Rechazado Terreno','No Entregable','Rechazada B2B'], 'bg-danger text-white']
-                                          ]
-                                      }">
-                                    <field name="alas_status" nolabel="1" readonly="1"/>
-                                </span>
+                            <div class="alert alert-info" role="alert">
+                                <strong>Estado actual: </strong>
+                                <field name="alas_status" nolabel="1" readonly="1"/>
                             </div>
                         </div>
                     </div>

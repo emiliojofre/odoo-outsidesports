@@ -8,7 +8,7 @@
         Permite crear órdenes de entrega, obtener etiquetas y hacer tracking
         directamente desde las órdenes de entrega de Odoo.
     """,
-    'author': 'OutsideSports',
+    'author': 'NLH Consultores SpA',
     'category': 'Inventory/Delivery',
     'depends': [
         'stock',
@@ -28,5 +28,5 @@
     'installable': True,
     'application': False,
     'auto_install': False,
-    'license': 'LGPL-3',
+    'license': 'OPL-1',
 }
