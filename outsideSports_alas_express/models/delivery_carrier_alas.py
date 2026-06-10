@@ -129,10 +129,12 @@ class ProviderAlasExpress(models.Model):
         except ValueError:
             msg = resp.text
 
-        raise UserError(_(
-            'Error %s de Alas Express en %s:\n%s'
-        ) % (resp.status_code, endpoint, msg))
+        # Log del payload para debugging
+        _logger.error('Alas Express ERROR payload enviado: %s', json.dumps(payload, ensure_ascii=False) if payload else 'N/A')
 
+        raise UserError(_(
+            'Error %s de Alas Express en %s:\n%s\n\nPayload enviado:\n%s'
+        ) % (resp.status_code, endpoint, msg, json.dumps(payload, indent=2, ensure_ascii=False) if payload else 'N/A'))
     # ── Construcción del payload ─────────────────────────────────────────────
 
     def _alas_build_delivery_order_payload(self, picking):
