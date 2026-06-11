@@ -215,7 +215,7 @@ class ProviderAlasExpress(models.Model):
     def _alas_get_package_codes(self, picking):
         """
         Retorna los nombres de los paquetes asignados al picking.
-        Lanza error si no hay paquetes asignados.
+        Lanza error si no hay paquetes o si hay más de 3.
         """
         if not picking.package_ids:
             raise UserError(_(
@@ -223,6 +223,12 @@ class ProviderAlasExpress(models.Model):
                 'Debe asignar los paquetes en la pestaña "Operaciones detalladas" '
                 'antes de enviar a Alas Express.'
             ) % picking.name)
+        if len(picking.package_ids) > 3:
+            raise UserError(_(
+                'El albarán "%s" tiene %d paquetes asignados. '
+                'Alas Express acepta un máximo de 3 paquetes por orden.\n'
+                'Divida el envío en múltiples albaranes.'
+            ) % (picking.name, len(picking.package_ids)))
         return [pkg.name for pkg in picking.package_ids]
 
     # ── Métodos públicos de la API ───────────────────────────────────────────
@@ -270,8 +276,8 @@ class ProviderAlasExpress(models.Model):
         body = (
             f'Estimado/a {partner.name},<br/><br/>'
             f'Su orden <strong>{origin}</strong> ha sido despachada. '
-            f'Puede consultar su estado de entrega en el siguiente link:<br/><br/>'
-            f'<a href="{labels_url}">{labels_url}</a><br/><br/>'
+            f'Puede consultar su estado de entrega en el siguiente link con el número de tu orden:<br/><br/>'
+            f'<a href="https://www.alasxpress.com/">https://www.alasxpress.com/</a><br/><br/>'
             f'Atentamente,<br/>'
             f'<strong>Despacho Outside Sports</strong>'
         )
