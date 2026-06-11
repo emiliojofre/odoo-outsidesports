@@ -264,12 +264,12 @@ class ProviderAlasExpress(models.Model):
             self._alas_save_label_attachment(picking, label_b64)
 
         # Enviar correo de despacho al cliente
-        if labels_url and picking.partner_id and picking.partner_id.email:
-            self._alas_send_dispatch_email(picking, labels_url)
+        if picking.partner_id and picking.partner_id.email:
+            self._alas_send_dispatch_email(picking)
 
         return result
 
-    def _alas_send_dispatch_email(self, picking, labels_url):
+    def _alas_send_dispatch_email(self, picking):
         """Envía correo de notificación de despacho al cliente."""
         partner = picking.partner_id
         origin = picking.origin or picking.name
