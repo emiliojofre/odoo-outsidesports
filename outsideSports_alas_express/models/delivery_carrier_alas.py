@@ -214,20 +214,16 @@ class ProviderAlasExpress(models.Model):
 
     def _alas_get_package_codes(self, picking):
         """
-        Genera los códigos de paquetes para la orden.
-        Si el picking tiene paquetes de producto definidos, usa sus nombres.
-        Si no, genera un código por línea de movimiento: PICKING-LINE_INDEX.
+        Retorna los nombres de los paquetes asignados al picking.
+        Lanza error si no hay paquetes asignados.
         """
-        if picking.package_ids:
-            return [pkg.name for pkg in picking.package_ids]
-
-        # Fallback: un paquete por unidad de demanda (máx. práctico)
-        codes = []
-        for idx, move in enumerate(picking.move_ids.filtered(lambda m: m.state not in ('cancel', 'draft')), start=1):
-            qty = int(move.product_uom_qty)
-            for i in range(max(qty, 1)):
-                codes.append(f'{picking.name}-{idx}-{i+1}')
-        return codes if codes else [picking.name]
+        if not picking.package_ids:
+            raise UserError(_(
+                'El albarán "%s" no tiene paquetes asignados.\n'
+                'Debe asignar los paquetes en la pestaña "Operaciones detalladas" '
+                'antes de enviar a Alas Express.'
+            ) % picking.name)
+        return [pkg.name for pkg in picking.package_ids]
 
     # ── Métodos públicos de la API ───────────────────────────────────────────
 
@@ -261,7 +257,34 @@ class ProviderAlasExpress(models.Model):
         if label_b64:
             self._alas_save_label_attachment(picking, label_b64)
 
+        # Enviar correo de despacho al cliente
+        if labels_url and picking.partner_id and picking.partner_id.email:
+            self._alas_send_dispatch_email(picking, labels_url)
+
         return result
+
+    def _alas_send_dispatch_email(self, picking, labels_url):
+        """Envía correo de notificación de despacho al cliente."""
+        partner = picking.partner_id
+        origin = picking.origin or picking.name
+        body = (
+            f'Estimado/a {partner.name},<br/><br/>'
+            f'Su orden <strong>{origin}</strong> ha sido despachada. '
+            f'Puede consultar su estado de entrega en el siguiente link:<br/><br/>'
+            f'<a href="{labels_url}">{labels_url}</a><br/><br/>'
+            f'Atentamente,<br/>'
+            f'<strong>Despacho Outside Sports</strong>'
+        )
+        mail_values = {
+            'subject': f'Tu pedido {origin} ha sido despachado - Outside Sports',
+            'body_html': body,
+            'email_to': partner.email,
+            'email_from': self.env.company.email or 'despacho@outsidesports.cl',
+            'auto_delete': True,
+        }
+        mail = self.env['mail.mail'].create(mail_values)
+        mail.send()
+        _logger.info('Alas Express: correo de despacho enviado a %s para picking %s', partner.email, picking.name)
 
     def alas_get_status(self, picking):
         """
