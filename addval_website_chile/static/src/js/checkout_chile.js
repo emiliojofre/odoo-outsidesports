@@ -1,7 +1,9 @@
 /** @odoo-module **/
 /**
  * addval_website_chile - checkout_chile.js
- * Auto-normalización de teléfono y RUT en el formulario de checkout.
+ * - Teléfono: el usuario ingresa 9 dígitos, se envía +56XXXXXXXXX
+ * - RUT: auto-inserción de guion y validación visual módulo 11
+ * - Preserva city_id seleccionado al re-renderizar tras error de validación
  */
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -9,21 +11,24 @@ document.addEventListener('DOMContentLoaded', function () {
     // ── Teléfono ──────────────────────────────────────────────────────────────
     const phoneInput = document.getElementById('phone_input');
     if (phoneInput) {
-        phoneInput.addEventListener('blur', function () {
-            let val = phoneInput.value.trim().replace(/[\s\-]/g, '');
-            if (!val) return;
-
-            if (val.startsWith('+56') && val.length === 12) {
-                // ya correcto
-            } else if (/^56\d{9}$/.test(val)) {
-                val = '+' + val;
-            } else if (/^9\d{8}$/.test(val)) {
-                val = '+56' + val;
-            } else if (/^\d{9}$/.test(val)) {
-                val = '+56' + val;
-            }
-            phoneInput.value = val;
+        // Solo permitir dígitos, máximo 9
+        phoneInput.addEventListener('input', function () {
+            phoneInput.value = phoneInput.value.replace(/\D/g, '').slice(0, 9);
         });
+
+        const form = phoneInput.closest('form');
+        if (form) {
+            const phoneHidden = document.createElement('input');
+            phoneHidden.type = 'hidden';
+            phoneHidden.name = 'phone';
+            form.appendChild(phoneHidden);
+            phoneInput.removeAttribute('name');
+
+            form.addEventListener('submit', function () {
+                const val = phoneInput.value.trim();
+                phoneHidden.value = val.length === 9 ? '+56' + val : val;
+            }, true);
+        }
     }
 
     // ── RUT ───────────────────────────────────────────────────────────────────
@@ -32,49 +37,70 @@ document.addEventListener('DOMContentLoaded', function () {
         vatInput.addEventListener('blur', function () {
             let val = vatInput.value.trim().replace(/\./g, '').toUpperCase();
             if (!val) return;
-
-            // Si no tiene guion y tiene al menos 2 chars, insertar guion antes del DV
             if (!val.includes('-') && val.length >= 2) {
-                const dv = val.slice(-1);
-                const num = val.slice(0, -1);
-                val = num + '-' + dv;
+                val = val.slice(0, -1) + '-' + val.slice(-1);
             }
             vatInput.value = val;
 
-            // Validación visual cliente (módulo 11)
+            // Validación visual módulo 11
             const partes = val.split('-');
-            if (partes.length === 2) {
-                const numStr = partes[0];
-                const dvIngresado = partes[1];
-                if (/^\d+$/.test(numStr)) {
-                    let suma = 0;
-                    let mult = 2;
-                    for (let i = numStr.length - 1; i >= 0; i--) {
-                        suma += parseInt(numStr[i]) * mult;
-                        mult = mult < 7 ? mult + 1 : 2;
-                    }
-                    const resto = 11 - (suma % 11);
-                    let dvEsperado = resto === 11 ? '0' : resto === 10 ? 'K' : String(resto);
+            if (partes.length !== 2) return;
+            const numStr = partes[0];
+            const dvIngresado = partes[1];
+            if (!/^\d+$/.test(numStr)) return;
 
-                    if (dvIngresado !== dvEsperado) {
-                        vatInput.classList.add('is-invalid');
-                        // Mostrar hint si existe
-                        let hint = vatInput.parentElement.querySelector('.rut-hint');
-                        if (!hint) {
-                            hint = document.createElement('div');
-                            hint.className = 'invalid-feedback rut-hint';
-                            vatInput.parentElement.appendChild(hint);
-                        }
-                        hint.textContent = 'RUT inválido. Verifica el dígito verificador.';
-                        hint.style.display = 'block';
-                    } else {
-                        vatInput.classList.remove('is-invalid');
-                        vatInput.classList.add('is-valid');
-                        const hint = vatInput.parentElement.querySelector('.rut-hint');
-                        if (hint) hint.style.display = 'none';
-                    }
-                }
+            let suma = 0, mult = 2;
+            for (let i = numStr.length - 1; i >= 0; i--) {
+                suma += parseInt(numStr[i]) * mult;
+                mult = mult < 7 ? mult + 1 : 2;
             }
+            const resto = 11 - (suma % 11);
+            const dvEsperado = resto === 11 ? '0' : resto === 10 ? 'K' : String(resto);
+
+            let hint = vatInput.parentElement.querySelector('.rut-hint');
+            if (!hint) {
+                hint = document.createElement('div');
+                hint.className = 'rut-hint';
+                hint.style.fontSize = '0.85em';
+                hint.style.marginTop = '4px';
+                vatInput.parentElement.appendChild(hint);
+            }
+
+            if (dvIngresado !== dvEsperado) {
+                vatInput.classList.add('is-invalid');
+                vatInput.classList.remove('is-valid');
+                hint.style.color = '#dc3545';
+                hint.textContent = 'RUT inválido. El dígito verificador debería ser ' + dvEsperado + '.';
+            } else {
+                vatInput.classList.remove('is-invalid');
+                vatInput.classList.add('is-valid');
+                hint.style.color = '#198754';
+                hint.textContent = 'RUT válido ✓';
+            }
+        });
+    }
+
+    // ── Preservar city_id tras error de validación ────────────────────────────
+    // El select de comunas se recarga vía AJAX al cambiar región.
+    // Si el formulario fue re-renderizado por error, el server ya filtró
+    // country_state_cities por el state_id correcto, por lo que el select
+    // debería tener la opción correcta. Solo necesitamos asegurarnos de
+    // que el city_input (hidden) esté sincronizado con lo que está seleccionado.
+    const citySelect = document.getElementById('city_id_select');
+    const cityInput = document.getElementById('city_input');
+
+    if (citySelect && cityInput) {
+        // Si hay una opción seleccionada al cargar (re-render tras error),
+        // sincronizar el input hidden inmediatamente
+        const selectedOption = citySelect.options[citySelect.selectedIndex];
+        if (selectedOption && selectedOption.value) {
+            cityInput.value = selectedOption.text;
+        }
+
+        // Mantener sincronizado al cambiar
+        citySelect.addEventListener('change', function () {
+            const opt = citySelect.options[citySelect.selectedIndex];
+            cityInput.value = opt ? opt.text : '';
         });
     }
 });

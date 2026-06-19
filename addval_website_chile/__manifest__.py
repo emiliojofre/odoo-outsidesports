@@ -12,7 +12,7 @@
         - Teléfono: auto-prefijo +56 si el usuario no lo ingresa
         - Validación server-side de ambos campos
     """,
-    'depends': ['addval_website_address', 'website_sale'],
+    'depends': ['addval_website_address', 'website_sale', 'eq_website_default_code'],
     'data': [
         'views/website_sale_address.xml',
     ],

@@ -1,38 +1,111 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <!--
-        Override del formulario de checkout de addval_website_address:
-        - Renombra VAT → RUT, obligatorio
-        - Agrega id="vat_input" y id="phone_input" para JS
-        - Actualiza field_required para incluir vat
+        Todos los templates de este módulo aplican SOLO al sitio B2C
+        (website con name = "OUTSIDE SPORTS B2C").
+        Se usa la función website_id en los templates heredados.
+        El controller verifica request.website.name.
     -->
+
+    <!-- ================================================================
+         1. Formulario de checkout: labels, RUT, teléfono, pie de página
+         ================================================================ -->
     <template id="address_chile_rut_phone"
               inherit_id="addval_website_address.address_custom"
-              name="Chile - RUT y Teléfono">
+              name="Chile B2C - RUT, Teléfono y Labels"
+              website_id="3">
 
-        <!-- Agregar id al input de teléfono para JS -->
+        <!-- Nombre: solo * -->
+        <xpath expr="//label[@for='name']" position="replace">
+            <label class="col-form-label" for="name">Nombre *</label>
+        </xpath>
+
+        <!-- Email: solo * -->
+        <xpath expr="//label[@for='email']" position="replace">
+            <label t-attf-class="col-form-label #{mode[1] == 'shipping' and 'label-optional' or ''}" for="email">Email *</label>
+        </xpath>
+
+        <!-- Teléfono: solo *, id y placeholder de 9 dígitos -->
+        <xpath expr="//label[@for='phone']" position="replace">
+            <label class="col-form-label" for="phone">Teléfono *</label>
+        </xpath>
         <xpath expr="//input[@name='phone']" position="attributes">
             <attribute name="id">phone_input</attribute>
-            <attribute name="placeholder">+56912345678</attribute>
-            <attribute name="title">Ingresa tu número chileno, ej: +56912345678 o 912345678</attribute>
+            <attribute name="placeholder">912345678</attribute>
+            <attribute name="title">Ingresa 9 dígitos. Se agregará +56 automáticamente.</attribute>
+            <attribute name="maxlength">9</attribute>
+            <attribute name="pattern">[0-9]{9}</attribute>
         </xpath>
 
-        <!-- Cambiar label VAT → RUT -->
+        <!-- País: solo * -->
+        <xpath expr="//label[@for='country_id']" position="replace">
+            <label class="col-form-label" for="country_id">País *</label>
+        </xpath>
+
+        <!-- Región: solo *, negrita -->
+        <xpath expr="//label[@for='state_id']" position="replace">
+            <label class="col-form-label fw-bold" for="state_id">Región *</label>
+        </xpath>
+
+        <!-- Comuna: solo * -->
+        <xpath expr="//label[@for='city_id']" position="replace">
+            <label class="col-form-label" for="city_id">Comuna *</label>
+        </xpath>
+
+        <!-- Dirección: solo * -->
+        <xpath expr="//label[@for='street']" position="replace">
+            <label class="col-form-label" for="street">Dirección *</label>
+        </xpath>
+
+        <!-- RUT: solo *, negrita, id y required -->
         <xpath expr="//label[@for='vat']" position="replace">
-            <label class="col-form-label fw-bold" for="vat">RUT *(Campo obligatorio)</label>
+            <label class="col-form-label fw-bold" for="vat">RUT *</label>
         </xpath>
-
-        <!-- Agregar id, required y placeholder al input vat -->
         <xpath expr="//input[@name='vat']" position="attributes">
             <attribute name="id">vat_input</attribute>
             <attribute name="required">required</attribute>
             <attribute name="placeholder">12345678-9</attribute>
         </xpath>
 
-        <!-- Actualizar field_required para incluir vat -->
+        <!-- Pie de página: leyenda * = Campo Obligatorio -->
+        <xpath expr="//div[hasclass('d-flex') and hasclass('justify-content-between')]" position="before">
+            <p class="text-muted small mt-2 mb-3"><em>* Campo obligatorio</em></p>
+        </xpath>
+
+        <!-- field_required incluye vat -->
         <xpath expr="//input[@name='field_required']" position="attributes">
             <attribute name="t-att-value">'phone,name,vat'</attribute>
         </xpath>
 
     </template>
+
+    <!-- ================================================================
+         2. Catálogo: sacar PVP, mantener SKU — solo B2C
+         ================================================================ -->
+    <template id="outside_hide_pvp_catalog"
+              inherit_id="eq_website_default_code.products_item_default_codes"
+              name="Chile B2C - Ocultar PVP en catálogo"
+              website_id="3">
+        <xpath expr="//div[span[hasclass('pvp')]]" position="replace"/>
+    </template>
+
+    <!-- ================================================================
+         3. Ficha de producto: sacar PVP, mantener SKU — solo B2C
+         ================================================================ -->
+    <template id="outside_hide_pvp_product"
+              inherit_id="eq_website_default_code.product_default_codes"
+              name="Chile B2C - Ocultar PVP en ficha"
+              website_id="3">
+        <xpath expr="//div[span[hasclass('pvp')]]" position="replace"/>
+    </template>
+
+    <!-- ================================================================
+         4. Activar indicación de impuesto — solo B2C
+         ================================================================ -->
+    <template id="outside_tax_indication_b2c"
+              inherit_id="website_sale.tax_indication"
+              name="Chile B2C - Activar tax indication"
+              website_id="3"
+              active="True"/>
+
 </odoo>
