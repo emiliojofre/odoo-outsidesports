@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <!--
-        Todos los templates de este módulo aplican SOLO al sitio B2C
-        (website con name = "OUTSIDE SPORTS B2C").
-        Se usa la función website_id en los templates heredados.
-        El controller verifica request.website.name.
+        Todos los templates aplican SOLO al sitio B2C.
+        El website_id se asigna via <record> después de crear cada template,
+        ya que en Odoo 16 el atributo website_id requiere un xmlid, no un int.
     -->
 
     <!-- ================================================================
@@ -12,20 +11,14 @@
          ================================================================ -->
     <template id="address_chile_rut_phone"
               inherit_id="addval_website_address.address_custom"
-              name="Chile B2C - RUT, Teléfono y Labels"
-              website_id="3">
+              name="Chile B2C - RUT, Teléfono y Labels">
 
-        <!-- Nombre: solo * -->
         <xpath expr="//label[@for='name']" position="replace">
             <label class="col-form-label" for="name">Nombre *</label>
         </xpath>
-
-        <!-- Email: solo * -->
         <xpath expr="//label[@for='email']" position="replace">
             <label t-attf-class="col-form-label #{mode[1] == 'shipping' and 'label-optional' or ''}" for="email">Email *</label>
         </xpath>
-
-        <!-- Teléfono: solo *, id y placeholder de 9 dígitos -->
         <xpath expr="//label[@for='phone']" position="replace">
             <label class="col-form-label" for="phone">Teléfono *</label>
         </xpath>
@@ -36,28 +29,18 @@
             <attribute name="maxlength">9</attribute>
             <attribute name="pattern">[0-9]{9}</attribute>
         </xpath>
-
-        <!-- País: solo * -->
         <xpath expr="//label[@for='country_id']" position="replace">
             <label class="col-form-label" for="country_id">País *</label>
         </xpath>
-
-        <!-- Región: solo *, negrita -->
         <xpath expr="//label[@for='state_id']" position="replace">
             <label class="col-form-label fw-bold" for="state_id">Región *</label>
         </xpath>
-
-        <!-- Comuna: solo * -->
         <xpath expr="//label[@for='city_id']" position="replace">
             <label class="col-form-label" for="city_id">Comuna *</label>
         </xpath>
-
-        <!-- Dirección: solo * -->
         <xpath expr="//label[@for='street']" position="replace">
             <label class="col-form-label" for="street">Dirección *</label>
         </xpath>
-
-        <!-- RUT: solo *, negrita, id y required -->
         <xpath expr="//label[@for='vat']" position="replace">
             <label class="col-form-label fw-bold" for="vat">RUT *</label>
         </xpath>
@@ -66,46 +49,56 @@
             <attribute name="required">required</attribute>
             <attribute name="placeholder">12345678-9</attribute>
         </xpath>
-
-        <!-- Pie de página: leyenda * = Campo Obligatorio -->
         <xpath expr="//div[hasclass('d-flex') and hasclass('justify-content-between')]" position="before">
             <p class="text-muted small mt-2 mb-3"><em>* Campo obligatorio</em></p>
         </xpath>
-
-        <!-- field_required incluye vat -->
         <xpath expr="//input[@name='field_required']" position="attributes">
             <attribute name="t-att-value">'phone,name,vat'</attribute>
         </xpath>
-
     </template>
 
+    <!-- Asignar website_id B2C al template de checkout -->
+    <record id="address_chile_rut_phone" model="ir.ui.view">
+        <field name="website_id" search="[('name','=','OUTSIDE SPORTS B2C')]" model="website"/>
+    </record>
+
     <!-- ================================================================
-         2. Catálogo: sacar PVP, mantener SKU — solo B2C
+         2. Catálogo: sacar PVP — solo B2C
          ================================================================ -->
     <template id="outside_hide_pvp_catalog"
               inherit_id="eq_website_default_code.products_item_default_codes"
-              name="Chile B2C - Ocultar PVP en catálogo"
-              website_id="3">
+              name="Chile B2C - Ocultar PVP en catálogo">
         <xpath expr="//div[span[hasclass('pvp')]]" position="replace"/>
     </template>
 
+    <record id="outside_hide_pvp_catalog" model="ir.ui.view">
+        <field name="website_id" search="[('name','=','OUTSIDE SPORTS B2C')]" model="website"/>
+    </record>
+
     <!-- ================================================================
-         3. Ficha de producto: sacar PVP, mantener SKU — solo B2C
+         3. Ficha de producto: sacar PVP — solo B2C
          ================================================================ -->
     <template id="outside_hide_pvp_product"
               inherit_id="eq_website_default_code.product_default_codes"
-              name="Chile B2C - Ocultar PVP en ficha"
-              website_id="3">
+              name="Chile B2C - Ocultar PVP en ficha">
         <xpath expr="//div[span[hasclass('pvp')]]" position="replace"/>
     </template>
 
+    <record id="outside_hide_pvp_product" model="ir.ui.view">
+        <field name="website_id" search="[('name','=','OUTSIDE SPORTS B2C')]" model="website"/>
+    </record>
+
     <!-- ================================================================
-         4. Activar indicación de impuesto — solo B2C
+         4. Tax indication activo — solo B2C
          ================================================================ -->
     <template id="outside_tax_indication_b2c"
               inherit_id="website_sale.tax_indication"
-              name="Chile B2C - Activar tax indication"
-              website_id="3"
-              active="True"/>
+              name="Chile B2C - Tax indication activo"
+              active="True">
+    </template>
+
+    <record id="outside_tax_indication_b2c" model="ir.ui.view">
+        <field name="website_id" search="[('name','=','OUTSIDE SPORTS B2C')]" model="website"/>
+    </record>
 
 </odoo>
