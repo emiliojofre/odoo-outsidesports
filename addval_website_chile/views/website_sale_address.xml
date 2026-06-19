@@ -29,13 +29,6 @@
             <attribute name="placeholder">12345678-9</attribute>
         </xpath>
 
-        <!-- Reemplazar small de hint del VAT -->
-        <xpath expr="//input[@name='vat']/following-sibling::small[not(@t-if)]" position="replace">
-            <small t-if="not vat_warning" class="form-text text-muted">
-                Formato: 12345678-9 o 12345678-K
-            </small>
-        </xpath>
-
         <!-- Actualizar field_required para incluir vat -->
         <xpath expr="//input[@name='field_required']" position="attributes">
             <attribute name="t-att-value">'phone,name,vat'</attribute>
