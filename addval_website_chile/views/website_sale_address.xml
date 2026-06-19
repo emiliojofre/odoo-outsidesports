@@ -1,11 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!--
-        Todos los templates aplican SOLO al sitio B2C.
-        El website_id se asigna via <record> después de crear cada template,
-        ya que en Odoo 16 el atributo website_id requiere un xmlid, no un int.
-    -->
-
     <!-- ================================================================
          1. Formulario de checkout: labels, RUT, teléfono, pie de página
          ================================================================ -->
@@ -19,16 +13,25 @@
         <xpath expr="//label[@for='email']" position="replace">
             <label t-attf-class="col-form-label #{mode[1] == 'shipping' and 'label-optional' or ''}" for="email">Email *</label>
         </xpath>
+
+        <!-- Reemplazar label y input de teléfono COMPLETO para eliminar restricciones del padre -->
         <xpath expr="//label[@for='phone']" position="replace">
             <label class="col-form-label" for="phone">Teléfono *</label>
         </xpath>
-        <xpath expr="//input[@name='phone']" position="attributes">
-            <attribute name="id">phone_input</attribute>
-            <attribute name="placeholder">912345678</attribute>
-            <attribute name="title">Ingresa 9 dígitos. Se agregará +56 automáticamente.</attribute>
-            <attribute name="maxlength">9</attribute>
-            <attribute name="pattern">[0-9]{9}</attribute>
+        <xpath expr="//input[@name='phone']" position="replace">
+            <input type="tel"
+                   id="phone_display"
+                   t-attf-class="form-control #{error.get('phone') and 'is-invalid' or ''}"
+                   inputmode="tel"
+                   maxlength="9"
+                   pattern="[0-9]{9}"
+                   placeholder="912345678"
+                   title="Ingresa 9 dígitos. Se agregará +56 automáticamente."
+                   t-att-value="'phone' in checkout and checkout['phone'] and checkout['phone'].replace('+56','') or ''"/>
+            <input type="hidden" name="phone" id="phone_input"
+                   t-att-value="'phone' in checkout and checkout['phone'] or ''"/>
         </xpath>
+
         <xpath expr="//label[@for='country_id']" position="replace">
             <label class="col-form-label" for="country_id">País *</label>
         </xpath>
@@ -57,7 +60,6 @@
         </xpath>
     </template>
 
-    <!-- Asignar website_id B2C al template de checkout -->
     <record id="address_chile_rut_phone" model="ir.ui.view">
         <field name="website_id" search="[('name','=','OUTSIDE SPORTS B2C')]" model="website"/>
     </record>

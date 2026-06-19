@@ -1,33 +1,40 @@
 /** @odoo-module **/
 /**
  * addval_website_chile - checkout_chile.js
- * - Teléfono: el usuario ingresa 9 dígitos, se envía +56XXXXXXXXX
- * - RUT: auto-inserción de guion y validación visual módulo 11
- * - Preserva city_id seleccionado al re-renderizar tras error de validación
+ * - phone_display: input visible de 9 dígitos → sincroniza phone_input hidden con +56
+ * - RUT: auto-guion y validación visual módulo 11
+ * - Preserva city_id tras re-render por error de validación
  */
 
 document.addEventListener('DOMContentLoaded', function () {
 
     // ── Teléfono ──────────────────────────────────────────────────────────────
-    const phoneInput = document.getElementById('phone_input');
-    if (phoneInput) {
-        // Solo permitir dígitos, máximo 9
-        phoneInput.addEventListener('input', function () {
-            phoneInput.value = phoneInput.value.replace(/\D/g, '').slice(0, 9);
+    const phoneDisplay = document.getElementById('phone_display');
+    const phoneHidden  = document.getElementById('phone_input');
+
+    if (phoneDisplay && phoneHidden) {
+        // Solo dígitos, máximo 9
+        phoneDisplay.addEventListener('input', function () {
+            phoneDisplay.value = phoneDisplay.value.replace(/\D/g, '').slice(0, 9);
+            syncPhone();
         });
 
-        const form = phoneInput.closest('form');
-        if (form) {
-            const phoneHidden = document.createElement('input');
-            phoneHidden.type = 'hidden';
-            phoneHidden.name = 'phone';
-            form.appendChild(phoneHidden);
-            phoneInput.removeAttribute('name');
+        phoneDisplay.addEventListener('blur', syncPhone);
 
-            form.addEventListener('submit', function () {
-                const val = phoneInput.value.trim();
-                phoneHidden.value = val.length === 9 ? '+56' + val : val;
-            }, true);
+        function syncPhone() {
+            const val = phoneDisplay.value.trim();
+            phoneHidden.value = val.length === 9 ? '+56' + val : val;
+        }
+
+        // Sincronizar también justo antes del submit
+        const form = phoneDisplay.closest('form');
+        if (form) {
+            form.addEventListener('submit', syncPhone, true);
+        }
+
+        // Al cargar: si el hidden ya tiene valor (+56XXXXXXXXX), mostrarlo sin prefijo
+        if (phoneHidden.value) {
+            phoneDisplay.value = phoneHidden.value.replace('+56', '');
         }
     }
 
@@ -61,8 +68,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (!hint) {
                 hint = document.createElement('div');
                 hint.className = 'rut-hint';
-                hint.style.fontSize = '0.85em';
-                hint.style.marginTop = '4px';
+                hint.style.cssText = 'font-size:0.85em; margin-top:4px;';
                 vatInput.parentElement.appendChild(hint);
             }
 
@@ -81,23 +87,13 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ── Preservar city_id tras error de validación ────────────────────────────
-    // El select de comunas se recarga vía AJAX al cambiar región.
-    // Si el formulario fue re-renderizado por error, el server ya filtró
-    // country_state_cities por el state_id correcto, por lo que el select
-    // debería tener la opción correcta. Solo necesitamos asegurarnos de
-    // que el city_input (hidden) esté sincronizado con lo que está seleccionado.
     const citySelect = document.getElementById('city_id_select');
-    const cityInput = document.getElementById('city_input');
-
+    const cityInput  = document.getElementById('city_input');
     if (citySelect && cityInput) {
-        // Si hay una opción seleccionada al cargar (re-render tras error),
-        // sincronizar el input hidden inmediatamente
-        const selectedOption = citySelect.options[citySelect.selectedIndex];
-        if (selectedOption && selectedOption.value) {
-            cityInput.value = selectedOption.text;
+        const selectedOpt = citySelect.options[citySelect.selectedIndex];
+        if (selectedOpt && selectedOpt.value) {
+            cityInput.value = selectedOpt.text;
         }
-
-        // Mantener sincronizado al cambiar
         citySelect.addEventListener('change', function () {
             const opt = citySelect.options[citySelect.selectedIndex];
             cityInput.value = opt ? opt.text : '';
