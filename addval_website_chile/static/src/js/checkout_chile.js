@@ -1,14 +1,87 @@
 /** @odoo-module **/
 /**
  * addval_website_chile - checkout_chile.js
- * - phone_display: input visible de 9 dígitos → sincroniza phone_input hidden con +56
- * - RUT: auto-guion y validación visual módulo 11
- * - Preserva city_id tras re-render por error de validación
  */
 
 document.addEventListener('DOMContentLoaded', function () {
 
-    // ── Teléfono ──────────────────────────────────────────────────────────────
+    const STORAGE_KEY = 'outside_checkout_state';
+
+    // ── Restaurar valores guardados si hay error de validación ────────────────
+    // La página de error tiene el mensaje de error visible
+    const hasError = document.querySelector('.alert-danger, .o_website_sale_alert, [class*="error"]');
+    const saved = sessionStorage.getItem(STORAGE_KEY);
+
+    if (saved) {
+        try {
+            const data = JSON.parse(saved);
+
+            // Restaurar teléfono en el display
+            const phoneDisplay = document.getElementById('phone_display');
+            const phoneHidden  = document.getElementById('phone_input');
+            if (phoneDisplay && data.phone) {
+                phoneDisplay.value = data.phone.replace('+56', '');
+                if (phoneHidden) phoneHidden.value = data.phone;
+            }
+
+            // Restaurar región
+            const stateSelect = document.getElementById('state_id');
+            if (stateSelect && data.state_id) {
+                stateSelect.value = data.state_id;
+                // Disparar change para que Odoo cargue las comunas via AJAX
+                stateSelect.dispatchEvent(new Event('change', { bubbles: true }));
+
+                // Restaurar comuna después de que el AJAX cargue las opciones
+                if (data.city_id) {
+                    const restoreCity = (attempts) => {
+                        const citySelect = document.getElementById('city_id_select');
+                        if (!citySelect) return;
+                        // Intentar seleccionar
+                        citySelect.value = data.city_id;
+                        if (citySelect.value === data.city_id) {
+                            // Éxito: sincronizar el hidden city
+                            const cityInput = document.getElementById('city_input');
+                            if (cityInput) {
+                                const opt = citySelect.options[citySelect.selectedIndex];
+                                cityInput.value = opt ? opt.text : '';
+                            }
+                        } else if (attempts > 0) {
+                            // Las opciones aún no cargaron, reintentar
+                            setTimeout(() => restoreCity(attempts - 1), 300);
+                        }
+                    };
+                    setTimeout(() => restoreCity(10), 400);
+                }
+            }
+
+            // Limpiar storage solo si no hay error (es decir, si el submit fue exitoso)
+            // Si hay error, mantenemos para el próximo intento
+            if (!hasError) {
+                sessionStorage.removeItem(STORAGE_KEY);
+            }
+        } catch(e) {
+            sessionStorage.removeItem(STORAGE_KEY);
+        }
+    }
+
+    // ── Guardar estado antes del submit ───────────────────────────────────────
+    const form = document.querySelector('form.checkout_autoformat');
+    if (form) {
+        form.addEventListener('submit', function () {
+            const phoneDisplay = document.getElementById('phone_display');
+            const stateSelect  = document.getElementById('state_id');
+            const citySelect   = document.getElementById('city_id_select');
+
+            const data = {
+                phone:    phoneDisplay ? ('+56' + phoneDisplay.value.trim().replace(/\D/g,'').slice(0,9)) : '',
+                state_id: stateSelect  ? stateSelect.value : '',
+                city_id:  citySelect   ? citySelect.value  : '',
+            };
+            sessionStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }, true);
+    }
+
+    // ── Teléfono: sincronizar display → hidden con +56 ────────────────────────
     const phoneDisplay = document.getElementById('phone_display');
     const phoneHidden  = document.getElementById('phone_input');
 
@@ -18,7 +91,6 @@ document.addEventListener('DOMContentLoaded', function () {
             phoneDisplay.value = phoneDisplay.value.replace(/\D/g, '').slice(0, 9);
             syncPhone();
         });
-
         phoneDisplay.addEventListener('blur', syncPhone);
 
         function syncPhone() {
@@ -26,19 +98,13 @@ document.addEventListener('DOMContentLoaded', function () {
             phoneHidden.value = val.length === 9 ? '+56' + val : val;
         }
 
-        // Sincronizar también justo antes del submit
-        const form = phoneDisplay.closest('form');
-        if (form) {
-            form.addEventListener('submit', syncPhone, true);
-        }
-
-        // Al cargar: si el hidden ya tiene valor (+56XXXXXXXXX), mostrarlo sin prefijo
+        // Al cargar: mostrar sin +56 en el display
         if (phoneHidden.value) {
             phoneDisplay.value = phoneHidden.value.replace('+56', '');
         }
     }
 
-    // ── RUT ───────────────────────────────────────────────────────────────────
+    // ── RUT: auto-guion y validación visual módulo 11 ─────────────────────────
     const vatInput = document.getElementById('vat_input');
     if (vatInput) {
         vatInput.addEventListener('blur', function () {
@@ -49,7 +115,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             vatInput.value = val;
 
-            // Validación visual módulo 11
             const partes = val.split('-');
             if (partes.length !== 2) return;
             const numStr = partes[0];
@@ -86,7 +151,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // ── Preservar city_id tras error de validación ────────────────────────────
+    // ── Sincronizar city_input hidden al cambiar comuna ───────────────────────
     const citySelect = document.getElementById('city_id_select');
     const cityInput  = document.getElementById('city_input');
     if (citySelect && cityInput) {
