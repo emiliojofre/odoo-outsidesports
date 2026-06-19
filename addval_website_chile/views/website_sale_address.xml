@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <!--
-        Override del bloque VAT en el formulario de checkout de addval_website_address:
-        - Renombra label VAT → RUT
-        - Agrega required
-        - Agrega id="vat_input" para el JS de validación
-        - Agrega id="phone_input" al teléfono para el JS de auto-prefijo
-        - Agrega hint de formato RUT
+        Override del formulario de checkout de addval_website_address:
+        - Renombra VAT → RUT, obligatorio
+        - Agrega id="vat_input" y id="phone_input" para JS
         - Actualiza field_required para incluir vat
     -->
     <template id="address_chile_rut_phone"
@@ -20,25 +17,23 @@
             <attribute name="title">Ingresa tu número chileno, ej: +56912345678 o 912345678</attribute>
         </xpath>
 
-        <!-- Reemplazar bloque VAT completo → RUT obligatorio -->
-        <xpath expr="//div[hasclass('div_vat')]" position="replace">
-            <div t-attf-class="mb-3 #{error.get('vat') and 'o_has_error' or ''} col-lg-6 div_vat mb-0">
-                <label class="col-form-label fw-bold" for="vat">RUT *(Campo obligatorio)</label>
-                <input type="text"
-                       id="vat_input"
-                       name="vat"
-                       t-attf-class="form-control #{error.get('vat') and 'is-invalid' or ''}"
-                       t-att-value="'vat' in checkout and checkout['vat']"
-                       t-att-readonly="'1' if vat_warning else None"
-                       placeholder="12345678-9"
-                       required="required"/>
-                <small t-if="vat_warning" class="form-text text-muted d-block d-lg-none">
-                    No es posible cambiar el RUT una vez emitidos documentos. Contáctanos para este cambio.
-                </small>
-                <small t-if="not vat_warning" class="form-text text-muted">
-                    Formato: 12345678-9 o 12345678-K
-                </small>
-            </div>
+        <!-- Cambiar label VAT → RUT -->
+        <xpath expr="//label[@for='vat']" position="replace">
+            <label class="col-form-label fw-bold" for="vat">RUT *(Campo obligatorio)</label>
+        </xpath>
+
+        <!-- Agregar id, required y placeholder al input vat -->
+        <xpath expr="//input[@name='vat']" position="attributes">
+            <attribute name="id">vat_input</attribute>
+            <attribute name="required">required</attribute>
+            <attribute name="placeholder">12345678-9</attribute>
+        </xpath>
+
+        <!-- Reemplazar small de hint del VAT -->
+        <xpath expr="//input[@name='vat']/following-sibling::small[not(@t-if)]" position="replace">
+            <small t-if="not vat_warning" class="form-text text-muted">
+                Formato: 12345678-9 o 12345678-K
+            </small>
         </xpath>
 
         <!-- Actualizar field_required para incluir vat -->
