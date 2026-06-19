@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- ================================================================
-         1. Formulario de checkout: labels, RUT, teléfono, pie de página
-         ================================================================ -->
     <template id="address_chile_rut_phone"
               inherit_id="addval_website_address.address_custom"
               name="Chile B2C - RUT, Teléfono y Labels">
@@ -13,10 +10,8 @@
         <xpath expr="//label[@for='email']" position="replace">
             <label t-attf-class="col-form-label #{mode[1] == 'shipping' and 'label-optional' or ''}" for="email">Email *</label>
         </xpath>
-
-        <!-- Reemplazar label y input de teléfono COMPLETO para eliminar restricciones del padre -->
         <xpath expr="//label[@for='phone']" position="replace">
-            <label class="col-form-label" for="phone">Teléfono *</label>
+            <label class="col-form-label" for="phone">Teléfono * (9 dígitos)</label>
         </xpath>
         <xpath expr="//input[@name='phone']" position="replace">
             <input type="tel"
@@ -31,7 +26,6 @@
             <input type="hidden" name="phone" id="phone_input"
                    t-att-value="'phone' in checkout and checkout['phone'] or ''"/>
         </xpath>
-
         <xpath expr="//label[@for='country_id']" position="replace">
             <label class="col-form-label" for="country_id">País *</label>
         </xpath>
@@ -64,9 +58,6 @@
         <field name="website_id" search="[('name','=','OUTSIDE SPORTS B2C')]" model="website"/>
     </record>
 
-    <!-- ================================================================
-         2. Catálogo: sacar PVP — solo B2C
-         ================================================================ -->
     <template id="outside_hide_pvp_catalog"
               inherit_id="eq_website_default_code.products_item_default_codes"
               name="Chile B2C - Ocultar PVP en catálogo">
@@ -77,9 +68,6 @@
         <field name="website_id" search="[('name','=','OUTSIDE SPORTS B2C')]" model="website"/>
     </record>
 
-    <!-- ================================================================
-         3. Ficha de producto: sacar PVP — solo B2C
-         ================================================================ -->
     <template id="outside_hide_pvp_product"
               inherit_id="eq_website_default_code.product_default_codes"
               name="Chile B2C - Ocultar PVP en ficha">
@@ -90,9 +78,6 @@
         <field name="website_id" search="[('name','=','OUTSIDE SPORTS B2C')]" model="website"/>
     </record>
 
-    <!-- ================================================================
-         4. Tax indication activo — solo B2C
-         ================================================================ -->
     <template id="outside_tax_indication_b2c"
               inherit_id="website_sale.tax_indication"
               name="Chile B2C - Tax indication activo"

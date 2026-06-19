@@ -1,22 +1,16 @@
 /** @odoo-module **/
-/**
- * addval_website_chile - checkout_chile.js
- */
 
 document.addEventListener('DOMContentLoaded', function () {
 
     const STORAGE_KEY = 'outside_checkout_state';
 
-    // ── Restaurar valores guardados si hay error de validación ────────────────
-    // La página de error tiene el mensaje de error visible
-    const hasError = document.querySelector('.alert-danger, .o_website_sale_alert, [class*="error"]');
+    // ── Restaurar valores tras error de validación ────────────────────────────
     const saved = sessionStorage.getItem(STORAGE_KEY);
-
     if (saved) {
         try {
             const data = JSON.parse(saved);
 
-            // Restaurar teléfono en el display
+            // Restaurar teléfono
             const phoneDisplay = document.getElementById('phone_display');
             const phoneHidden  = document.getElementById('phone_input');
             if (phoneDisplay && data.phone) {
@@ -24,40 +18,29 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (phoneHidden) phoneHidden.value = data.phone;
             }
 
-            // Restaurar región
+            // Restaurar región y luego comuna
             const stateSelect = document.getElementById('state_id');
             if (stateSelect && data.state_id) {
                 stateSelect.value = data.state_id;
-                // Disparar change para que Odoo cargue las comunas via AJAX
                 stateSelect.dispatchEvent(new Event('change', { bubbles: true }));
 
-                // Restaurar comuna después de que el AJAX cargue las opciones
                 if (data.city_id) {
                     const restoreCity = (attempts) => {
                         const citySelect = document.getElementById('city_id_select');
                         if (!citySelect) return;
-                        // Intentar seleccionar
                         citySelect.value = data.city_id;
-                        if (citySelect.value === data.city_id) {
-                            // Éxito: sincronizar el hidden city
+                        if (citySelect.value === String(data.city_id)) {
                             const cityInput = document.getElementById('city_input');
                             if (cityInput) {
                                 const opt = citySelect.options[citySelect.selectedIndex];
                                 cityInput.value = opt ? opt.text : '';
                             }
                         } else if (attempts > 0) {
-                            // Las opciones aún no cargaron, reintentar
                             setTimeout(() => restoreCity(attempts - 1), 300);
                         }
                     };
                     setTimeout(() => restoreCity(10), 400);
                 }
-            }
-
-            // Limpiar storage solo si no hay error (es decir, si el submit fue exitoso)
-            // Si hay error, mantenemos para el próximo intento
-            if (!hasError) {
-                sessionStorage.removeItem(STORAGE_KEY);
             }
         } catch(e) {
             sessionStorage.removeItem(STORAGE_KEY);
@@ -71,22 +54,19 @@ document.addEventListener('DOMContentLoaded', function () {
             const phoneDisplay = document.getElementById('phone_display');
             const stateSelect  = document.getElementById('state_id');
             const citySelect   = document.getElementById('city_id_select');
-
-            const data = {
-                phone:    phoneDisplay ? ('+56' + phoneDisplay.value.trim().replace(/\D/g,'').slice(0,9)) : '',
-                state_id: stateSelect  ? stateSelect.value : '',
-                city_id:  citySelect   ? citySelect.value  : '',
-            };
-            sessionStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
+                phone:    phoneDisplay ? '+56' + phoneDisplay.value.trim().replace(/\D/g,'').slice(0,9) : '',
+                state_id: stateSelect  ? stateSelect.value  : '',
+                city_id:  citySelect   ? citySelect.value   : '',
+            }));
         }, true);
     }
 
-    // ── Teléfono: sincronizar display → hidden con +56 ────────────────────────
+    // ── Teléfono: display → hidden con +56 ───────────────────────────────────
     const phoneDisplay = document.getElementById('phone_display');
     const phoneHidden  = document.getElementById('phone_input');
 
     if (phoneDisplay && phoneHidden) {
-        // Solo dígitos, máximo 9
         phoneDisplay.addEventListener('input', function () {
             phoneDisplay.value = phoneDisplay.value.replace(/\D/g, '').slice(0, 9);
             syncPhone();
@@ -98,7 +78,6 @@ document.addEventListener('DOMContentLoaded', function () {
             phoneHidden.value = val.length === 9 ? '+56' + val : val;
         }
 
-        // Al cargar: mostrar sin +56 en el display
         if (phoneHidden.value) {
             phoneDisplay.value = phoneHidden.value.replace('+56', '');
         }
@@ -136,7 +115,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 hint.style.cssText = 'font-size:0.85em; margin-top:4px;';
                 vatInput.parentElement.appendChild(hint);
             }
-
             if (dvIngresado !== dvEsperado) {
                 vatInput.classList.add('is-invalid');
                 vatInput.classList.remove('is-valid');
@@ -151,7 +129,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // ── Sincronizar city_input hidden al cambiar comuna ───────────────────────
+    // ── Sincronizar city_input hidden ─────────────────────────────────────────
     const citySelect = document.getElementById('city_id_select');
     const cityInput  = document.getElementById('city_input');
     if (citySelect && cityInput) {
