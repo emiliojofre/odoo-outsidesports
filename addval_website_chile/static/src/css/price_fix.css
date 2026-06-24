@@ -1,32 +1,20 @@
 /**
- * CSS B2C Chile - Oculta precio neto, muestra solo PVP con IVA
+ * B2C Chile - Ocultar precio neto, mostrar solo precio con IVA
  */
 
-/* Ocultar el bloque de precio neto completo (h3 con precio + IVA) */
+/* Ocultar bloque de precio neto (h3 con +IVA) */
 .product_price h3.css_editable_mode_hidden {
     display: none !important;
 }
 
-/* Ocultar "($ XXX / Unidad(es))" */
+/* Ocultar unidad de precio */
 .o_base_unit_price_wrapper {
     display: none !important;
 }
 
-/* Mostrar el PVP (que viene del módulo eq_website_default_code)
-   como si fuera el precio principal */
-.product_price div.pvp,
-.product_price span.pvp {
-    font-size: 1.75rem !important;
-    font-weight: 700 !important;
-    color: #212529 !important;
-    display: block !important;
-    margin-bottom: 0.5rem !important;
-}
-
-/* Ocultar el PVP de la sección extra (SKU/PVP abajo) */
-.o_product_page_extra_field div.pvp,
-.o_product_page_extra_field span.pvp,
-.product_attributes_overview div.pvp,
-.product_attributes_overview span.pvp {
-    display: none !important;
+/* Precio B2C con IVA - estilo igual al precio original */
+.b2c-price-iva {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
 }
