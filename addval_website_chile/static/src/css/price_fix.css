@@ -1,20 +1,37 @@
 /**
- * B2C Chile - El precio ya viene con IVA desde el modelo Python.
- * Solo ocultamos el texto "+ IVA" y el PVP duplicado de abajo.
+ * B2C Chile - Muestra PVP como precio principal usando solo CSS
  */
 
-/* Ocultar el span "+ IVA" */
-.product_price span.h6,
-.product_price .h6.text-muted {
-    display: none !important;
-}
-
-/* Ocultar la fila PVP de abajo (SKU/PVP extra) */
-.o_product_page_extra_field {
+/* Ocultar el precio neto (h3 con + IVA) */
+.product_price h3.css_editable_mode_hidden {
     display: none !important;
 }
 
 /* Ocultar precio por unidad */
 .o_base_unit_price_wrapper {
+    display: none !important;
+}
+
+/* Convertir product_price en flexbox para reordenar */
+.product_price {
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* Traer el div con PVP al principio */
+.product_price .o_product_page_extra_field {
+    order: -1 !important;
+}
+
+/* Dar estilo al PVP como si fuera el precio principal */
+.product_price .o_product_page_extra_field span.pvp {
+    font-size: 1.75rem !important;
+    font-weight: 700 !important;
+    color: #212529 !important;
+}
+
+/* Ocultar el label "PVP:" */
+.product_price .o_product_page_extra_field td:first-child,
+.product_price .o_product_page_extra_field th:first-child {
     display: none !important;
 }
