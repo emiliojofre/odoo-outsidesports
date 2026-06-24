@@ -1,20 +1,25 @@
 /**
  * CSS para ocultar precio neto en sitio B2C Chile
- * Solo muestra el PVP (precio con IVA)
+ * Oculta el h3 con el precio neto y el span "+ IVA"
  */
 
-/* Ocultar el h3 que contiene el precio neto "$ XXX + IVA" */
-.product_price h3.css_editable_mode_hidden,
-.product_price .css_editable_mode_hidden {
+/* Ocultar el bloque completo de precio neto (h3 con clase css_editable_mode_hidden) */
+.product_price h3.css_editable_mode_hidden {
     display: none !important;
 }
 
-/* Ocultar el span "+ IVA" */
-.h6.text-muted {
+/* Ocultar el span "+ IVA" (clase h6 text-muted dentro de precio) */
+.product_price .h6.text-muted,
+.oe_price .h6.text-muted {
     display: none !important;
 }
 
-/* Ocultar el texto "($ XXX / Unidad(es))" */
+/* Ocultar "($ XXX / Unidad(es))" */
 .o_base_unit_price_wrapper {
+    display: none !important;
+}
+
+/* En listados: ocultar precio neto debajo del PVP */
+.product_price_group .css_editable_mode_hidden {
     display: none !important;
 }
