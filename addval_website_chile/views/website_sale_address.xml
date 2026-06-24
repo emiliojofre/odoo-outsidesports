@@ -57,6 +57,22 @@
         <field name="website_id" search="[('name','=','OUTSIDE SPORTS B2C')]" model="website"/>
     </record>
 
+    <!-- Sobrescribir el template de precio para mostrar precio B2C con IVA -->
+    <template id="outside_product_price_b2c"
+              inherit_id="website_sale.product_price"
+              name="Chile B2C - Precio con IVA incluido">
+        <xpath expr="//span[hasclass('oe_price')]" position="replace">
+            <span class="oe_price" style="white-space: nowrap;"
+                  t-esc="round(combination_info['price'] * 1.19)"
+                  t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+        </xpath>
+    </template>
+
+    <record id="outside_product_price_b2c" model="ir.ui.view">
+        <field name="website_id" search="[('name','=','OUTSIDE SPORTS B2C')]" model="website"/>
+    </record>
+
+    <!-- Ocultar PVP en catálogo -->
     <template id="outside_hide_pvp_catalog"
               inherit_id="eq_website_default_code.products_item_default_codes"
               name="Chile B2C - Ocultar PVP en catálogo">
@@ -67,6 +83,7 @@
         <field name="website_id" search="[('name','=','OUTSIDE SPORTS B2C')]" model="website"/>
     </record>
 
+    <!-- Ocultar PVP en ficha -->
     <template id="outside_hide_pvp_product"
               inherit_id="eq_website_default_code.product_default_codes"
               name="Chile B2C - Ocultar PVP en ficha">
@@ -77,6 +94,7 @@
         <field name="website_id" search="[('name','=','OUTSIDE SPORTS B2C')]" model="website"/>
     </record>
 
+    <!-- Desactivar "+ IVA" -->
     <template id="outside_tax_indication_b2c"
               inherit_id="website_sale.tax_indication"
               name="Chile B2C - Tax indication desactivado"
