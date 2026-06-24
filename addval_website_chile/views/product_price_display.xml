@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Corrección de precios en ficha de producto: mostrar solo PVP con IVA -->
+    <template id="product_page_price_override"
+              inherit_id="website_sale.product"
+              name="Chile B2C - Mostrar solo PVP con IVA en ficha"
+              priority="100">
+        
+        <!-- Reemplazar la sección de precios para mostrar solo el precio final con IVA -->
+        <xpath expr="//div[@id='product_price_tag']" position="replace">
+            <div id="product_price_tag" class="o_website_sale_sticky">
+                <div class="product-price text-center">
+                    <span class="price h5" t-if="product_template.price">
+                        <span t-field="product_template.price_with_taxes"
+                              t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                        <small class="text-muted">(IVA Incl.)</small>
+                    </span>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <record id="product_page_price_override" model="ir.ui.view">
+        <field name="website_id" search="[('name','=','OUTSIDE SPORTS B2C')]" model="website"/>
+    </record>
+
+    <!-- Corrección de precios en listados de productos: mostrar solo un precio -->
+    <template id="products_list_price_override"
+              inherit_id="website_sale.products_item"
+              name="Chile B2C - Mostrar solo PVP en listados"
+              priority="100">
+        
+        <!-- Mostrar solo el precio con IVA, sin duplicados -->
+        <xpath expr="//div[hasclass('product-price-group')]" position="replace">
+            <div class="product-price-group">
+                <div class="product-price">
+                    <t t-if="website.pricelist_id.currency_id == product_template.currency_id">
+                        <span class="price h6" t-field="product_template.price"
+                              t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                        <small class="text-muted">(IVA Incl.)</small>
+                    </t>
+                    <t t-else="">
+                        <span class="price h6" t-field="product_template.price_with_taxes"
+                              t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                        <small class="text-muted">(IVA Incl.)</small>
+                    </t>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <record id="products_list_price_override" model="ir.ui.view">
+        <field name="website_id" search="[('name','=','OUTSIDE SPORTS B2C')]" model="website"/>
+    </record>
+
+</odoo>

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="address_chile_rut_phone"
+              inherit_id="addval_website_address.address_custom"
+              name="Chile B2C - RUT, Teléfono y Labels">
+        <xpath expr="//label[@for='name']" position="replace">
+            <label class="col-form-label" for="name">Nombre *</label>
+        </xpath>
+        <xpath expr="//label[@for='email']" position="replace">
+            <label t-attf-class="col-form-label #{mode[1] == 'shipping' and 'label-optional' or ''}" for="email">Email *</label>
+        </xpath>
+        <xpath expr="//label[@for='phone']" position="replace">
+            <label class="col-form-label" for="phone">Teléfono * (9 dígitos)</label>
+        </xpath>
+        <xpath expr="//input[@name='phone']" position="replace">
+            <input type="tel"
+                   id="phone_display"
+                   t-attf-class="form-control #{error.get('phone') and 'is-invalid' or ''}"
+                   inputmode="tel"
+                   maxlength="9"
+                   pattern="[0-9]{9}"
+                   placeholder="912345678"
+                   title="Ingresa 9 dígitos. Se agregará +56 automáticamente."
+                   t-att-value="'phone' in checkout and checkout['phone'] and checkout['phone'].replace('+56','') or ''"/>
+            <input type="hidden" name="phone" id="phone_input"
+                   t-att-value="'phone' in checkout and checkout['phone'] or ''"/>
+        </xpath>
+        <xpath expr="//label[@for='country_id']" position="replace">
+            <label class="col-form-label" for="country_id">País *</label>
+        </xpath>
+        <xpath expr="//label[@for='state_id']" position="replace">
+            <label class="col-form-label fw-bold" for="state_id">Región *</label>
+        </xpath>
+        <xpath expr="//label[@for='city_id']" position="replace">
+            <label class="col-form-label" for="city_id">Comuna *</label>
+        </xpath>
+        <xpath expr="//label[@for='street']" position="replace">
+            <label class="col-form-label" for="street">Dirección *</label>
+        </xpath>
+        <xpath expr="//label[@for='vat']" position="replace">
+            <label class="col-form-label fw-bold" for="vat">RUT *</label>
+        </xpath>
+        <xpath expr="//input[@name='vat']" position="attributes">
+            <attribute name="id">vat_input</attribute>
+            <attribute name="required">required</attribute>
+            <attribute name="placeholder">12345678-9</attribute>
+        </xpath>
+        <xpath expr="//div[hasclass('d-flex') and hasclass('justify-content-between')]" position="before">
+            <p class="text-muted small mt-2 mb-3"><em>* Campo obligatorio</em></p>
+        </xpath>
+        <xpath expr="//input[@name='field_required']" position="attributes">
+            <attribute name="t-att-value">'phone,name,vat'</attribute>
+        </xpath>
+    </template>
+
+    <record id="address_chile_rut_phone" model="ir.ui.view">
+        <field name="website_id" search="[('name','=','OUTSIDE SPORTS B2C')]" model="website"/>
+    </record>
+
+    <!-- Ocultar PVP en catálogo -->
+    <template id="outside_hide_pvp_catalog"
+              inherit_id="eq_website_default_code.products_item_default_codes"
+              name="Chile B2C - Ocultar PVP en catálogo">
+        <xpath expr="//div[span[hasclass('pvp')]]" position="replace"/>
+    </template>
+
+    <record id="outside_hide_pvp_catalog" model="ir.ui.view">
+        <field name="website_id" search="[('name','=','OUTSIDE SPORTS B2C')]" model="website"/>
+    </record>
+
+    <!-- Ocultar PVP en ficha -->
+    <template id="outside_hide_pvp_product"
+              inherit_id="eq_website_default_code.product_default_codes"
+              name="Chile B2C - Ocultar PVP en ficha">
+        <xpath expr="//div[span[hasclass('pvp')]]" position="replace"/>
+    </template>
+
+    <record id="outside_hide_pvp_product" model="ir.ui.view">
+        <field name="website_id" search="[('name','=','OUTSIDE SPORTS B2C')]" model="website"/>
+    </record>
+
+    <!-- Desactivar "+ IVA" -->
+    <template id="outside_tax_indication_b2c"
+              inherit_id="website_sale.tax_indication"
+              name="Chile B2C - Tax indication desactivado"
+              active="False">
+    </template>
+
+    <record id="outside_tax_indication_b2c" model="ir.ui.view">
+        <field name="website_id" search="[('name','=','OUTSIDE SPORTS B2C')]" model="website"/>
+    </record>
+
+</odoo>

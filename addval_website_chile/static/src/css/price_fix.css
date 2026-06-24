@@ -1,0 +1,20 @@
+/* Ocultar "+ IVA" */
+.product_price span.h6,
+.product_price .h6.text-muted {
+    display: none !important;
+}
+
+/* Ocultar precio por unidad */
+.o_base_unit_price_wrapper {
+    display: none !important;
+}
+
+/* Ocultar PVP de abajo en ficha de producto */
+.o_product_page_extra_field {
+    display: none !important;
+}
+
+/* Ocultar precio neto en listados */
+.product_price_group .css_editable_mode_hidden {
+    display: none !important;
+}
