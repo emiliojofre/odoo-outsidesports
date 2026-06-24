@@ -13,6 +13,7 @@
     'assets': {
         'web.assets_frontend': [
             'addval_website_chile/static/src/js/checkout_chile.js',
+            'addval_website_chile/static/src/js/product_price_fix.js',
             'addval_website_chile/static/src/css/price_fix.css',
         ],
     },

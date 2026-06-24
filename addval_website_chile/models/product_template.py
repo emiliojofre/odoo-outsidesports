@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
+import logging
 from odoo import models
 
-B2C_WEBSITE_NAME = 'OUTSIDE SPORTS B2C'
+_logger = logging.getLogger(__name__)
+
+PRICELIST_IDS_B2C = [13, 16]
+IVA_RATE = 1.19
 
 
 class ProductTemplate(models.Model):
@@ -9,12 +13,6 @@ class ProductTemplate(models.Model):
 
     def _get_combination_info(self, combination=False, product_id=False,
                                add_qty=1, pricelist=False, **kwargs):
-        """
-        Sobrescribe combination_info para el sitio B2C:
-        - Toma el precio neto de la tarifa Publico B2C
-        - Aplica IVA 19%
-        - Retorna ese precio como 'price' para que Odoo lo muestre
-        """
         res = super()._get_combination_info(
             combination=combination,
             product_id=product_id,
@@ -22,20 +20,19 @@ class ProductTemplate(models.Model):
             pricelist=pricelist,
             **kwargs
         )
+        pl = pricelist
+        if not pl:
+            try:
+                pl = self.env['website'].get_current_website().get_current_pricelist()
+            except Exception:
+                pl = False
 
-        # Solo aplicar en el sitio B2C
-        try:
-            website = self.env['website'].get_current_website()
-            if website.name != B2C_WEBSITE_NAME:
-                return res
-        except Exception:
-            return res
-
-        # Calcular precio con IVA (19%)
-        price_neto = res.get('price', 0)
-        if price_neto:
-            price_con_iva = round(price_neto * 1.19)
-            res['price'] = price_con_iva
-            res['list_price'] = price_con_iva
+        if pl and pl.id in PRICELIST_IDS_B2C:
+            price = res.get('price', 0)
+            if price:
+                res['price'] = round(price * IVA_RATE)
+            list_price = res.get('list_price', 0)
+            if list_price:
+                res['list_price'] = round(list_price * IVA_RATE)
 
         return res
