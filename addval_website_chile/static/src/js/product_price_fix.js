@@ -1,143 +1,204 @@
 /**
- * Script para corregir la visualización de precios duplicados en ficha de producto
+ * Script para corregir la visualización de precios en ficha de producto
  * y listados de productos para el sitio B2C Chile
+ * 
+ * IMPORTANTE: Solo mostra el PRECIO CON IVA (PVP), NO el precio neto
+ * 
+ * Soluciona:
+ * 1. Imagen 1: Eliminar el precio neto ($14.202), mostrar solo PVP ($16.900)
+ * 2. Imagen 2: Mostrar un solo precio sin repeticiones, eliminar duplicados
  */
 
 document.addEventListener('DOMContentLoaded', function() {
-    fixProductPrices();
+    // Esperar a que todo esté cargado
+    setTimeout(fixAllPrices, 500);
 });
 
 /**
- * Corrige precios duplicados y PVP redundante en ficha de producto
+ * Función principal para corregir todos los precios
  */
-function fixProductPrices() {
-    // En ficha de producto individual
-    const productDetailPrice = document.querySelector('.o_website_sale_sticky .product-price');
-    if (productDetailPrice) {
-        fixProductDetailPrice(productDetailPrice);
-    }
-
-    // En listados de productos
-    const productItems = document.querySelectorAll('.product-price-group');
-    productItems.forEach(function(item) {
-        fixProductListPrice(item);
-    });
-
-    // Observar cambios dinámicos (para AJAX)
-    observePriceChanges();
+function fixAllPrices() {
+    // Corregir precios en ficha de producto individual
+    fixProductDetailPrices();
+    
+    // Corregir precios en listados
+    fixProductListPrices();
+    
+    // Observar cambios posteriores (AJAX, filtros, etc)
+    observeAndFixPrices();
 }
 
 /**
- * Corrige el precio en la ficha de detalle del producto
- * Elimina duplicados y mantiene solo el precio final con IVA
+ * Corrige precios en la ficha detallada del producto (imagen 1)
+ * OBJETIVO: Mostrar SOLO el precio con IVA, eliminar el neto
  */
-function fixProductDetailPrice(priceElement) {
-    const priceSpans = priceElement.querySelectorAll('span.price, span.pvp, .product-price-display');
-    
-    if (priceSpans.length > 1) {
-        // Guardar el último precio (que debería ser el más correcto con IVA)
-        const lastPrice = priceSpans[priceSpans.length - 1];
-        const priceText = lastPrice.textContent.trim();
-        
-        // Limpiar y reconstruir
-        priceElement.innerHTML = '';
-        
-        const newSpan = document.createElement('span');
-        newSpan.className = 'price h5';
-        newSpan.innerHTML = priceText + '<small class="text-muted"> (IVA Incl.)</small>';
-        
-        priceElement.appendChild(newSpan);
-    }
+function fixProductDetailPrices() {
+    // Buscar el contenedor principal de precios
+    const priceContainers = document.querySelectorAll(
+        '.o_website_sale_sticky .product-price, ' +
+        '.product-price-container, ' +
+        'span.price, ' +
+        'div[id*="product_price"], ' +
+        '.oe_price'
+    );
 
-    // Asegurar que dice "(IVA Incl.)" y no aparece PVP duplicado
-    const smallTags = priceElement.querySelectorAll('small');
-    smallTags.forEach(function(small) {
-        if (small.textContent.includes('PVP') && small.textContent.includes('IVA')) {
-            // Mantener solo el precio con IVA Incl.
-            small.textContent = ' (IVA Incl.)';
-        }
-    });
-}
-
-/**
- * Corrige precios en listados de productos
- * Elimina PVP duplicado y mantiene solo el precio con IVA
- */
-function fixProductListPrice(productItem) {
-    // Encontrar todos los precios en el elemento
-    const priceDisplay = productItem.querySelector('.product-price');
-    
-    if (!priceDisplay) return;
-
-    // Encontrar spans de precio duplicados
-    const priceTexts = priceDisplay.querySelectorAll('span[class*="price"], span.pvp');
-    
-    if (priceTexts.length > 1) {
-        // Obtener el valor numérico más grande (generalmente el PVP)
-        let maxPrice = 0;
-        let maxPriceElement = null;
+    priceContainers.forEach(function(container) {
+        // Obtener todos los elementos que podrían contener precios
+        const priceElements = container.querySelectorAll('span, div, p');
+        const prices = [];
         
-        priceTexts.forEach(function(el) {
+        priceElements.forEach(function(el) {
             const text = el.textContent.trim();
-            const numberMatch = text.match(/[\d.,]+/);
-            if (numberMatch) {
-                const num = parseFloat(numberMatch[0].replace(/\./g, '').replace(/,/g, '.'));
-                if (num > maxPrice) {
-                    maxPrice = num;
-                    maxPriceElement = el;
+            // Buscar números de precio (ej: $14.202, $16.900)
+            if (text.match(/\$?\s*[\d.,]+/) && !text.includes('(IVA')) {
+                const numMatch = text.match(/[\d.,]+/);
+                if (numMatch) {
+                    const numValue = parseFloat(numMatch[0].replace(/\./g, '').replace(/,/g, '.'));
+                    prices.push({
+                        element: el,
+                        text: text,
+                        value: numValue,
+                        html: el.innerHTML
+                    });
                 }
             }
         });
 
-        if (maxPriceElement) {
-            // Mantener el precio más alto y eliminar duplicados
-            priceDisplay.innerHTML = maxPriceElement.outerHTML + '<small class="text-muted"> (IVA Incl.)</small>';
+        // Si hay múltiples precios, mantener solo el MAYOR (que es el con IVA/PVP)
+        if (prices.length > 1) {
+            const maxPrice = prices.reduce((max, p) => p.value > max.value ? p : max);
+            
+            // Limpiar el contenedor
+            container.innerHTML = '';
+            
+            // Recrear con solo el precio máximo (PVP con IVA)
+            const priceSpan = document.createElement('span');
+            priceSpan.className = 'price h5';
+            
+            // Formatear el precio correctamente
+            const formattedPrice = '$ ' + maxPrice.value.toLocaleString('es-CL');
+            priceSpan.innerHTML = formattedPrice + ' <small class="text-muted">(IVA Incl.)</small>';
+            
+            container.appendChild(priceSpan);
         }
-    }
-
-    // Eliminar cualquier texto "PVP: $" redundante
-    const text = priceDisplay.textContent;
-    if ((text.match(/PVP/g) || []).length > 1) {
-        priceDisplay.textContent = priceDisplay.textContent.replace(/PVP:\s*\$?\s*/g, '').trim();
-        const price = priceDisplay.textContent.match(/[\d.,]+/);
-        if (price) {
-            priceDisplay.innerHTML = '<span class="price h6">$' + price[0] + '</span><small class="text-muted"> (IVA Incl.)</small>';
+        // Si tiene "PVP:" duplicado, limpiar y dejar solo uno
+        else if (container.textContent.includes('PVP')) {
+            const pvpMatches = container.textContent.match(/PVP\s*:\s*\$?\s*[\d.,]+/g);
+            
+            if (pvpMatches && pvpMatches.length > 1) {
+                // Usar el último PVP (debería ser el correcto)
+                const lastPvp = pvpMatches[pvpMatches.length - 1];
+                const priceMatch = lastPvp.match(/[\d.,]+/);
+                
+                if (priceMatch) {
+                    const formattedPrice = '$ ' + parseFloat(priceMatch[0].replace(/\./g, '').replace(/,/g, '.')).toLocaleString('es-CL');
+                    
+                    container.innerHTML = '';
+                    const priceSpan = document.createElement('span');
+                    priceSpan.className = 'price h5';
+                    priceSpan.innerHTML = formattedPrice + ' <small class="text-muted">(IVA Incl.)</small>';
+                    container.appendChild(priceSpan);
+                }
+            }
         }
-    }
+    });
 }
 
 /**
- * Observa cambios en el DOM para aplicar las correcciones cuando hay AJAX
+ * Corrige precios en listados de productos (imagen 2)
+ * OBJETIVO: Mostrar SOLO UN precio (el con IVA), sin duplicados
  */
-function observePriceChanges() {
-    const observer = new MutationObserver(function(mutations) {
-        mutations.forEach(function(mutation) {
-            if (mutation.type === 'childList' || mutation.type === 'textContent') {
-                // Aplicar correcciones nuevamente
-                const productDetailPrice = document.querySelector('.o_website_sale_sticky .product-price');
-                if (productDetailPrice) {
-                    fixProductDetailPrice(productDetailPrice);
-                }
+function fixProductListPrices() {
+    // Buscar todos los contenedores de precio en listados
+    const priceDisplays = document.querySelectorAll(
+        '.products_grid .product-price, ' +
+        '.product_list .product-price, ' +
+        '.product-price-group .product-price, ' +
+        '[class*="product"][class*="price"] .product-price'
+    );
+
+    priceDisplays.forEach(function(priceDisplay) {
+        const text = priceDisplay.textContent.trim();
+        const innerHTML = priceDisplay.innerHTML;
+        
+        // Extraer TODOS los números de precio del contenedor
+        const priceMatches = text.match(/[\d.,]+/g);
+        
+        if (priceMatches && priceMatches.length > 0) {
+            // Convertir todos los matches a números y encontrar el mayor (con IVA)
+            const prices = priceMatches.map(match => {
+                return parseFloat(match.replace(/\./g, '').replace(/,/g, '.'));
+            });
+            
+            const maxPrice = Math.max(...prices);
+            
+            // Si hay múltiples precios, limpiar y dejar solo el máximo
+            if (prices.length > 1 || (text.match(/\$/g) && text.match(/\$/g).length > 1)) {
+                priceDisplay.innerHTML = '';
                 
-                const productItems = document.querySelectorAll('.product-price-group');
-                productItems.forEach(function(item) {
-                    fixProductListPrice(item);
-                });
+                const priceSpan = document.createElement('span');
+                priceSpan.className = 'price';
+                
+                // Formatear el precio máximo (con IVA)
+                const formattedPrice = '$ ' + maxPrice.toLocaleString('es-CL');
+                priceSpan.innerHTML = formattedPrice + ' <small class="text-muted">(IVA Incl.)</small>';
+                
+                priceDisplay.appendChild(priceSpan);
+            }
+            // Si solo hay un precio pero está repetido en el texto
+            else if ((text.match(/PVP/g) || []).length > 1) {
+                const numValue = parseFloat(priceMatches[0].replace(/\./g, '').replace(/,/g, '.'));
+                
+                priceDisplay.innerHTML = '';
+                const priceSpan = document.createElement('span');
+                priceSpan.className = 'price';
+                
+                const formattedPrice = '$ ' + numValue.toLocaleString('es-CL');
+                priceSpan.innerHTML = formattedPrice + ' <small class="text-muted">(IVA Incl.)</small>';
+                
+                priceDisplay.appendChild(priceSpan);
+            }
+        }
+    });
+}
+
+/**
+ * Observa cambios en el DOM y aplica las correcciones cuando hay actualizaciones dinámicas
+ */
+function observeAndFixPrices() {
+    const observer = new MutationObserver(function(mutations) {
+        let hasPriceChanges = false;
+        
+        mutations.forEach(function(mutation) {
+            // Verificar si los cambios incluyen elementos de precio
+            if (mutation.type === 'childList') {
+                const addedNodes = Array.from(mutation.addedNodes);
+                if (addedNodes.some(node => {
+                    if (node.nodeType === 1) { // Element node
+                        const className = node.className || '';
+                        const text = node.textContent || '';
+                        return className.includes('price') || 
+                               className.includes('product') ||
+                               text.includes('$');
+                    }
+                    return false;
+                })) {
+                    hasPriceChanges = true;
+                }
             }
         });
+
+        if (hasPriceChanges) {
+            setTimeout(fixAllPrices, 100);
+        }
     });
 
-    // Configurar observer
-    const config = {
+    // Iniciar observación en el documento
+    observer.observe(document.body, {
         childList: true,
         subtree: true,
-        characterData: true,
+        characterData: false,
         attributes: false
-    };
-
-    // Observar cambios en el contenedor principal
-    const mainContent = document.querySelector('main') || document.querySelector('.container');
-    if (mainContent) {
-        observer.observe(mainContent, config);
-    }
+    });
 }
+
