@@ -58,6 +58,7 @@
         <field name="website_id" search="[('name','=','OUTSIDE SPORTS B2C')]" model="website"/>
     </record>
 
+    <!-- Ocultar PVP en catálogo (listados) - se muestra via CSS desde product_price_group -->
     <template id="outside_hide_pvp_catalog"
               inherit_id="eq_website_default_code.products_item_default_codes"
               name="Chile B2C - Ocultar PVP en catálogo">
@@ -68,6 +69,7 @@
         <field name="website_id" search="[('name','=','OUTSIDE SPORTS B2C')]" model="website"/>
     </record>
 
+    <!-- Ocultar PVP en sección extra de ficha (lo mostramos arriba con CSS) -->
     <template id="outside_hide_pvp_product"
               inherit_id="eq_website_default_code.product_default_codes"
               name="Chile B2C - Ocultar PVP en ficha">
