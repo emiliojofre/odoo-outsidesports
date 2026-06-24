@@ -88,4 +88,34 @@
         <field name="website_id" search="[('name','=','OUTSIDE SPORTS B2C')]" model="website"/>
     </record>
 
+    <!-- Corrección de visualización de precios: mostrar solo PVP con IVA -->
+    <template id="product_price_fix_b2c"
+              inherit_id="website_sale.product"
+              name="Chile B2C - Corregir visualización de precios"
+              active="True">
+        <!-- Ocultar el precio sin IVA cuando ya se muestra el PVP -->
+        <xpath expr="//div[hasclass('product_price')]//span[hasclass('price')]" position="attributes">
+            <attribute name="t-if">not product.list_price or not product_template.pricelist_item_ids</attribute>
+        </xpath>
+    </template>
+
+    <record id="product_price_fix_b2c" model="ir.ui.view">
+        <field name="website_id" search="[('name','=','OUTSIDE SPORTS B2C')]" model="website"/>
+    </record>
+
+    <!-- Corrección para listas de productos: mostrar solo PVP sin duplicado -->
+    <template id="products_price_fix_b2c"
+              inherit_id="website_sale.products_item"
+              name="Chile B2C - Corregir precio en listados"
+              active="True">
+        <!-- Mostrar solo el precio con IVA en los listados -->
+        <xpath expr="//div[hasclass('product-price')]" position="attributes">
+            <attribute name="t-if">True</attribute>
+        </xpath>
+    </template>
+
+    <record id="products_price_fix_b2c" model="ir.ui.view">
+        <field name="website_id" search="[('name','=','OUTSIDE SPORTS B2C')]" model="website"/>
+    </record>
+
 </odoo>
