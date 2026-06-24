@@ -1,6 +1,6 @@
 /**
- * Script FINAL - Solo elimina elementos que contienen "+ IVA"
- * Sin loops, sin recálculos, muy simple y directo
+ * Script FINAL - Reemplaza precio neto por precio CON IVA
+ * En fichas de producto con variantes
  */
 
 (function() {
@@ -8,61 +8,85 @@
     
     console.log('[PriceFix] Iniciado');
 
-    function removeNetoLines() {
-        console.log('[PriceFix] Buscando filas con "+ IVA" para eliminar');
+    function replaceNetoWithIVA() {
+        console.log('[PriceFix] Buscando precios netos para reemplazar por IVA');
         
         const allElements = document.querySelectorAll('*');
-        let removed = 0;
+        let replaced = 0;
 
         allElements.forEach(function(el) {
             const text = el.textContent;
             
-            // Si contiene "+ IVA"
-            if (text.includes('+ IVA') && text.length < 100) {
-                console.log('[PriceFix] Encontrado "+ IVA": ' + text.trim());
+            // Si contiene "+ IVA" (precio neto)
+            if (text.includes('+ IVA') && text.length < 150 && el.children.length === 0) {
+                console.log('[PriceFix] Encontrado neto: ' + text.trim().slice(0, 50));
                 
-                // Buscar el contenedor más cercano (línea completa)
-                let toRemove = el;
-                let parent = el.parentElement;
+                // Extraer el número de precio
+                // Patrón: "$ XXX.XXX + IVA" o "$ XXX.XXX + IVA ($ XXX.XXX / Unidad(es))"
+                const priceMatch = text.match(/\$\s*([\d.,]+)\s*\+\s*IVA/);
                 
-                // Subir hasta encontrar un contenedor apropiado
-                // (que probablemente sea un div/span que contiene la línea de precio)
-                while (parent && parent.children.length < 10) {
-                    const parentText = parent.textContent;
+                if (priceMatch) {
+                    // Convertir el precio encontrado
+                    const priceString = priceMatch[1];
+                    const neto = parseFloat(priceString.replace(/\./g, '').replace(/,/g, '.'));
                     
-                    // Si el padre contiene PVP, subir más (es el contenedor de precios)
-                    if (parentText.includes('PVP')) {
-                        // Ir al elemento hermano o al siguiente
-                        if (el.nextElementSibling) {
-                            console.log('[PriceFix] Eliminando hermano de: ' + text.trim());
-                            el.nextElementSibling.remove();
-                            removed++;
-                            return;
+                    // Calcular con IVA (19%)
+                    const conIVA = neto * 1.19;
+                    
+                    // Formatear con separadores chilenos
+                    const formatted = formatPrice(conIVA);
+                    
+                    console.log('[PriceFix] Neto: $' + neto.toFixed(3) + ' → Con IVA: $' + formatted);
+                    
+                    // Buscar si hay PVP cercano (en ficha de producto)
+                    let parent = el.parentElement;
+                    let hasPVP = false;
+                    let depth = 0;
+                    
+                    while (parent && depth < 5) {
+                        if (parent.textContent.includes('PVP')) {
+                            hasPVP = true;
+                            break;
                         }
-                        break;
+                        parent = parent.parentElement;
+                        depth++;
                     }
                     
-                    toRemove = parent;
-                    parent = parent.parentElement;
-                }
-                
-                // Eliminar el elemento o su contenedor
-                if (toRemove && toRemove.parentElement) {
-                    console.log('[PriceFix] Eliminando elemento: ' + text.trim());
-                    toRemove.parentElement.removeChild(toRemove);
-                    removed++;
+                    // Si está en ficha de producto con PVP, reemplazar el precio neto
+                    if (hasPVP) {
+                        console.log('[PriceFix] Reemplazando en ficha de producto');
+                        el.textContent = '$ ' + formatted + ' (IVA Incl.)';
+                        replaced++;
+                    }
+                    // Si no hay PVP cercano, es listado - eliminar la fila
+                    else {
+                        console.log('[PriceFix] Eliminando fila de listado');
+                        if (el.parentElement && el.parentElement.parentElement) {
+                            el.parentElement.parentElement.removeChild(el.parentElement);
+                            replaced++;
+                        }
+                    }
                 }
             }
         });
 
-        console.log('[PriceFix] Eliminados: ' + removed);
+        console.log('[PriceFix] Procesados: ' + replaced);
+    }
+
+    /**
+     * Formatea un número como precio chileno
+     * Ejemplo: 25900.1 → "25.900"
+     */
+    function formatPrice(value) {
+        const rounded = Math.round(value);
+        return rounded.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     }
 
     // Ejecutar UNA SOLA VEZ cuando cargue
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', removeNetoLines);
+        document.addEventListener('DOMContentLoaded', replaceNetoWithIVA);
     } else {
-        removeNetoLines();
+        replaceNetoWithIVA();
     }
 
 })();
