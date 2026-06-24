@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Addval Website Chile - RUT y Teléfono',
-    'version': '16.0.2.0.3',
+    'version': '16.0.2.0.2',
     'author': 'NLH Consultores SpA',
     'license': 'OPL-1',
     'category': 'Website/eCommerce',
