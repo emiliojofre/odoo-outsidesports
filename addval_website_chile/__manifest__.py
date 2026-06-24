@@ -9,8 +9,14 @@
     'depends': ['addval_website_address', 'website_sale', 'eq_website_default_code'],
     'data': [
         'views/website_sale_address.xml',
-        'views/assets.xml',
     ],
+    'assets': {
+        'web.assets_frontend': [
+            'addval_website_chile/static/src/css/price_fix.css',
+            'addval_website_chile/static/src/js/checkout_chile.js',
+            'addval_website_chile/static/src/js/product_price_fix.js',
+        ],
+    },
     'installable': True,
     'auto_install': False,
 }
