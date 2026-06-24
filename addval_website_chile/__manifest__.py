@@ -9,6 +9,7 @@
     'depends': ['addval_website_address', 'website_sale', 'eq_website_default_code'],
     'data': [
         'views/website_sale_address.xml',
+        'views/product_price_iva.xml',
     ],
     'assets': {
         'web.assets_frontend': [
