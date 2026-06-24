@@ -2,8 +2,13 @@
  * CSS para mostrar solo el PVP (precio con IVA) en sitio B2C Chile
  */
 
-/* Ocultar el bloque de precio neto (h3 con clase css_editable_mode_hidden) */
+/* Mostrar el h3 de precio (lo estábamos ocultando por error) */
 .product_price h3.css_editable_mode_hidden {
+    display: block !important;
+}
+
+/* Ocultar SOLO el span "+ IVA" dentro del precio */
+.product_price h3.css_editable_mode_hidden .h6.text-muted {
     display: none !important;
 }
 
@@ -12,23 +17,7 @@
     display: none !important;
 }
 
-/* En listados: ocultar precio neto */
+/* En listados: ocultar precio neto debajo del PVP */
 .product_price_group .css_editable_mode_hidden {
     display: none !important;
-}
-
-/* Mostrar el PVP prominentemente en la ficha de producto */
-.product_price .o_field_widget[name="pvp"],
-span.pvp,
-div.pvp {
-    font-size: 1.75rem !important;
-    font-weight: bold !important;
-    color: #000 !important;
-    display: block !important;
-}
-
-/* Mover la sección SKU/PVP arriba visualmente */
-.o_product_page_extra_field,
-.o_product_field_pvp {
-    order: -1 !important;
 }
