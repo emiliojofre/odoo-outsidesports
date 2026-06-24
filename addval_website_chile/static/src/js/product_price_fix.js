@@ -1,213 +1,113 @@
 /**
- * Script ULTRA AGRESIVO para eliminar precios netos
- * Estrategia: Elimina CUALQUIER elemento de precio que NO contenga "PVP:"
- * Mantiene SOLO los que dicen "PVP: $ XXX"
+ * Script CONSERVADOR para eliminar precios netos
+ * SOLO elimina elementos que:
+ * 1. Son span/div con SOLO "$ XXX.XXX" 
+ * 2. Están DIRECTAMENTE debajo de un elemento que dice "PVP:"
+ * 3. NO tocamos nada más
  */
 
 (function() {
     'use strict';
     
-    console.log('[PriceFix] ============ SCRIPT INICIADO ============');
+    console.log('[PriceFix] Iniciado - Script conservador');
 
     /**
-     * Elimina elementos de precio que no son PVP
-     * Busca patterns como:
-     * - "$ XXX.XXX" (sin PVP delante)
-     * - "$ XXX.XXX + IVA"
-     * - Números de precio que no tengan PVP
+     * Función principal - muy conservadora
      */
-    function eliminatePriceRows() {
-        console.log('[PriceFix] Buscando filas de precio neto a eliminar...');
-        
-        // Estrategia 1: Buscar TODOS los elementos que contengan SOLO números y $
-        // pero que NO tengan "PVP:"
-        
-        const allElements = document.querySelectorAll('*');
-        let eliminados = 0;
-        
-        allElements.forEach(function(el) {
-            // Saltar elementos muy grandes o especiales
-            if (el.children.length > 0 && el.textContent.length > 200) {
-                return;
-            }
+    function fixPrices() {
+        console.log('[PriceFix] Buscando precios netos...');
 
+        // Buscar SOLO elementos que tienen exactamente este patrón:
+        // Un elemento que SOLO contiene "$ XXX.XXX" y nada más
+        
+        const allSpans = document.querySelectorAll('span, div, p');
+        let removed = 0;
+
+        allSpans.forEach(function(el) {
             const text = el.textContent.trim();
             
-            // Patrón 1: "$ XXX.XXX" (solo número con $, sin PVP)
-            // Y que el padre contiene PVP
-            if (text.match(/^\s*\$\s*[\d.,]+\s*$/) && el.parentElement) {
-                if (el.parentElement.textContent.includes('PVP')) {
-                    console.log('[PriceFix] Eliminando precio neto: ' + text);
-                    el.style.display = 'none';
-                    eliminados++;
+            // PATRÓN ESPECÍFICO: Solo "$ XXX.XXX" (con puntos o comas)
+            // Debe coincidir EXACTAMENTE
+            if (text.match(/^\$\s*[\d.,]+\s*$/) && el.children.length === 0) {
+                
+                // Verificar que el PADRE cercano tiene "PVP:"
+                let parent = el.parentElement;
+                let hasNearbyPVP = false;
+                let depth = 0;
+
+                // Subir máximo 3 niveles en el árbol
+                while (parent && depth < 3) {
+                    if (parent.textContent.includes('PVP:')) {
+                        hasNearbyPVP = true;
+                        break;
+                    }
+                    parent = parent.parentElement;
+                    depth++;
                 }
-            }
-            
-            // Patrón 2: "$ XXX.XXX + IVA"
-            if (text.includes('+ IVA')) {
-                console.log('[PriceFix] Eliminando "+ IVA": ' + text);
-                el.style.display = 'none';
-                eliminados++;
-            }
-            
-            // Patrón 3: Si es un div/span pequeño que SOLO contiene precio sin PVP
-            // y hay un PVP en el mismo contenedor padre
-            const parentText = el.parentElement ? el.parentElement.textContent : '';
-            if (text.match(/^\s*\$\s*[\d.,]+\s*$/) && 
-                parentText.includes('PVP') && 
-                !text.includes('PVP')) {
-                console.log('[PriceFix] Ocultando precio sin PVP: ' + text);
-                el.style.display = 'none';
-                eliminados++;
-            }
-        });
 
-        console.log('[PriceFix] Total eliminados: ' + eliminados);
-        return eliminados;
-    }
-
-    /**
-     * Busca contenedores de precio específicos y los limpia
-     */
-    function cleanPriceContainers() {
-        console.log('[PriceFix] Limpiando contenedores de precio...');
-
-        // Buscar spans y divs que contengan precios
-        const priceElements = document.querySelectorAll(
-            'span, div, p'
-        );
-
-        let limpios = 0;
-
-        priceElements.forEach(function(el) {
-            const text = el.textContent.trim();
-            
-            // Si es SOLO un número con $
-            if (text.match(/^\s*\$\s*[\d.,]+\s*$/)) {
-                const parentText = el.parentElement ? el.parentElement.textContent : '';
-                
-                // Si el padre tiene PVP pero este elemento NO
-                if (parentText.includes('PVP') && !text.includes('PVP')) {
-                    console.log('[PriceFix] Limpiando elemento neto: ' + text);
-                    el.textContent = '';
-                    el.style.display = 'none';
-                    limpios++;
-                }
-            }
-            
-            // Si contiene "+ IVA"
-            if (text.includes('+ IVA')) {
-                console.log('[PriceFix] Eliminando elemento con "+ IVA": ' + text);
-                el.textContent = '';
-                el.style.display = 'none';
-                limpios++;
-            }
-        });
-
-        console.log('[PriceFix] Total limpiados: ' + limpios);
-        return limpios;
-    }
-
-    /**
-     * Busca en filas de productos y elimina segundo precio
-     */
-    function fixProductRows() {
-        console.log('[PriceFix] Procesando filas de productos...');
-
-        // Buscar contenedores de productos
-        const productContainers = document.querySelectorAll(
-            '.product_item, ' +
-            '.product-item, ' +
-            '[class*="product"][class*="item"], ' +
-            '.oe_product, ' +
-            '.product'
-        );
-
-        console.log('[PriceFix] Contenedores de producto encontrados: ' + productContainers.length);
-
-        productContainers.forEach(function(container) {
-            const allText = container.textContent;
-            
-            // Contar cuántos precios hay (patrones con $)
-            const priceMatches = allText.match(/\$\s*[\d.,]+/g);
-            
-            if (priceMatches && priceMatches.length > 1) {
-                console.log('[PriceFix] Producto con múltiples precios encontrado');
-                
-                // Buscar todos los elementos dentro que contengan $
-                const internalPrices = container.querySelectorAll('*');
-                let pvpFound = false;
-                
-                internalPrices.forEach(function(el) {
-                    const text = el.textContent;
+                // SOLO si encontramos PVP cercano, este elemento es el neto
+                if (hasNearbyPVP) {
+                    console.log('[PriceFix] Removiendo precio neto: "' + text + '"');
                     
-                    // Si tiene "PVP:" marcar que ya encontramos el principal
-                    if (text.includes('PVP:')) {
-                        pvpFound = true;
-                    }
-                    // Si ya pasamos PVP y encuentra otro precio, eliminar
-                    else if (pvpFound && text.match(/^\s*\$\s*[\d.,]+\s*$/) && el.children.length === 0) {
-                        console.log('[PriceFix] Eliminando precio duplicado: ' + text);
-                        el.style.display = 'none';
-                    }
-                });
+                    // No ocultamos, ELIMINAMOS del DOM completamente
+                    el.remove();
+                    removed++;
+                }
             }
         });
+
+        console.log('[PriceFix] Elementos removidos: ' + removed);
     }
 
     /**
-     * Ejecuta todas las funciones
+     * Ejecutar con delay para dejar que cargue todo
      */
-    function runAllFixes() {
-        console.log('[PriceFix] ========== INICIANDO CORRECCIONES ==========');
-        
-        let total = 0;
-        total += eliminatePriceRows();
-        total += cleanPriceContainers();
-        fixProductRows();
-        
-        console.log('[PriceFix] ========== CORRECCIONES COMPLETADAS ==========');
-        console.log('[PriceFix] Total de elementos procesados: ' + total);
+    function init() {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('[PriceFix] DOM listo');
+                setTimeout(fixPrices, 300);
+            });
+        } else {
+            console.log('[PriceFix] DOM ya estaba listo');
+            setTimeout(fixPrices, 300);
+        }
     }
 
-    /**
-     * Ejecutar cuando esté listo
-     */
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('[PriceFix] DOMContentLoaded detectado');
-            setTimeout(runAllFixes, 300);
-            setTimeout(runAllFixes, 800);
-            setTimeout(runAllFixes, 1500);
-        });
-    } else {
-        console.log('[PriceFix] DOM ya está listo');
-        setTimeout(runAllFixes, 300);
-        setTimeout(runAllFixes, 800);
-        setTimeout(runAllFixes, 1500);
-    }
+    // Iniciar
+    init();
 
     /**
-     * Observer para cambios dinámicos
+     * Observer MÍNIMO - solo para cambios de variante
      */
     const observer = new MutationObserver(function(mutations) {
-        // Buscar si hay cambios relacionados con precios
-        let hasPriceChanges = false;
-        
+        // Muy restrictivo - solo ejecuta si hay cambios de texto importantes
+        let shouldFix = false;
+
         for (let i = 0; i < mutations.length; i++) {
-            const text = mutations[i].target.textContent || '';
-            if (text.includes('PVP') || text.includes('$')) {
-                hasPriceChanges = true;
+            const mutation = mutations[i];
+            
+            // Solo si hay cambios en nodos de texto que incluyan $
+            if (mutation.type === 'characterData' && mutation.target.textContent.includes('$')) {
+                shouldFix = true;
                 break;
+            }
+            
+            // O si se agregan nuevos elementos con PVP
+            if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                for (let j = 0; j < mutation.addedNodes.length; j++) {
+                    const node = mutation.addedNodes[j];
+                    if (node.textContent && node.textContent.includes('PVP')) {
+                        shouldFix = true;
+                        break;
+                    }
+                }
             }
         }
 
-        if (hasPriceChanges) {
-            console.log('[PriceFix] Detectado cambio de precio, re-ejecutando...');
-            setTimeout(function() {
-                cleanPriceContainers();
-                fixProductRows();
-            }, 50);
+        if (shouldFix) {
+            console.log('[PriceFix] Detectado cambio, ejecutando...');
+            setTimeout(fixPrices, 100);
         }
     });
 
@@ -217,7 +117,6 @@
         characterData: true
     });
 
-    console.log('[PriceFix] Observer activo');
-    console.log('[PriceFix] ============================================');
+    console.log('[PriceFix] Listo');
 
 })();
