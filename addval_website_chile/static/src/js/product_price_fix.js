@@ -1,122 +1,143 @@
 /**
- * Script CONSERVADOR para eliminar precios netos
- * SOLO elimina elementos que:
- * 1. Son span/div con SOLO "$ XXX.XXX" 
- * 2. Están DIRECTAMENTE debajo de un elemento que dice "PVP:"
- * 3. NO tocamos nada más
+ * Script para agregar IVA al precio Publico B2C
+ * Tarifa: Publico B2C (ID=16)
+ * IVA: 19%
+ * 
+ * Estrategia:
+ * 1. Buscar todos los precios de la tarifa Publico B2C
+ * 2. Multiplicar por 1.19 (agregar 19% IVA)
+ * 3. Mostrar solo ese precio con IVA
+ * 4. Eliminar duplicados y confusión
  */
 
 (function() {
     'use strict';
     
-    console.log('[PriceFix] Iniciado - Script conservador');
+    console.log('[PriceFix] Iniciado - Calculando precios con IVA 19%');
+
+    const IVA_RATE = 1.19; // 19% de IVA
 
     /**
-     * Función principal - muy conservadora
+     * Encuentra todos los precios en la página y los ajusta con IVA
      */
-    function fixPrices() {
-        console.log('[PriceFix] Buscando precios netos...');
-
-        // Buscar SOLO elementos que tienen exactamente este patrón:
-        // Un elemento que SOLO contiene "$ XXX.XXX" y nada más
+    function addIVAToPublicoB2C() {
+        console.log('[PriceFix] Buscando precios Publico B2C...');
         
-        const allSpans = document.querySelectorAll('span, div, p');
-        let removed = 0;
+        // Buscar todos los spans/divs que contengan precios
+        const allElements = document.querySelectorAll('span, div, p, td');
+        let processed = 0;
 
-        allSpans.forEach(function(el) {
+        allElements.forEach(function(el) {
             const text = el.textContent.trim();
             
-            // PATRÓN ESPECÍFICO: Solo "$ XXX.XXX" (con puntos o comas)
-            // Debe coincidir EXACTAMENTE
-            if (text.match(/^\$\s*[\d.,]+\s*$/) && el.children.length === 0) {
+            // Patrón: "$ XXX.XXX" o similares
+            const priceMatch = text.match(/^\$?\s*([\d.,]+)\s*$/);
+            
+            if (priceMatch && el.children.length === 0) {
+                // Convertir el precio encontrado
+                const priceString = priceMatch[1];
+                const priceValue = parseFloat(priceString.replace(/\./g, '').replace(/,/g, '.'));
                 
-                // Verificar que el PADRE cercano tiene "PVP:"
+                // Calcular precio con IVA
+                const priceWithIVA = priceValue * IVA_RATE;
+                
+                // Verificar si el padre cercano contiene "PVP:" 
                 let parent = el.parentElement;
-                let hasNearbyPVP = false;
+                let hasPVP = false;
                 let depth = 0;
-
-                // Subir máximo 3 niveles en el árbol
+                
                 while (parent && depth < 3) {
                     if (parent.textContent.includes('PVP:')) {
-                        hasNearbyPVP = true;
+                        hasPVP = true;
                         break;
                     }
                     parent = parent.parentElement;
                     depth++;
                 }
-
-                // SOLO si encontramos PVP cercano, este elemento es el neto
-                if (hasNearbyPVP) {
-                    console.log('[PriceFix] Removiendo precio neto: "' + text + '"');
+                
+                // Si NO tiene PVP cercano, es la tarifa Publico B2C (neto)
+                // Multiplicar por IVA y mostrar
+                if (!hasPVP) {
+                    console.log('[PriceFix] Precio neto encontrado: $' + priceValue.toFixed(3) + 
+                                ' → Con IVA: $' + priceWithIVA.toFixed(3));
                     
-                    // No ocultamos, ELIMINAMOS del DOM completamente
-                    el.remove();
-                    removed++;
+                    // Formatear con separadores chilenos
+                    const formatted = formatPrice(priceWithIVA);
+                    
+                    // Reemplazar el contenido
+                    el.textContent = '$ ' + formatted;
+                    el.style.fontWeight = 'bold';
+                    el.style.color = '#2c5aa0';
+                    
+                    processed++;
+                }
+                // Si tiene PVP cercano, es el precio con IVA, dejarlo como está
+                else {
+                    console.log('[PriceFix] Precio con IVA encontrado, sin cambios: $' + priceValue.toFixed(3));
                 }
             }
         });
 
-        console.log('[PriceFix] Elementos removidos: ' + removed);
+        console.log('[PriceFix] Precios procesados: ' + processed);
     }
 
     /**
-     * Ejecutar con delay para dejar que cargue todo
+     * Formatea un número como precio chileno
+     * Ejemplo: 15900.1 → "15.900,10"
      */
-    function init() {
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', function() {
-                console.log('[PriceFix] DOM listo');
-                setTimeout(fixPrices, 300);
-            });
-        } else {
-            console.log('[PriceFix] DOM ya estaba listo');
-            setTimeout(fixPrices, 300);
-        }
+    function formatPrice(value) {
+        // Redondear a 2 decimales
+        const rounded = Math.round(value * 100) / 100;
+        
+        // Separar enteros y decimales
+        const parts = rounded.toFixed(2).split('.');
+        const integer = parts[0];
+        const decimals = parts[1];
+        
+        // Agregar puntos cada 3 dígitos
+        const formatted = integer.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        
+        return formatted + ',' + decimals;
     }
 
-    // Iniciar
-    init();
+    /**
+     * Ejecutar cuando esté listo
+     */
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('[PriceFix] DOM listo');
+            setTimeout(addIVAToPublicoB2C, 300);
+        });
+    } else {
+        console.log('[PriceFix] DOM ya estaba listo');
+        setTimeout(addIVAToPublicoB2C, 300);
+    }
 
     /**
-     * Observer MÍNIMO - solo para cambios de variante
+     * Observer para cambios posteriores (filtros, búsqueda, variantes)
      */
     const observer = new MutationObserver(function(mutations) {
-        // Muy restrictivo - solo ejecuta si hay cambios de texto importantes
-        let shouldFix = false;
-
+        let hasChanges = false;
+        
         for (let i = 0; i < mutations.length; i++) {
             const mutation = mutations[i];
-            
-            // Solo si hay cambios en nodos de texto que incluyan $
-            if (mutation.type === 'characterData' && mutation.target.textContent.includes('$')) {
-                shouldFix = true;
-                break;
-            }
-            
-            // O si se agregan nuevos elementos con PVP
             if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
-                for (let j = 0; j < mutation.addedNodes.length; j++) {
-                    const node = mutation.addedNodes[j];
-                    if (node.textContent && node.textContent.includes('PVP')) {
-                        shouldFix = true;
-                        break;
-                    }
-                }
+                hasChanges = true;
+                break;
             }
         }
 
-        if (shouldFix) {
-            console.log('[PriceFix] Detectado cambio, ejecutando...');
-            setTimeout(fixPrices, 100);
+        if (hasChanges) {
+            console.log('[PriceFix] Detectado cambio, re-procesando...');
+            setTimeout(addIVAToPublicoB2C, 100);
         }
     });
 
     observer.observe(document.body, {
         childList: true,
-        subtree: true,
-        characterData: true
+        subtree: true
     });
 
-    console.log('[PriceFix] Listo');
+    console.log('[PriceFix] Listo - esperando cambios');
 
 })();
