@@ -1,5 +1,5 @@
 /**
- * Script: Muestra PVP en posición del precio, oculta neto y PVP duplicado
+ * Script: Reemplaza número neto por PVP en el h3 de precio
  */
 
 (function() {
@@ -7,7 +7,7 @@
     
     console.log('[PriceFix] Iniciado');
     
-    let isRunning = false; // Flag para evitar loops
+    let isRunning = false;
 
     function fixPrice() {
         if (isRunning) return;
@@ -35,15 +35,7 @@
                 console.log('[PriceFix] Número reemplazado: ' + pvpNumber);
             }
 
-            // 3. Ocultar todos los elementos "+ IVA" dentro del h3
-            priceH3.querySelectorAll('*').forEach(function(el) {
-                const t = el.textContent.trim();
-                if (t === '+ IVA' || t === '+IVA') {
-                    el.style.setProperty('display', 'none', 'important');
-                }
-            });
-
-            // 4. Agregar "(IVA Incl.)" si no existe
+            // 3. Agregar "(IVA Incl.)" si no existe
             const oePrice = priceH3.querySelector('.oe_price');
             if (oePrice && !oePrice.querySelector('.iva-incl')) {
                 const label = document.createElement('small');
@@ -54,32 +46,18 @@
             }
         }
 
-        // 5. Ocultar la sección SKU/PVP de abajo completamente
-        document.querySelectorAll('*').forEach(function(el) {
-            const text = el.textContent.trim();
-            if (text.startsWith('PVP:') && text.length < 30 && el.children.length <= 2) {
-                // Ocultar el contenedor padre de la fila
-                const parent = el.closest('tr, li, div.col, div.row > div, dl > dd, dl > dt') || el.parentElement;
-                if (parent) parent.style.setProperty('display', 'none', 'important');
-            }
-        });
-
         console.log('[PriceFix] Listo');
-        
         setTimeout(function() { isRunning = false; }, 300);
     }
 
     setTimeout(fixPrice, 500);
 
-    // Observer solo en el bloque de precio, no en todo el body
+    // Observer solo detecta cambios en el precio
     const observer = new MutationObserver(function(mutations) {
         if (isRunning) return;
         for (let i = 0; i < mutations.length; i++) {
             const t = mutations[i].target;
-            if (t.classList && (
-                t.classList.contains('oe_currency_value') ||
-                t.classList.contains('product_price')
-            )) {
+            if (t.classList && t.classList.contains('oe_currency_value')) {
                 console.log('[PriceFix] Variante cambiada');
                 setTimeout(fixPrice, 200);
                 break;

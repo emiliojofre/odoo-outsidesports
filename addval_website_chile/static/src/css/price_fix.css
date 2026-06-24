@@ -1,5 +1,5 @@
 /**
- * CSS para mostrar solo el PVP (precio con IVA) en sitio B2C Chile
+ * CSS mínimo para sitio B2C Chile
  */
 
 /* Mostrar el h3 de precio */
@@ -7,25 +7,12 @@
     display: block !important;
 }
 
-/* Ocultar "+ IVA" - span h6 dentro del precio */
-.product_price h3 span.h6,
+/* Ocultar span "+ IVA" */
 .product_price span.h6 {
     display: none !important;
 }
 
 /* Ocultar "($ XXX / Unidad(es))" */
 .o_base_unit_price_wrapper {
-    display: none !important;
-}
-
-/* Ocultar la fila completa del PVP en el detalle del producto */
-.o_product_page_extra_field:has(span.pvp),
-tr:has(span.pvp),
-div:has(> span.pvp) {
-    display: none !important;
-}
-
-/* En listados: ocultar precio neto */
-.product_price_group .css_editable_mode_hidden {
     display: none !important;
 }
