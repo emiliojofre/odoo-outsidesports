@@ -3,7 +3,6 @@
     <template id="address_chile_rut_phone"
               inherit_id="addval_website_address.address_custom"
               name="Chile B2C - RUT, Teléfono y Labels">
-
         <xpath expr="//label[@for='name']" position="replace">
             <label class="col-form-label" for="name">Nombre *</label>
         </xpath>
@@ -58,29 +57,19 @@
         <field name="website_id" search="[('name','=','OUTSIDE SPORTS B2C')]" model="website"/>
     </record>
 
-    <!-- Ocultar precio neto en catálogo y mostrar solo PVP con IVA -->
     <template id="outside_hide_pvp_catalog"
               inherit_id="eq_website_default_code.products_item_default_codes"
-              name="Chile B2C - Precio con IVA en catálogo">
-        <xpath expr="//div[span[hasclass('pvp')]]" position="replace">
-            <div class="b2c-price-iva fw-bold fs-5">
-                <t t-set="pvp_val" t-value="product.mapped('product_variant_ids')[0].pvp if product.mapped('product_variant_ids') else 0"/>
-                <t t-if="pvp_val">
-                    $ <t t-out="'{:,.0f}'.format(pvp_val).replace(',', '.')"/> 
-                    <small class="text-muted fs-6">(IVA Incl.)</small>
-                </t>
-            </div>
-        </xpath>
+              name="Chile B2C - Ocultar PVP en catálogo">
+        <xpath expr="//div[span[hasclass('pvp')]]" position="replace"/>
     </template>
 
     <record id="outside_hide_pvp_catalog" model="ir.ui.view">
         <field name="website_id" search="[('name','=','OUTSIDE SPORTS B2C')]" model="website"/>
     </record>
 
-    <!-- Ocultar PVP en sección extra de ficha -->
     <template id="outside_hide_pvp_product"
               inherit_id="eq_website_default_code.product_default_codes"
-              name="Chile B2C - Ocultar PVP extra en ficha">
+              name="Chile B2C - Ocultar PVP en ficha">
         <xpath expr="//div[span[hasclass('pvp')]]" position="replace"/>
     </template>
 
@@ -88,7 +77,6 @@
         <field name="website_id" search="[('name','=','OUTSIDE SPORTS B2C')]" model="website"/>
     </record>
 
-    <!-- Desactivar tax indication ("+IVA") -->
     <template id="outside_tax_indication_b2c"
               inherit_id="website_sale.tax_indication"
               name="Chile B2C - Tax indication desactivado"

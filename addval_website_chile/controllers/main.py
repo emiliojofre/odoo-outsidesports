@@ -4,35 +4,15 @@ import re
 
 from odoo import _
 from odoo.addons.addval_website_address.controllers.main import WebsiteSaleAddressInfo
-from odoo.addons.website_sale.controllers.main import WebsiteSale
-from odoo.http import request, route
+from odoo.http import request
 
 _logger = logging.getLogger(__name__)
 
 B2C_WEBSITE_NAME = 'OUTSIDE SPORTS B2C'
-PRICELIST_B2C_ID = 16  # Tarifa: Publico B2C
 
 
 def _is_b2c():
     return request.website.name == B2C_WEBSITE_NAME
-
-
-def _get_price_with_iva(product, pricelist_id=PRICELIST_B2C_ID):
-    """
-    Obtiene el precio de la tarifa B2C y le agrega el IVA (19%).
-    """
-    try:
-        pricelist = request.env['product.pricelist'].sudo().browse(pricelist_id)
-        if not pricelist.exists():
-            return None
-        # Obtener precio neto de la tarifa B2C
-        price_neto = pricelist._get_product_price(product, 1.0)
-        # Calcular precio con IVA (19%)
-        price_with_iva = round(price_neto * 1.19)
-        return price_with_iva
-    except Exception as e:
-        _logger.error('Error calculando precio con IVA: %s', e)
-        return None
 
 
 def _validar_rut(rut_raw):
@@ -72,32 +52,6 @@ def _normalizar_telefono(phone_raw):
     if re.match(r'^\d{9}$', phone):
         return '+56' + phone
     return phone_raw.strip()
-
-
-class WebsiteSaleChileB2C(WebsiteSale):
-    """
-    Sobrescribe la ficha de producto para inyectar el precio con IVA
-    en el contexto del template, para el sitio B2C.
-    """
-
-    @route(['/shop/<model("product.template"):product>'], type='http', auth='public', website=True)
-    def product(self, product, category='', search='', **kwargs):
-        response = super().product(product, category=category, search=search, **kwargs)
-
-        if not _is_b2c():
-            return response
-
-        # Calcular precio con IVA para la variante activa
-        try:
-            variant = product.product_variant_id
-            price_iva = _get_price_with_iva(variant)
-            if price_iva and hasattr(response, 'qcontext'):
-                response.qcontext['b2c_price_iva'] = price_iva
-                _logger.info('Precio B2C con IVA: %s', price_iva)
-        except Exception as e:
-            _logger.error('Error en product B2C: %s', e)
-
-        return response
 
 
 class WebsiteSaleChile(WebsiteSaleAddressInfo):

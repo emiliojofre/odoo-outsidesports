@@ -1,20 +1,20 @@
 /**
- * B2C Chile - Ocultar precio neto, mostrar solo precio con IVA
+ * B2C Chile - El precio ya viene con IVA desde el modelo Python.
+ * Solo ocultamos el texto "+ IVA" y el PVP duplicado de abajo.
  */
 
-/* Ocultar bloque de precio neto (h3 con +IVA) */
-.product_price h3.css_editable_mode_hidden {
+/* Ocultar el span "+ IVA" */
+.product_price span.h6,
+.product_price .h6.text-muted {
     display: none !important;
 }
 
-/* Ocultar unidad de precio */
+/* Ocultar la fila PVP de abajo (SKU/PVP extra) */
+.o_product_page_extra_field {
+    display: none !important;
+}
+
+/* Ocultar precio por unidad */
 .o_base_unit_price_wrapper {
     display: none !important;
-}
-
-/* Precio B2C con IVA - estilo igual al precio original */
-.b2c-price-iva {
-    font-size: 1.75rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
 }
