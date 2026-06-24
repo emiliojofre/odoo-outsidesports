@@ -81,11 +81,26 @@
     <template id="outside_tax_indication_b2c"
               inherit_id="website_sale.tax_indication"
               name="Chile B2C - Tax indication activo"
-              active="True">
+              active="False">
     </template>
 
     <record id="outside_tax_indication_b2c" model="ir.ui.view">
         <field name="website_id" search="[('name','=','OUTSIDE SPORTS B2C')]" model="website"/>
     </record>
 
-</odoo>
+    <!-- Ocultar precio neto con CSS -->
+    <template id="outside_hide_neto_price_b2c"
+              inherit_id="website_sale.product"
+              name="Chile B2C - Ocultar precio neto"
+              active="True">
+        <xpath expr="//div[hasclass('product_price')]" position="inside">
+            <style>
+                .css_editable_mode_hidden .oe_price { display: none !important; }
+                .product_price h3.css_editable_mode_hidden { display: none !important; }
+            </style>
+        </xpath>
+    </template>
+
+    <record id="outside_hide_neto_price_b2c" model="ir.ui.view">
+        <field name="website_id" search="[('name','=','OUTSIDE SPORTS B2C')]" model="website"/>
+    </record>
