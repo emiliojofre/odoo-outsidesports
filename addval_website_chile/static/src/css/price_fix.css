@@ -7,15 +7,21 @@
     display: block !important;
 }
 
-/* Ocultar "+ IVA" - todos los posibles selectores */
-.product_price h3 .h6.text-muted,
+/* Ocultar "+ IVA" - span h6 dentro del precio */
 .product_price h3 span.h6,
-.product_price .h6.text-muted {
+.product_price span.h6 {
     display: none !important;
 }
 
 /* Ocultar "($ XXX / Unidad(es))" */
 .o_base_unit_price_wrapper {
+    display: none !important;
+}
+
+/* Ocultar la fila completa del PVP en el detalle del producto */
+.o_product_page_extra_field:has(span.pvp),
+tr:has(span.pvp),
+div:has(> span.pvp) {
     display: none !important;
 }
 
