@@ -1,11 +1,12 @@
 /**
- * B2C Chile:
- * 1. Aplica IVA (x1.19) a los precios de variantes
- * 2. Oculta PVP de abajo
- * 3. Agrega (IVA Incl.)
+ * B2C Chile - Solo ejecuta en el sitio B2C (website_id=3)
  */
 (function () {
     'use strict';
+
+    // Solo ejecutar en el sitio B2C
+    var websiteId = document.documentElement.dataset.websiteId;
+    if (websiteId !== '3') return;
 
     const IVA = 1.19;
 
@@ -14,16 +15,6 @@
     }
 
     function fixVariantPrices() {
-        // Corregir precios de variantes (+ $7.563)
-        document.querySelectorAll('.js_attribute_value .badge, span[data-price]').forEach(function(el) {
-            var price = parseFloat(el.dataset.price || 0);
-            if (price && !el.dataset.ivaApplied) {
-                var newPrice = Math.round(price * IVA);
-                el.dataset.price = newPrice;
-                el.dataset.ivaApplied = '1';
-            }
-        });
-
         // Corregir texto visible "+ $ 7.563"
         document.querySelectorAll('.variant_attribute .badge').forEach(function(el) {
             var text = el.textContent.trim();
@@ -53,14 +44,12 @@
         });
     }
 
-    // Ejecutar al cargar
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', fixVariantPrices);
     } else {
         fixVariantPrices();
     }
 
-    // Re-ejecutar cuando Odoo actualiza precios por AJAX
     new MutationObserver(function() {
         fixVariantPrices();
     }).observe(document.body, { childList: true, subtree: true });
