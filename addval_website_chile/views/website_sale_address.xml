@@ -58,34 +58,4 @@
         <field name="website_id" search="[('name','=','OUTSIDE SPORTS B2C')]" model="website"/>
     </record>
 
-    <template id="outside_hide_pvp_catalog"
-              inherit_id="eq_website_default_code.products_item_default_codes"
-              name="Chile B2C - Ocultar PVP en catálogo">
-        <xpath expr="//div[span[hasclass('pvp')]]" position="replace"/>
-    </template>
-
-    <record id="outside_hide_pvp_catalog" model="ir.ui.view">
-        <field name="website_id" search="[('name','=','OUTSIDE SPORTS B2C')]" model="website"/>
-    </record>
-
-    <template id="outside_hide_pvp_product"
-              inherit_id="eq_website_default_code.product_default_codes"
-              name="Chile B2C - Ocultar PVP en ficha">
-        <xpath expr="//div[span[hasclass('pvp')]]" position="replace"/>
-    </template>
-
-    <record id="outside_hide_pvp_product" model="ir.ui.view">
-        <field name="website_id" search="[('name','=','OUTSIDE SPORTS B2C')]" model="website"/>
-    </record>
-
-    <template id="outside_tax_indication_b2c"
-              inherit_id="website_sale.tax_indication"
-              name="Chile B2C - Tax indication activo"
-              active="True">
-    </template>
-
-    <record id="outside_tax_indication_b2c" model="ir.ui.view">
-        <field name="website_id" search="[('name','=','OUTSIDE SPORTS B2C')]" model="website"/>
-    </record>
-
 </odoo>
