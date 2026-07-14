@@ -139,10 +139,6 @@ class WebsiteSaleChile(*_BASES):
         self, address_values, partner_sudo, address_type,
         use_delivery_as_billing, required_fields, **kwargs,
     ):
-        _logger.info(
-            "CHILE_DEBUG entrando a _validate_address_values, is_b2c=%r",
-            _is_b2c(),
-        )
         if not _is_b2c():
             return super()._validate_address_values(
                 address_values, partner_sudo, address_type,
@@ -181,11 +177,6 @@ class WebsiteSaleChile(*_BASES):
         return invalid_fields, missing_fields, error_messages
 
     def checkout_form_validate(self, mode, all_form_values, data):
-        _logger.info(
-            "CHILE_DEBUG entrando a checkout_form_validate, is_b2c=%r "
-            "website_name=%r",
-            _is_b2c(), request.website.name if request.website else 'SIN_WEBSITE',
-        )
         if not _is_b2c():
             return super().checkout_form_validate(mode, all_form_values, data)
         phone_raw = (all_form_values.get('phone') or '').strip()
@@ -197,16 +188,21 @@ class WebsiteSaleChile(*_BASES):
         _completar_city_desde_city_id(all_form_values)
         if data is not None and not (data.get('city') or '').strip():
             data['city'] = all_form_values.get('city') or data.get('city')
-        _logger.info(
-            "CHILE_DEBUG city_id=%r all_form_values.city=%r data.city=%r "
-            "data.keys=%r required_field_present_field_required=%r",
-            all_form_values.get('city_id'),
-            all_form_values.get('city'),
-            data.get('city') if data is not None else 'DATA_ES_NONE',
-            sorted(data.keys()) if data is not None else None,
-            all_form_values.get('field_required'),
-        )
         error, error_message = super().checkout_form_validate(mode, all_form_values, data)
+        if error.get('phone'):
+            # addval_website_address valida telefono con su propio formato
+            # internacional (11 digitos) y agrega su propio mensaje generico;
+            # en Chile B2C el formato es 9 digitos + "+56", asi que
+            # reemplazamos ese mensaje por uno acorde.
+            msg_generico_addval = _(
+                "Teléfono inválido. Debe tener 12 caracteres incluyendo '+' al "
+                "inicio, o 11 números sin '+'. Vuelve a ingresarlo."
+            )
+            if msg_generico_addval in error_message:
+                error_message.remove(msg_generico_addval)
+            msg_chile = _("Teléfono inválido. Debe tener sólo 9 números. Vuelve a ingresarlo.")
+            if msg_chile not in error_message:
+                error_message.append(msg_chile)
         if mode[1] == 'billing':
             vat = (all_form_values.get('vat') or '').strip()
             if not vat:

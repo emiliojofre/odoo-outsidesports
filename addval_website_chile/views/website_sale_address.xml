@@ -170,23 +170,6 @@
                 <input type="hidden" name="callback" t-att-value="callback"/>
                 <input type="hidden" name="field_required" t-att-value="'phone,name,vat'"/>
 
-                <!--
-                    Fuente de verdad para reimponer región/comuna tras un
-                    error: el script de addval_website_address
-                    (_onChangeCountry/_changeState) reconstruye esos <select>
-                    vía AJAX sin preservar el valor elegido, dejando
-                    seleccionada la primera opción. checkout_chile.js usa
-                    estos valores (que el servidor SIEMPRE entrega
-                    correctamente en un error, confirmado en
-                    website_sale.controllers.main.address) para reintentar
-                    hasta ganarle la carrera a ese script, sin importar
-                    cuándo se dispare.
-                -->
-                <input type="hidden" id="chile_restore_state_id"
-                       t-att-value="'state_id' in checkout and checkout['state_id'] or ''"/>
-                <input type="hidden" id="chile_restore_city_id"
-                       t-att-value="'city_id' in checkout and checkout['city_id'] or ''"/>
-
                 <div class="d-flex justify-content-between">
                     <a role="button" t-att-href="mode == ('new', 'billing') and '/shop/cart' or '/shop/checkout'" class="btn btn-secondary mb32">
                         <i class="fa fa-chevron-left"/>
