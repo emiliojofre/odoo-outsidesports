@@ -1,22 +1,16 @@
 /*
- * Chile B2C - Oculta el precio por unidad de referencia (si esta activo)
- * y el indicador nativo de impuesto junto al precio, SOLO en el sitio
- * B2C (clase agregada por JS a partir del flag window.CHILE_B2C).
+ * Chile B2C - estilos de apoyo para el precio.
  *
- * El selector de ".text-muted" dentro de ".product_price" es un
- * best-effort: el texto "+ IVA" nativo de Odoo suele venir en un
- * <small class="text-muted"> junto al precio, pero esto puede variar
- * segun el tema instalado. Si al probar en el entorno real el "+ IVA"
- * sigue apareciendo, hay que:
- *   1) Inspeccionar el elemento en el navegador (clic derecho > Inspeccionar)
- *   2) Pasarme la clase/estructura real para ajustar el selector, o
- *   3) Como alternativa 100% garantizada: Website > (cambiar a sitio
- *      OUTSIDE SPORTS B2C) > abrir una ficha de producto > Editar >
- *      pestana "Personalizar" > apagar el switch "Tax Indication".
- *      Ese switch ya viene soportado nativamente por Odoo por sitio,
- *      sin tocar el ajuste global de Precios.
+ * El ocultamiento de "IVA excluido" y "+ IVA" ya NO se hace por CSS:
+ * se descubrio (viendo el HTML real) que "+ IVA" es un nodo de texto
+ * suelto sin clase ni tag que lo envuelva, imposible de targetear con
+ * un selector CSS. Esa limpieza vive en product_price_fix.js, que
+ * tiene el contexto (DOM ya renderizado) para hacerlo con precision.
+ *
+ * Este archivo queda solo por si a futuro se necesita algun ajuste
+ * puramente visual (spacing, color) del label "(IVA Incl.)" que
+ * agrega el JS.
  */
-body.chile-b2c-site .product_price small.text-muted:not(.iva-incl-label),
-body.chile-b2c-site .o_base_unit_price_wrapper {
-    display: none !important;
+body.chile-b2c-site .iva-incl-label {
+    white-space: nowrap;
 }
