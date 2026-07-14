@@ -1,5 +1,11 @@
 /**
  * Chile B2C - Deja el precio como "$ XXX.XXX (IVA Incl.)" unicamente.
+ * Cubre dos markups distintos, confirmados con el HTML real:
+ *   - Ficha de producto: .product_price h3.css_editable_mode_hidden
+ *   - Tarjetas del listado/catalogo: .product_price > span.h6.mb-0
+ * (El monto en si, con IVA incluido, ya viene calculado del lado del
+ * servidor por models/product_template.py - este script solo ajusta
+ * las etiquetas "IVA excluido" / "+ IVA" sobrantes.)
  *
  * IMPORTANTE: a diferencia de la version anterior, este script:
  *  - Solo corre en el sitio B2C (window.CHILE_B2C, seteado por
@@ -56,6 +62,25 @@
                     node.textContent = '';
                 }
             });
+        });
+
+        // ── Tarjetas del listado de categoria/catalogo (markup distinto) ──
+        // Confirmado con el HTML real: aqui NO hay <h3>, el precio es un
+        // <span class="h6 mb-0" data-oe-type="monetary"> hijo directo de
+        // .product_price, y el sufijo "+ IVA" es OTRO <span class="h6 mb-0">
+        // sin ese atributo - por eso se distinguen por [data-oe-type].
+        document.querySelectorAll('.product_price > span.h6.mb-0[data-oe-type="monetary"]').forEach(function (priceSpan) {
+            if (priceSpan.dataset.ivaLabelAdded) {
+                return;
+            }
+            var label = document.createElement('small');
+            label.className = 'text-muted ms-2 iva-incl-label';
+            label.textContent = '(IVA Incl.)';
+            priceSpan.appendChild(label);
+            priceSpan.dataset.ivaLabelAdded = '1';
+        });
+        document.querySelectorAll('.product_price > span.h6.mb-0:not([data-oe-type])').forEach(function (suffixSpan) {
+            suffixSpan.style.display = 'none';
         });
     }
 
