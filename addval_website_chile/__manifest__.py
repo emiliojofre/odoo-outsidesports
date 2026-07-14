@@ -1,14 +1,20 @@
 # -*- coding: utf-8 -*-
 {
-    'name': 'Addval Website Chile - RUT y Teléfono',
-    'version': '16.0.3.0.1',
+    'name': 'Addval Website Chile - RUT, Teléfono y Precio IVA Incluido',
+    'version': '16.0.4.0.0',
     'author': 'NLH Consultores SpA',
     'license': 'OPL-1',
     'category': 'Website/eCommerce',
-    'summary': 'Precio B2C con IVA incluido, validación RUT y teléfono en checkout',
+    'summary': (
+        'Validación de RUT chileno y teléfono en el checkout, y precio '
+        'B2C con IVA incluido (solo tarifa final) en el sitio '
+        'OUTSIDE SPORTS B2C, sin afectar otros sitios (ej. B2B).'
+    ),
     'depends': ['addval_website_address', 'website_sale', 'eq_website_default_code'],
     'data': [
         'views/website_sale_address.xml',
+        'views/website_layout_chile.xml',
+        'views/website_sale_product.xml',
     ],
     'assets': {
         'web.assets_frontend': [

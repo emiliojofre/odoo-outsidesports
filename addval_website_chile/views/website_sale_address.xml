@@ -3,6 +3,7 @@
     <template id="address_chile_rut_phone"
               inherit_id="addval_website_address.address_custom"
               name="Chile B2C - RUT, Teléfono y Labels">
+
         <xpath expr="//label[@for='name']" position="replace">
             <label class="col-form-label" for="name">Nombre *</label>
         </xpath>
@@ -54,17 +55,6 @@
     </template>
 
     <record id="address_chile_rut_phone" model="ir.ui.view">
-        <field name="website_id" search="[('name','=','OUTSIDE SPORTS B2C')]" model="website"/>
-    </record>
-
-    <!-- Desactivar "+ IVA" -->
-    <template id="outside_tax_indication_b2c"
-              inherit_id="website_sale.tax_indication"
-              name="Chile B2C - Tax indication desactivado"
-              active="False">
-    </template>
-
-    <record id="outside_tax_indication_b2c" model="ir.ui.view">
         <field name="website_id" search="[('name','=','OUTSIDE SPORTS B2C')]" model="website"/>
     </record>
 
