@@ -79,6 +79,12 @@ def _completar_city_desde_city_id(values):
         values['city'] = city_rec.name
 
 
+_logger.info(
+    "CHILE_DEBUG: cargando controllers/main.py de addval_website_chile - "
+    "WebsiteSaleChile va a heredar de %r", WebsiteSaleAddressInfo,
+)
+
+
 class WebsiteSaleChile(WebsiteSaleAddressInfo):
 
     PHONE_PATTERN = re.compile(r'^\+56\d{9}$')
@@ -191,3 +197,17 @@ class WebsiteSaleChile(WebsiteSaleAddressInfo):
                     if msg not in error_message:
                         error_message.append(msg)
         return error, error_message
+
+
+_logger.info(
+    "CHILE_DEBUG: WebsiteSaleChile definida. MRO = %r",
+    [f"{c.__module__}.{c.__name__}" for c in WebsiteSaleChile.__mro__],
+)
+try:
+    from odoo.addons.internal_credit_payment.controllers.main import WebsiteCreditPayment
+    _logger.info(
+        "CHILE_DEBUG: WebsiteCreditPayment.__mro__ = %r",
+        [f"{c.__module__}.{c.__name__}" for c in WebsiteCreditPayment.__mro__],
+    )
+except ImportError:
+    _logger.info("CHILE_DEBUG: internal_credit_payment no está instalado/importable")
