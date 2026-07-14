@@ -8,6 +8,31 @@ from odoo.http import request
 
 _logger = logging.getLogger(__name__)
 
+# internal_credit_payment.WebsiteCreditPayment reimplementa
+# checkout_form_validate/_validate_address_values desde cero sin llamar a
+# super(), y NO hereda de nuestra cadena (WebsiteSaleChile ->
+# WebsiteSaleAddressInfo -> WebsiteSale), sino directo de WebsiteSale -
+# son dos ramas independientes. Confirmado via MRO real en logs: cuando
+# Odoo arma la clase final que atiende /shop/address, si termina
+# resolviendo checkout_form_validate por esa rama, la nuestra queda
+# inalcanzable sin importar el orden de carga de modulos (el 'depends'
+# en el manifest no alcanza para esto).
+# Solucion: heredar EXPLICITAMENTE de ambas clases nosotros mismos, asi
+# controlamos el MRO directamente en vez de depender de como Odoo decida
+# fusionar los controladores. Con import protegido por try/except para
+# no romper en un ambiente donde internal_credit_payment no este
+# instalado (ej. otro cliente).
+try:
+    from odoo.addons.internal_credit_payment.controllers.main import WebsiteCreditPayment
+except ImportError:
+    WebsiteCreditPayment = None
+
+_BASES = (
+    (WebsiteSaleAddressInfo, WebsiteCreditPayment)
+    if WebsiteCreditPayment is not None
+    else (WebsiteSaleAddressInfo,)
+)
+
 B2C_WEBSITE_NAME = 'OUTSIDE SPORTS B2C'
 
 
@@ -81,11 +106,11 @@ def _completar_city_desde_city_id(values):
 
 _logger.info(
     "CHILE_DEBUG: cargando controllers/main.py de addval_website_chile - "
-    "WebsiteSaleChile va a heredar de %r", WebsiteSaleAddressInfo,
+    "WebsiteSaleChile va a heredar de %r", _BASES,
 )
 
 
-class WebsiteSaleChile(WebsiteSaleAddressInfo):
+class WebsiteSaleChile(*_BASES):
 
     PHONE_PATTERN = re.compile(r'^\+56\d{9}$')
 
@@ -200,14 +225,6 @@ class WebsiteSaleChile(WebsiteSaleAddressInfo):
 
 
 _logger.info(
-    "CHILE_DEBUG: WebsiteSaleChile definida. MRO = %r",
+    "CHILE_DEBUG: WebsiteSaleChile definida. MRO final = %r",
     [f"{c.__module__}.{c.__name__}" for c in WebsiteSaleChile.__mro__],
 )
-try:
-    from odoo.addons.internal_credit_payment.controllers.main import WebsiteCreditPayment
-    _logger.info(
-        "CHILE_DEBUG: WebsiteCreditPayment.__mro__ = %r",
-        [f"{c.__module__}.{c.__name__}" for c in WebsiteCreditPayment.__mro__],
-    )
-except ImportError:
-    _logger.info("CHILE_DEBUG: internal_credit_payment no está instalado/importable")
