@@ -54,6 +54,31 @@ def _normalizar_telefono(phone_raw):
     return phone_raw.strip()
 
 
+def _completar_city_desde_city_id(values):
+    """
+    Odoo exige 'city' (texto plano) como campo obligatorio nativo
+    (website_sale/controllers/main.py: _get_mandatory_fields_billing/
+    _shipping: req = ["name", "email", "street", "city", "country_id"]).
+    Nuestro formulario usa un <select> de comuna (city_id) en vez de un
+    input de texto libre, y depender de JS para mantener sincronizado un
+    campo "city" oculto es fragil (no se dispara si la opcion se
+    selecciona programaticamente, p.ej. al reintentar tras un error).
+
+    En vez de eso, derivamos 'city' server-side directamente desde
+    'city_id' aqui, de forma que el campo obligatorio de Odoo siempre
+    quede satisfecho sin depender de ningun timing de JS. Muta el dict
+    recibido in-place.
+    """
+    if (values.get('city') or '').strip():
+        return
+    city_id_raw = (values.get('city_id') or '').strip()
+    if not city_id_raw or not city_id_raw.isdigit():
+        return
+    city_rec = request.env['res.city'].browse(int(city_id_raw))
+    if city_rec.exists():
+        values['city'] = city_rec.name
+
+
 class WebsiteSaleChile(WebsiteSaleAddressInfo):
 
     PHONE_PATTERN = re.compile(r'^\+56\d{9}$')
@@ -95,6 +120,7 @@ class WebsiteSaleChile(WebsiteSaleAddressInfo):
         if vat_raw:
             valido, vat_norm = _validar_rut(vat_raw)
             address_values['vat'] = vat_norm if valido else vat_raw
+        _completar_city_desde_city_id(address_values)
         invalid_fields, missing_fields, error_messages = super()._validate_address_values(
             address_values, partner_sudo, address_type,
             use_delivery_as_billing, required_fields, **kwargs,
@@ -128,6 +154,9 @@ class WebsiteSaleChile(WebsiteSaleAddressInfo):
             all_form_values['phone'] = norm
             if data and 'phone' in data:
                 data['phone'] = norm
+        _completar_city_desde_city_id(all_form_values)
+        if data is not None and not (data.get('city') or '').strip():
+            data['city'] = all_form_values.get('city') or data.get('city')
         error, error_message = super().checkout_form_validate(mode, all_form_values, data)
         if mode[1] == 'billing':
             vat = (all_form_values.get('vat') or '').strip()
