@@ -1,5 +1,30 @@
 /** @odoo-module **/
 
+import { WebsiteSale } from 'website_sale.website_sale';
+
+// addval_website_address engancha '_onPhoneInput'/'_onSubmitAddressForm' a
+// CUALQUIER input[name="phone"] del sitio, exigiendo 11 digitos (+ opcional).
+// Nuestro campo de telefono en Chile B2C usa otro formato (9 digitos, con
+// "+56" agregado por el servidor) y ahora TAMBIEN se llama "phone" - por
+// eso hereda esa regla ajena sin querer. Se neutraliza SOLO en el sitio
+// B2C (via window.CHILE_B2C, mismo flag usado en el resto del modulo);
+// en cualquier otro sitio se sigue llamando a _super normalmente, sin
+// ningun cambio de comportamiento.
+WebsiteSale.include({
+    _onPhoneInput: function (ev) {
+        if (window.CHILE_B2C) {
+            return;
+        }
+        return this._super.apply(this, arguments);
+    },
+    _onSubmitAddressForm: function (ev) {
+        if (window.CHILE_B2C) {
+            return;
+        }
+        return this._super.apply(this, arguments);
+    },
+});
+
 document.addEventListener('DOMContentLoaded', function () {
 
     // ── Reimponer región/comuna tras un error de validación ───────────────────
