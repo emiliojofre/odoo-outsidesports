@@ -108,6 +108,10 @@ class WebsiteSaleChile(WebsiteSaleAddressInfo):
         self, address_values, partner_sudo, address_type,
         use_delivery_as_billing, required_fields, **kwargs,
     ):
+        _logger.info(
+            "CHILE_DEBUG entrando a _validate_address_values, is_b2c=%r",
+            _is_b2c(),
+        )
         if not _is_b2c():
             return super()._validate_address_values(
                 address_values, partner_sudo, address_type,
@@ -146,6 +150,11 @@ class WebsiteSaleChile(WebsiteSaleAddressInfo):
         return invalid_fields, missing_fields, error_messages
 
     def checkout_form_validate(self, mode, all_form_values, data):
+        _logger.info(
+            "CHILE_DEBUG entrando a checkout_form_validate, is_b2c=%r "
+            "website_name=%r",
+            _is_b2c(), request.website.name if request.website else 'SIN_WEBSITE',
+        )
         if not _is_b2c():
             return super().checkout_form_validate(mode, all_form_values, data)
         phone_raw = (all_form_values.get('phone') or '').strip()
