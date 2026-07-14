@@ -157,6 +157,15 @@ class WebsiteSaleChile(WebsiteSaleAddressInfo):
         _completar_city_desde_city_id(all_form_values)
         if data is not None and not (data.get('city') or '').strip():
             data['city'] = all_form_values.get('city') or data.get('city')
+        _logger.info(
+            "CHILE_DEBUG city_id=%r all_form_values.city=%r data.city=%r "
+            "data.keys=%r required_field_present_field_required=%r",
+            all_form_values.get('city_id'),
+            all_form_values.get('city'),
+            data.get('city') if data is not None else 'DATA_ES_NONE',
+            sorted(data.keys()) if data is not None else None,
+            all_form_values.get('field_required'),
+        )
         error, error_message = super().checkout_form_validate(mode, all_form_values, data)
         if mode[1] == 'billing':
             vat = (all_form_values.get('vat') or '').strip()
