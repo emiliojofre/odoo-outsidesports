@@ -2,85 +2,87 @@
 
 document.addEventListener('DOMContentLoaded', function () {
 
-    const STORAGE_KEY = 'outside_checkout_state';
+    // ── Reimponer región/comuna tras un error de validación ───────────────────
+    // addval_website_address (_onChangeCountry/_changeState) reconstruye los
+    // <select> de región y comuna vía AJAX SIN preservar el valor elegido
+    // (borra las opciones y las rearma sin marcar ninguna "selected"), sin
+    // importar si esto ocurre al cargar la pagina o al reaccionar a un
+    // cambio de pais. En vez de adivinar CUANDO se dispara ese script,
+    // reintentamos aplicar el valor correcto (que el servidor SIEMPRE
+    // entrega en checkout['state_id']/checkout['city_id'] tras un error,
+    // confirmado en website_sale/controllers/main.py "values = kw") hasta
+    // ganarle la carrera, con un limite de intentos para no quedar en loop
+    // infinito si esos campos vinieran vacios (primera carga sin error).
+    const wantedStateEl = document.getElementById('chile_restore_state_id');
+    const wantedCityEl = document.getElementById('chile_restore_city_id');
+    const wantedState = wantedStateEl ? wantedStateEl.value : '';
+    const wantedCity = wantedCityEl ? wantedCityEl.value : '';
 
-    // ── Restaurar valores tras error de validación ────────────────────────────
-    const saved = sessionStorage.getItem(STORAGE_KEY);
-    if (saved) {
-        try {
-            const data = JSON.parse(saved);
-
-            // Restaurar teléfono
-            const phoneDisplay = document.getElementById('phone_display');
-            const phoneHidden  = document.getElementById('phone_input');
-            if (phoneDisplay && data.phone) {
-                phoneDisplay.value = data.phone.replace('+56', '');
-                if (phoneHidden) phoneHidden.value = data.phone;
+    function applyCity(attemptsLeft) {
+        if (!wantedCity) {
+            return;
+        }
+        const citySelect = document.getElementById('city_id_select');
+        if (!citySelect) {
+            return;
+        }
+        const hasOption = Array.prototype.some.call(
+            citySelect.options, function (o) { return o.value === wantedCity; }
+        );
+        if (citySelect.value !== wantedCity && hasOption) {
+            citySelect.value = wantedCity;
+            const cityInput = document.getElementById('city_input');
+            if (cityInput) {
+                const opt = citySelect.options[citySelect.selectedIndex];
+                cityInput.value = opt ? opt.text : '';
             }
-
-            // Restaurar región y luego comuna
-            const stateSelect = document.getElementById('state_id');
-            if (stateSelect && data.state_id) {
-                stateSelect.value = data.state_id;
-                stateSelect.dispatchEvent(new Event('change', { bubbles: true }));
-
-                if (data.city_id) {
-                    const restoreCity = (attempts) => {
-                        const citySelect = document.getElementById('city_id_select');
-                        if (!citySelect) return;
-                        citySelect.value = data.city_id;
-                        if (citySelect.value === String(data.city_id)) {
-                            const cityInput = document.getElementById('city_input');
-                            if (cityInput) {
-                                const opt = citySelect.options[citySelect.selectedIndex];
-                                cityInput.value = opt ? opt.text : '';
-                            }
-                        } else if (attempts > 0) {
-                            setTimeout(() => restoreCity(attempts - 1), 300);
-                        }
-                    };
-                    setTimeout(() => restoreCity(10), 400);
-                }
-            }
-        } catch(e) {
-            sessionStorage.removeItem(STORAGE_KEY);
+        }
+        if (citySelect.value !== wantedCity && attemptsLeft > 0) {
+            setTimeout(function () { applyCity(attemptsLeft - 1); }, 250);
         }
     }
 
-    // ── Guardar estado antes del submit ───────────────────────────────────────
-    const form = document.querySelector('form.checkout_autoformat');
-    if (form) {
-        form.addEventListener('submit', function () {
-            const phoneDisplay = document.getElementById('phone_display');
-            const stateSelect  = document.getElementById('state_id');
-            const citySelect   = document.getElementById('city_id_select');
-            sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
-                phone:    phoneDisplay ? '+56' + phoneDisplay.value.trim().replace(/\D/g,'').slice(0,9) : '',
-                state_id: stateSelect  ? stateSelect.value  : '',
-                city_id:  citySelect   ? citySelect.value   : '',
-            }));
-        }, true);
+    function applyState(attemptsLeft) {
+        if (!wantedState) {
+            return;
+        }
+        const stateSelect = document.getElementById('state_id');
+        if (!stateSelect) {
+            return;
+        }
+        const hasOption = Array.prototype.some.call(
+            stateSelect.options, function (o) { return o.value === wantedState; }
+        );
+        if (stateSelect.value !== wantedState && hasOption) {
+            stateSelect.value = wantedState;
+            // Dispara el cambio a proposito: eso es lo que hace que
+            // addval_website_address repueble el <select> de comuna vía
+            // AJAX para esta región - luego reintentamos aplicar la comuna.
+            stateSelect.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        if (stateSelect.value !== wantedState && attemptsLeft > 0) {
+            setTimeout(function () { applyState(attemptsLeft - 1); }, 250);
+            return;
+        }
+        applyCity(16);
     }
 
-    // ── Teléfono: display → hidden con +56 ───────────────────────────────────
-    const phoneDisplay = document.getElementById('phone_display');
-    const phoneHidden  = document.getElementById('phone_input');
+    if (wantedState) {
+        // Pequeño delay inicial: si el script de pais/region corre en el
+        // arranque, le da tiempo a terminar su primera pasada antes de que
+        // empecemos a pelear por el valor correcto.
+        setTimeout(function () { applyState(16); }, 300);
+    }
 
-    if (phoneDisplay && phoneHidden) {
+    // ── Teléfono: solo filtrar a dígitos mientras se escribe (cosmético) ──────
+    // El input ya se llama "phone" y se envia directo; el servidor
+    // (_normalizar_telefono) agrega el "+56" - no hace falta ningun JS de
+    // sincronizacion con un campo oculto.
+    const phoneDisplay = document.getElementById('phone_display');
+    if (phoneDisplay) {
         phoneDisplay.addEventListener('input', function () {
             phoneDisplay.value = phoneDisplay.value.replace(/\D/g, '').slice(0, 9);
-            syncPhone();
         });
-        phoneDisplay.addEventListener('blur', syncPhone);
-
-        function syncPhone() {
-            const val = phoneDisplay.value.trim();
-            phoneHidden.value = val.length === 9 ? '+56' + val : val;
-        }
-
-        if (phoneHidden.value) {
-            phoneDisplay.value = phoneHidden.value.replace('+56', '');
-        }
     }
 
     // ── RUT: auto-guion y validación visual módulo 11 ─────────────────────────

@@ -111,7 +111,7 @@ class WebsiteSaleChile(WebsiteSaleAddressInfo):
                 missing_fields.add('vat')
                 error_messages.append(_("El RUT es obligatorio."))
             else:
-                valido, _ = _validar_rut(vat)
+                valido, _rut_norm = _validar_rut(vat)
                 if not valido:
                     invalid_fields.add('vat')
                     msg = _("RUT inválido. Verifica el dígito verificador. Ej: 12345678-9")
@@ -137,7 +137,7 @@ class WebsiteSaleChile(WebsiteSaleAddressInfo):
                 if msg not in error_message:
                     error_message.append(msg)
             else:
-                valido, _ = _validar_rut(vat)
+                valido, _rut_norm = _validar_rut(vat)
                 if not valido:
                     error['vat'] = 'error'
                     msg = _("RUT inválido. Verifica el dígito verificador. Ej: 12345678-9")

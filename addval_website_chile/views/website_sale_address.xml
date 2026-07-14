@@ -45,15 +45,13 @@
                         <label class="col-form-label" for="phone">Teléfono * (9 dígitos)</label>
                         <div class="input-group">
                             <span class="input-group-text">+56</span>
-                            <input type="tel" id="phone_display"
+                            <input type="tel" name="phone" id="phone_display"
                                    t-attf-class="form-control #{error.get('phone') and 'is-invalid' or ''}"
                                    inputmode="tel" maxlength="9" pattern="[0-9]{9}"
                                    placeholder="912345678"
                                    title="Ingresa 9 dígitos. Se agregará +56 automáticamente."
                                    t-att-value="'phone' in checkout and checkout['phone'] and checkout['phone'].replace('+56','') or ''"/>
                         </div>
-                        <input type="hidden" name="phone" id="phone_input"
-                               t-att-value="'phone' in checkout and checkout['phone'] or ''"/>
                     </div>
 
                     <div class="w-100"/>
@@ -171,6 +169,23 @@
                 <input type="hidden" name="partner_id" t-att-value="partner_id or '0'"/>
                 <input type="hidden" name="callback" t-att-value="callback"/>
                 <input type="hidden" name="field_required" t-att-value="'phone,name,vat'"/>
+
+                <!--
+                    Fuente de verdad para reimponer región/comuna tras un
+                    error: el script de addval_website_address
+                    (_onChangeCountry/_changeState) reconstruye esos <select>
+                    vía AJAX sin preservar el valor elegido, dejando
+                    seleccionada la primera opción. checkout_chile.js usa
+                    estos valores (que el servidor SIEMPRE entrega
+                    correctamente en un error, confirmado en
+                    website_sale.controllers.main.address) para reintentar
+                    hasta ganarle la carrera a ese script, sin importar
+                    cuándo se dispare.
+                -->
+                <input type="hidden" id="chile_restore_state_id"
+                       t-att-value="'state_id' in checkout and checkout['state_id'] or ''"/>
+                <input type="hidden" id="chile_restore_city_id"
+                       t-att-value="'city_id' in checkout and checkout['city_id'] or ''"/>
 
                 <div class="d-flex justify-content-between">
                     <a role="button" t-att-href="mode == ('new', 'billing') and '/shop/cart' or '/shop/checkout'" class="btn btn-secondary mb32">
