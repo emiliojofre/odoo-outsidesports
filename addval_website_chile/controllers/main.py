@@ -110,6 +110,24 @@ _logger.info(
 )
 
 
+def _obtener_campo(values, key):
+    """
+    'values' (el 'checkout' que arma website_sale.address()) normalmente
+    es un dict (direccion nueva, o el kw crudo tras un error). Pero al
+    EDITAR una direccion de facturacion existente o gestionar direcciones
+    de envio, Odoo pasa directamente un registro res.partner en su lugar
+    - que no tiene .get() como un dict (de ahi el AttributeError real
+    visto en produccion: 'res.partner' object has no attribute 'get').
+    Esta funcion maneja ambos casos de forma segura.
+    """
+    if isinstance(values, dict):
+        return values.get(key) or ''
+    valor = getattr(values, key, False)
+    if hasattr(valor, 'id'):
+        return valor.id or ''
+    return valor or ''
+
+
 class WebsiteSaleChile(*_BASES):
 
     PHONE_PATTERN = re.compile(r'^\+56\d{9}$')
@@ -119,7 +137,7 @@ class WebsiteSaleChile(*_BASES):
         if not _is_b2c():
             return res
         values = render_values.get('checkout', kw)
-        state_id_raw = values.get('state_id', '') or kw.get('state_id', '')
+        state_id_raw = _obtener_campo(values, 'state_id') or kw.get('state_id', '')
         state = None
         if state_id_raw and str(state_id_raw).isdigit():
             state = request.env['res.country.state'].browse(int(state_id_raw))
