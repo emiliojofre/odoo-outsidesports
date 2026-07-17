@@ -17,14 +17,20 @@
 
         Nunca se muestra para la direccion principal del cliente
         (ship == order.partner_id) ni para direcciones que no sean
-        propias (allow_edit ya filtra eso).
+        propias. La condicion se recalcula aqui mismo en vez de usar
+        "allow_edit" (esa variable se define solo DENTRO del t-call a
+        address_kanban, como parametro para esa subplantilla, y no esta
+        garantizada disponible fuera de el, que es donde se inserta este
+        boton) - se usa la misma logica que el core (ship/order, ambas
+        siempre en alcance por ser las del propio t-foreach), sin
+        depender de esa variable ambigua.
     -->
     <template id="chile_shipping_delete_button"
               inherit_id="website_sale.checkout"
               name="Chile B2C - Eliminar dirección de envío">
 
         <xpath expr="//div[hasclass('one_kanban') and hasclass('mb-2')]" position="inside">
-            <form t-if="allow_edit and ship.id != order.partner_id.id"
+            <form t-if="ship.id != order.partner_id.id and (not order.partner_id or ship.id in order.partner_id.child_ids.ids)"
                   action="/shop/address/delete" method="post"
                   class="d-inline chile-delete-shipping-form">
                 <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
