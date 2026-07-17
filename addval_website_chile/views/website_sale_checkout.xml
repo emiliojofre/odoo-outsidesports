@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Boton "eliminar" (archivar) junto a cada tarjeta de direccion de
+        ENVIO en el checkout. A proposito NO se toca
+        "website_sale.address_kanban" (la plantilla de tarjeta compartida
+        con la direccion de facturacion, y posiblemente reutilizada en
+        otras paginas como "Mi cuenta") - agregar ahi una variable nueva
+        (allow_delete) rompería esos otros usos si no se define en todos
+        los llamados. En cambio, este xpath apunta al div que envuelve
+        cada tarjeta DENTRO del bucle de shippings en
+        "website_sale.checkout" (confirmado via el codigo fuente real:
+        unico div con las clases 'one_kanban' Y 'mb-2' juntas - el div del
+        boton "Agregar direccion" tiene 'one_kanban' pero NO 'mb-2'), 
+        donde las variables ship/allow_edit/order ya existen con
+        seguridad (son las del propio bucle t-foreach="shippings").
+
+        Nunca se muestra para la direccion principal del cliente
+        (ship == order.partner_id) ni para direcciones que no sean
+        propias (allow_edit ya filtra eso).
+    -->
+    <template id="chile_shipping_delete_button"
+              inherit_id="website_sale.checkout"
+              name="Chile B2C - Eliminar dirección de envío">
+
+        <xpath expr="//div[hasclass('one_kanban') and hasclass('mb-2')]" position="inside">
+            <form t-if="allow_edit and ship.id != order.partner_id.id"
+                  action="/shop/address/delete" method="post"
+                  class="d-inline chile-delete-shipping-form">
+                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                <input type="hidden" name="partner_id" t-att-value="ship.id"/>
+                <a role="button" href="#"
+                   class="btn btn-link position-absolute p-0 chile-js-delete-shipping"
+                   style="top: 8px; right: 40px; z-index: 2;"
+                   title="Eliminar esta dirección"
+                   aria-label="Eliminar esta dirección">
+                    <i class="fa fa-trash text-danger"/>
+                </a>
+            </form>
+        </xpath>
+    </template>
+
+    <record id="chile_shipping_delete_button" model="ir.ui.view">
+        <field name="website_id" search="[('name','=','OUTSIDE SPORTS B2C')]" model="website"/>
+    </record>
+</odoo>

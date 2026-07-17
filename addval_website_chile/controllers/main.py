@@ -2,7 +2,7 @@
 import logging
 import re
 
-from odoo import _
+from odoo import _, http
 from odoo.addons.addval_website_address.controllers.main import WebsiteSaleAddressInfo
 from odoo.http import request
 
@@ -236,6 +236,52 @@ class WebsiteSaleChile(*_BASES):
                     if msg not in error_message:
                         error_message.append(msg)
         return error, error_message
+
+    @http.route(
+        ['/shop/address/delete'], type='http', auth='public',
+        methods=['POST'], website=True, csrf=True,
+    )
+    def chile_delete_shipping_address(self, **post):
+        """
+        Elimina (archiva, nunca unlink) una direccion de ENVIO propia del
+        cliente actual. Nunca permite:
+          - eliminar el contacto principal (partner_id de la orden),
+          - eliminar una direccion que no sea hija de ese contacto
+            (evita que alguien mande un partner_id ajeno).
+        Si la direccion eliminada era la seleccionada para el envio de
+        esta orden, vuelve a usar la direccion principal como fallback.
+        """
+        if not _is_b2c():
+            return request.redirect('/shop/checkout')
+
+        order = request.website.sale_get_order()
+        if not order:
+            return request.redirect('/shop/checkout')
+
+        partner_id_raw = post.get('partner_id')
+        if not partner_id_raw or not str(partner_id_raw).isdigit():
+            return request.redirect('/shop/checkout')
+        partner_id = int(partner_id_raw)
+
+        Partner = request.env['res.partner']
+        partner_a_eliminar = Partner.sudo().browse(partner_id)
+        if not partner_a_eliminar.exists():
+            return request.redirect('/shop/checkout')
+
+        if partner_id == order.partner_id.id:
+            # Nunca eliminar el contacto principal.
+            return request.redirect('/shop/checkout')
+
+        if partner_id not in order.partner_id.child_ids.ids:
+            # No es una direccion propia de este cliente - no autorizado.
+            return request.redirect('/shop/checkout')
+
+        if order.partner_shipping_id.id == partner_id:
+            order.partner_shipping_id = order.partner_id
+
+        partner_a_eliminar.sudo().write({'active': False})
+
+        return request.redirect('/shop/checkout')
 
 
 _logger.info(

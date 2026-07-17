@@ -14,3 +14,16 @@
 body.chile-b2c-site .iva-incl-label {
     white-space: nowrap;
 }
+
+/*
+ * El boton de eliminar direccion de envio se inserta como hermano de
+ * la tarjeta (.card), no dentro de ella (para no tocar la plantilla
+ * compartida website_sale.address_kanban - ver
+ * views/website_sale_checkout.xml). Para que su position:absolute lo
+ * ancle correctamente junto al lapiz de editar (arriba a la derecha
+ * de la tarjeta) en vez de flotar respecto a un ancestro mas lejano,
+ * el contenedor que envuelve ambos necesita position:relative.
+ */
+body.chile-b2c-site .one_kanban.mb-2 {
+    position: relative;
+}

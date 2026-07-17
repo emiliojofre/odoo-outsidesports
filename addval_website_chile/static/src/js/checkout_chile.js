@@ -169,4 +169,18 @@ document.addEventListener('DOMContentLoaded', function () {
             cityInput.value = opt ? opt.text : '';
         });
     }
+
+    // ── Confirmación antes de eliminar una dirección de envío ─────────────────
+    document.querySelectorAll('.chile-js-delete-shipping').forEach(function (link) {
+        link.addEventListener('click', function (ev) {
+            ev.preventDefault();
+            ev.stopPropagation();
+            if (window.confirm('¿Seguro que quieres eliminar esta dirección de envío?')) {
+                const form = link.closest('form.chile-delete-shipping-form');
+                if (form) {
+                    form.submit();
+                }
+            }
+        });
+    });
 });
