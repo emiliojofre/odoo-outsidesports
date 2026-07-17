@@ -19,11 +19,25 @@ body.chile-b2c-site .iva-incl-label {
  * El boton de eliminar direccion de envio se inserta como hermano de
  * la tarjeta (.card), no dentro de ella (para no tocar la plantilla
  * compartida website_sale.address_kanban - ver
- * views/website_sale_checkout.xml). Para que su position:absolute lo
- * ancle correctamente junto al lapiz de editar (arriba a la derecha
- * de la tarjeta) en vez de flotar respecto a un ancestro mas lejano,
- * el contenedor que envuelve ambos necesita position:relative.
+ * views/website_sale_checkout.xml). El contenedor que envuelve ambos
+ * necesita position:relative para poder anclar nuestro icono con
+ * position:absolute.
+ *
+ * En vez de adivinar un offset en pixeles para que "right: Npx" caiga
+ * justo al lado del lapiz (que termino solapandose con el, ya que el
+ * lapiz vive DENTRO del padding propio de .card-body, un contexto de
+ * posicionamiento distinto al de este wrapper), se le resta ancho a la
+ * tarjeta con margin-right y el icono se ubica en ese espacio liberado,
+ * pegado al borde del wrapper (right:0) - asi nunca puede superponerse
+ * al lapiz, sin depender del padding interno exacto de la tarjeta.
  */
 body.chile-b2c-site .one_kanban.mb-2 {
     position: relative;
+}
+body.chile-b2c-site .one_kanban.mb-2 .card {
+    margin-right: 30px;
+}
+body.chile-b2c-site .one_kanban.mb-2 .chile-js-delete-shipping {
+    top: 8px;
+    right: 0 !important;
 }

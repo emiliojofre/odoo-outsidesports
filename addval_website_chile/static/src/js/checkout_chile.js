@@ -97,7 +97,7 @@ WebsiteSale.include({
     },
 });
 
-document.addEventListener('DOMContentLoaded', function () {
+function _iniciarChecklistChile() {
 
     // ── Teléfono: solo filtrar a dígitos mientras se escribe (cosmético) ──────
     // El input ya se llama "phone" y se envia directo; el servidor
@@ -183,4 +183,13 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     });
-});
+}
+
+// Si el script llega en el bundle "lazy" (despues de que
+// DOMContentLoaded ya disparo), el listener nunca correria. Mismo
+// patron defensivo que ya usa product_price_fix.js.
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', _iniciarChecklistChile);
+} else {
+    _iniciarChecklistChile();
+}

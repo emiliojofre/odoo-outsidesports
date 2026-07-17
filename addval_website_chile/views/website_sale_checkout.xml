@@ -37,7 +37,7 @@
                 <input type="hidden" name="partner_id" t-att-value="ship.id"/>
                 <a role="button" href="#"
                    class="btn btn-link position-absolute p-0 chile-js-delete-shipping"
-                   style="top: 8px; right: 40px; z-index: 2;"
+                   style="top: 8px; z-index: 2;"
                    title="Eliminar esta dirección"
                    aria-label="Eliminar esta dirección">
                     <i class="fa fa-trash text-danger"/>
