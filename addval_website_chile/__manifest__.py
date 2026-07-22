@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Addval Website Chile - RUT, Teléfono y Precio IVA Incluido',
-    'version': '16.0.7.5.0',
+    'version': '16.0.7.6.0',
     'author': 'NLH Consultores SpA',
     'license': 'OPL-1',
     'category': 'Website/eCommerce',
@@ -14,6 +14,7 @@
         'addval_website_address',
         'website_sale',
         'eq_website_default_code',
+        'auth_signup',
         # Necesario NO por funcionalidad, sino para el orden de carga:
         # internal_credit_payment.WebsiteCreditPayment reimplementa
         # checkout_form_validate/_validate_address_values desde cero SIN
@@ -31,6 +32,7 @@
         'views/website_layout_chile.xml',
         'views/website_sale_product.xml',
         'views/website_sale_checkout.xml',
+        'views/website_auth_signup.xml',
     ],
     'assets': {
         'web.assets_frontend': [
