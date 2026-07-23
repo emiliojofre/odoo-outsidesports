@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Sobrescribir template de precio para mostrar con IVA -->
+    <template id="website_sale_product_price_b2c"
+              inherit_id="website_sale.product"
+              name="Chile B2C - Mostrar precio con IVA"
+              active="True">
+        
+        <!-- Buscar y reemplazar el elemento de precio -->
+        <xpath expr="//span[@class='price']" position="replace">
+            <t t-if="product_template.price">
+                <span class="price h5">
+                    <t t-set="price_with_tax" t-value="product_template.price * 1.19"/>
+                    $ <t t-out="'{:,.0f}'.format(price_with_tax).replace(',', '.')"/>
+                    <small class="text-muted"> (IVA Incl.)</small>
+                </span>
+            </t>
+        </xpath>
+    </template>
+
+    <record id="website_sale_product_price_b2c" model="ir.ui.view">
+        <field name="website_id" search="[('name','=','OUTSIDE SPORTS B2C')]" model="website"/>
+    </record>
+
+</odoo>

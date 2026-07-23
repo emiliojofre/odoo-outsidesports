@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Expone un flag JS global SOLO cuando el sitio activo es
+        "OUTSIDE SPORTS B2C" (por nombre, no por ID de website - asi
+        funciona igual en dev/test/prod aunque cambien los IDs).
+        website.layout es un extension point universal y estable:
+        no depende del tema instalado. No afecta a ningun otro sitio
+        (ej. B2B), que renderiza website.layout sin este bloque.
+    -->
+    <template id="chile_b2c_flag"
+              inherit_id="website.layout"
+              name="Chile B2C - Flag de sitio (sin afectar B2B)">
+
+        <xpath expr="//head" position="inside">
+            <script t-if="website and website.name == 'OUTSIDE SPORTS B2C'" type="text/javascript">
+                window.CHILE_B2C = true;
+            </script>
+        </xpath>
+    </template>
+</odoo>

@@ -1,0 +1,16 @@
+/*
+ * Chile B2C - estilos de apoyo para el precio.
+ *
+ * El ocultamiento de "IVA excluido" y "+ IVA" ya NO se hace por CSS:
+ * se descubrio (viendo el HTML real) que "+ IVA" es un nodo de texto
+ * suelto sin clase ni tag que lo envuelva, imposible de targetear con
+ * un selector CSS. Esa limpieza vive en product_price_fix.js, que
+ * tiene el contexto (DOM ya renderizado) para hacerlo con precision.
+ *
+ * Este archivo queda solo por si a futuro se necesita algun ajuste
+ * puramente visual (spacing, color) del label "(IVA Incl.)" que
+ * agrega el JS.
+ */
+body.chile-b2c-site .iva-incl-label {
+    white-space: nowrap;
+}

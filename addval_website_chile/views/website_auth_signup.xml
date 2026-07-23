@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Habilitar autorregistro de clientes SOLO en el sitio B2C.
+
+        Contexto: la vista nucleo "auth_signup.signup" (el formulario real
+        de "Crear cuenta") fue reemplazada en algun momento, desde el
+        editor visual, por un mensaje estatico ("De momento no permitimos
+        registros automaticos, Contactanos!") - de forma GENERICA (sin
+        website_id), es decir, para TODOS los sitios por igual
+        (confirmado: ir.ui.view id=313, key='auth_signup.signup',
+        website_id=None).
+
+        Decision del cliente: mantener ese bloqueo para los demas sitios
+        (ej. B2B), pero habilitar el formulario real SOLO en
+        OUTSIDE SPORTS B2C.
+
+        Como la vista generica ya "es" la definicion base para esa key
+        (no hereda de nada, mode=primary), la forma correcta de
+        excepcionarla solo para un sitio es crear OTRA vista con la
+        MISMA key pero con website_id seteado (el mismo mecanismo COW
+        de "vista especifica por sitio" que Odoo usa nativamente, visto
+        varias veces en este proyecto) - Odoo elige automaticamente la
+        copia mas especifica al renderizar para ese sitio, sin tocar la
+        generica para nadie mas. El contenido de abajo es el arch
+        ORIGINAL de Odoo (confirmado leyendo
+        auth_signup/views/auth_signup_login_templates.xml linea 39),
+        solo con los textos del boton/link traducidos.
+    -->
+    <record id="chile_signup_form_b2c" model="ir.ui.view">
+        <field name="name">Sign up login (Chile B2C - formulario real)</field>
+        <field name="type">qweb</field>
+        <field name="key">auth_signup.signup</field>
+        <field name="website_id" search="[('name','=','OUTSIDE SPORTS B2C')]" model="website"/>
+        <field name="arch" type="xml">
+            <t t-name="auth_signup.signup">
+                <t t-call="web.login_layout">
+                    <form class="oe_signup_form" role="form" method="post" t-if="not message">
+                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                        <t t-call="auth_signup.fields">
+                            <t t-set="only_passwords" t-value="bool(token and not invalid_token)"/>
+                        </t>
+                        <p class="alert alert-danger" t-if="error" role="alert">
+                            <t t-esc="error"/>
+                        </p>
+                        <input type="hidden" name="redirect" t-att-value="redirect"/>
+                        <input type="hidden" name="token" t-att-value="token"/>
+                        <div class="text-center oe_login_buttons d-grid pt-3">
+                            <button type="submit" class="btn btn-primary"> Registrarse</button>
+                            <a t-attf-href="/web/login?{{ keep_query() }}" class="btn btn-link btn-sm" role="button">¿Ya tienes una cuenta?</a>
+                            <div class="o_login_auth"/>
+                        </div>
+                    </form>
+                </t>
+            </t>
+        </field>
+    </record>
+
+    <!--
+        Texto en la página de confirmación del pedido, junto al botón
+        "Registrarse": "para seguir su pedido" -> "¿Desea registrarse?".
+        Ese texto es un nodo de texto suelto (sin tag propio) despues
+        del <a>, igual que el "+ IVA" que ya resolvimos antes - se
+        reemplaza via xpath apuntando al nodo de texto siguiente al link.
+    -->
+    <template id="chile_confirmation_signup_text"
+              inherit_id="website_sale.confirmation"
+              name="Chile B2C - Texto de invitación a registrarse">
+        <xpath expr="//p[hasclass('alert-info')]/a[hasclass('btn-primary')]/following-sibling::text()[1]" position="replace">
+            ¿Desea registrarse?
+        </xpath>
+    </template>
+
+    <record id="chile_confirmation_signup_text" model="ir.ui.view">
+        <field name="website_id" search="[('name','=','OUTSIDE SPORTS B2C')]" model="website"/>
+    </record>
+</odoo>
