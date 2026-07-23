@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Botón "eliminar" (archivar) junto al lápiz de editar, solo en
+        tarjetas de dirección de ENVÍO propias del cliente.
+
+        Diseño en dos partes:
+
+        1) Esta primera vista inyecta una bandera propia
+           "chile_allow_delete" - SOLO dentro del t-call a
+           address_kanban que vive en el bucle "t-foreach=shippings"
+           de website_sale.checkout (identificado de forma única via
+           el xpath, que matchea por el t-value que referencia
+           "child_ids" - la copia de "allow_edit" de la tarjeta de
+           facturación en cambio es t-value="1", sin ninguna
+           referencia a child_ids, así que no puede confundirse con
+           esta). Ahí sí existen con seguridad "ship" y "order" (son
+           las del propio bucle).
+
+        2) La segunda vista inserta el botón real DENTRO de
+           "website_sale.address_kanban" (la tarjeta compartida,
+           reutilizada también para la dirección de facturación y
+           quizás en otras páginas) - confirmado seguro de tocar
+           porque el propio Odoo lo hace igual en
+           website_sale_delivery_mondialrelay. El botón se condiciona
+           a "chile_allow_delete": como esa variable solo existe
+           (con valor True) en el llamado de la parte 1, en
+           CUALQUIER OTRO lugar donde se use address_kanban (la
+           tarjeta de facturación, "Mi cuenta", etc.) la variable
+           simplemente no está definida y QWeb la trata como falsy
+           -mismo comportamiento que ya usa el propio Odoo con
+           "edit_billing", que tampoco se define en el llamado de la
+           tarjeta de facturación-, así que el botón nunca aparece
+           ahí por accidente.
+
+        Se le da la misma clase "float-end" que ya usa el lápiz
+        (".js_edit_address"): al insertarse justo después de él en el
+        DOM, los floats se acomodan naturalmente uno al lado del otro
+        (el nuestro a la izquierda del lápiz), sin necesidad de
+        calcular ninguna posición en píxeles.
+    -->
+    <template id="chile_shipping_delete_flag"
+              inherit_id="website_sale.checkout"
+              name="Chile B2C - Flag para permitir eliminar dirección de envío">
+        <xpath expr="//t[@t-set='allow_edit' and contains(@t-value, 'child_ids')]" position="after">
+            <t t-set="chile_allow_delete"
+               t-value="ship.id != order.partner_id.id and (not order.partner_id or ship.id in order.partner_id.child_ids.ids)"/>
+        </xpath>
+    </template>
+
+    <record id="chile_shipping_delete_flag" model="ir.ui.view">
+        <field name="website_id" search="[('name','=','OUTSIDE SPORTS B2C')]" model="website"/>
+    </record>
+
+    <template id="chile_shipping_delete_button"
+              inherit_id="website_sale.address_kanban"
+              name="Chile B2C - Botón eliminar dirección de envío">
+        <xpath expr="//a[hasclass('js_edit_address')]" position="after">
+            <form t-if="chile_allow_delete"
+                  action="/shop/address/delete" method="post"
+                  class="d-inline chile-delete-shipping-form">
+                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                <input type="hidden" name="partner_id" t-att-value="contact.id"/>
+                <a role="button" href="#"
+                   class="btn btn-link float-end p-0 me-1 chile-js-delete-shipping"
+                   title="Eliminar esta dirección"
+                   aria-label="Eliminar esta dirección">
+                    <i class="fa fa-trash text-danger"/>
+                </a>
+            </form>
+        </xpath>
+    </template>
+
+    <record id="chile_shipping_delete_button" model="ir.ui.view">
+        <field name="website_id" search="[('name','=','OUTSIDE SPORTS B2C')]" model="website"/>
+    </record>
+</odoo>
