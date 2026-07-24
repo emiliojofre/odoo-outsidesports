@@ -59,15 +59,26 @@
     <!--
         Texto en la página de confirmación del pedido, junto al botón
         "Registrarse": "para seguir su pedido" -> "¿Desea registrarse?".
-        Ese texto es un nodo de texto suelto (sin tag propio) despues
-        del <a>, igual que el "+ IVA" que ya resolvimos antes - se
-        reemplaza via xpath apuntando al nodo de texto siguiente al link.
+
+        IMPORTANTE: el intento original apuntaba con xpath a
+        "following-sibling::text()[1]" (el nodo de texto suelto despues
+        del <a>) usando position="replace" - eso rompe la carga del
+        MODULO ENTERO con:
+          TypeError: Argument 'element' has incorrect type (expected
+          lxml.etree._Element, got lxml.etree._ElementUnicodeResult)
+        Es una limitacion real de Odoo/lxml: la herencia de vistas NO
+        puede hacer position="replace" sobre un nodo de texto (solo
+        sobre elementos reales). Por eso se reemplaza el <p> COMPLETO
+        (un elemento real), reescribiendo su contenido entero.
     -->
     <template id="chile_confirmation_signup_text"
               inherit_id="website_sale.confirmation"
               name="Chile B2C - Texto de invitación a registrarse">
-        <xpath expr="//p[hasclass('alert-info')]/a[hasclass('btn-primary')]/following-sibling::text()[1]" position="replace">
-            ¿Desea registrarse?
+        <xpath expr="//p[hasclass('alert-info')]" position="replace">
+            <p class="alert alert-info mt-3" role="status">
+                <a role="button" t-att-href="order.partner_id.signup_prepare() and order.partner_id.with_context(relative_url=True).signup_url" class="btn btn-primary">Registrarse</a>
+                ¿Desea registrarse?
+            </p>
         </xpath>
     </template>
 
