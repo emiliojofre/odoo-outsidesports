@@ -42,35 +42,6 @@
                         </group>
                     </group>
 
-                    <group string="Tarifas por Región">
-                        <div class="alert alert-warning" role="alert" colspan="2">
-                            La API de Alas Express no entrega cotización de envío.
-                            Defina aquí el precio a cobrar por cada región de Chile.
-                            El checkout usa la región del destinatario
-                            (<code>partner_shipping_id.state_id</code>).
-                        </div>
-                        <group>
-                            <field name="alas_default_price"/>
-                            <field name="alas_require_region_rate"/>
-                        </group>
-                        <group>
-                            <button name="action_alas_load_chile_regions"
-                                    type="object"
-                                    string="Cargar regiones de Chile"
-                                    class="btn-secondary"
-                                    attrs="{'invisible': [('id', '=', False)]}"/>
-                        </group>
-                    </group>
-                    <field name="alas_region_rate_ids"
-                           nolabel="1"
-                           attrs="{'invisible': [('id', '=', False)]}">
-                        <tree editable="bottom">
-                            <field name="state_id"/>
-                            <field name="price"/>
-                            <field name="currency_id" optional="hide"/>
-                        </tree>
-                    </field>
-
                     <group string="Información de la API">
                         <div class="alert alert-info" role="alert">
                             <strong>Autenticación:</strong> Header <code>x-alas-ce0-api-key</code><br/>
@@ -85,20 +56,6 @@
                 </page>
             </xpath>
 
-        </field>
-    </record>
-
-    <!-- Vista árbol de tarifas (para abrir desde otras acciones si se requiere) -->
-    <record id="view_alas_express_region_rate_tree" model="ir.ui.view">
-        <field name="name">alas.express.region.rate.tree</field>
-        <field name="model">alas.express.region.rate</field>
-        <field name="arch" type="xml">
-            <tree editable="bottom">
-                <field name="carrier_id" optional="hide"/>
-                <field name="state_id"/>
-                <field name="price"/>
-                <field name="currency_id"/>
-            </tree>
         </field>
     </record>
 

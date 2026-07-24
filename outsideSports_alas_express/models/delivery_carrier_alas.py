@@ -81,28 +81,6 @@ class ProviderAlasExpress(models.Model):
         help='Tipo de línea de negocio para Alas Express.',
     )
 
-    # ── Tarifas por región (la API de Alas no entrega cotización) ────────────
-    alas_region_rate_ids = fields.One2many(
-        'alas.express.region.rate',
-        'carrier_id',
-        string='Tarifas por Región',
-        help='Precio de envío a cobrar según la región de destino del cliente. '
-             'La API de Alas Express no permite cotizar; estas tarifas se definen en Odoo.',
-    )
-    alas_default_price = fields.Float(
-        string='Precio por defecto',
-        default=0.0,
-        digits='Product Price',
-        help='Precio usado cuando el destinatario no tiene región o no hay '
-             'tarifa configurada para su región.',
-    )
-    alas_require_region_rate = fields.Boolean(
-        string='Exigir tarifa por región',
-        default=True,
-        help='Si está activo, el checkout falla cuando no hay tarifa para la '
-             'región de destino (en lugar de usar el precio por defecto).',
-    )
-
     # ── Helpers internos ────────────────────────────────────────────────────
 
     def _alas_get_headers(self):
@@ -428,126 +406,13 @@ class ProviderAlasExpress(models.Model):
         })
         _logger.info('Alas Express: etiqueta guardada como adjunto "%s" en picking %s.', filename, picking.name)
 
-    # ── Tarifas por región ───────────────────────────────────────────────────
-
-    def action_alas_load_chile_regions(self):
-        """
-        Carga todas las regiones de Chile en la tabla de tarifas del carrier,
-        sin sobrescribir precios ya configurados.
-        """
-        self.ensure_one()
-        chile = self.env.ref('base.cl', raise_if_not_found=False)
-        if not chile:
-            raise UserError(_('No se encontró el país Chile (base.cl) en el sistema.'))
-
-        states = self.env['res.country.state'].search([('country_id', '=', chile.id)], order='code, name')
-        if not states:
-            raise UserError(_('No hay regiones/estados cargados para Chile.'))
-
-        existing_state_ids = set(self.alas_region_rate_ids.mapped('state_id').ids)
-        to_create = []
-        for state in states:
-            if state.id in existing_state_ids:
-                continue
-            to_create.append({
-                'carrier_id': self.id,
-                'state_id': state.id,
-                'price': self.alas_default_price or 0.0,
-            })
-        if to_create:
-            self.env['alas.express.region.rate'].create(to_create)
-
-        if to_create:
-            message = _(
-                'Se agregaron %s regiones. Complete el precio de envío de cada una.'
-            ) % len(to_create)
-            notif_type = 'success'
-        else:
-            message = _('Todas las regiones de Chile ya estaban cargadas.')
-            notif_type = 'info'
-
-        return {
-            'type': 'ir.actions.client',
-            'tag': 'display_notification',
-            'params': {
-                'title': _('Tarifas Alas Express'),
-                'message': message,
-                'type': notif_type,
-                'sticky': False,
-            },
-        }
-
-    def _alas_get_shipping_partner(self, order=None, partner=None):
-        """Obtiene el partner de destino para cotizar el envío."""
-        if partner:
-            return partner
-        if order:
-            return order.partner_shipping_id or order.partner_id
-        return self.env['res.partner']
-
-    def _alas_get_price_for_partner(self, partner):
-        """
-        Resuelve el precio de envío según la región del destinatario.
-
-        Retorna:
-            float: precio encontrado
-            False: no hay tarifa y se exige configuración por región
-        """
-        self.ensure_one()
-        state = partner.state_id if partner else False
-        if state:
-            rate = self.alas_region_rate_ids.filtered(lambda r: r.state_id == state)[:1]
-            if rate:
-                return rate.price
-
-        if self.alas_require_region_rate:
-            return False
-        return self.alas_default_price or 0.0
-
     # ── Métodos heredados delivery.carrier ───────────────────────────────────
 
     def alas_express_rate_shipment(self, order):
-        """
-        Cotiza el envío según la tarifa configurada por región en el método
-        de envío. La API de Alas Express no entrega precios de cotización.
-        """
-        self.ensure_one()
-        partner = self._alas_get_shipping_partner(order=order)
-        if not partner:
-            return {
-                'success': False,
-                'price': 0.0,
-                'error_message': _('No hay destinatario para cotizar el envío Alas Express.'),
-                'warning_message': False,
-            }
-
-        if not partner.state_id and self.alas_require_region_rate:
-            return {
-                'success': False,
-                'price': 0.0,
-                'error_message': _(
-                    'El destinatario "%s" no tiene región configurada. '
-                    'Indique la región para calcular el costo de envío Alas Express.'
-                ) % partner.display_name,
-                'warning_message': False,
-            }
-
-        price = self._alas_get_price_for_partner(partner)
-        if price is False:
-            region_name = partner.state_id.display_name if partner.state_id else _('sin región')
-            return {
-                'success': False,
-                'price': 0.0,
-                'error_message': _(
-                    'No hay tarifa Alas Express configurada para la región "%s". '
-                    'Configure el precio en el método de envío (pestaña Alas Express).'
-                ) % region_name,
-                'warning_message': False,
-            }
-
+        """Estimación de tarifa (no soportada por la API, retorna 0)."""
         return {
             'success': True,
-            'price': float(price),
+            'price': 0.0,
             'error_message': False,
             'warning_message': False,
         }
@@ -561,12 +426,8 @@ class ProviderAlasExpress(models.Model):
         for picking in pickings:
             try:
                 response = self.alas_create_delivery_order(picking)
-                partner = picking.partner_id
-                price = self._alas_get_price_for_partner(partner)
-                if price is False:
-                    price = self.alas_default_price or 0.0
                 result.append({
-                    'exact_price': float(price or 0.0),
+                    'exact_price': 0.0,
                     'tracking_number': response.get('deliveryOrderId', ''),
                 })
             except UserError as e:
