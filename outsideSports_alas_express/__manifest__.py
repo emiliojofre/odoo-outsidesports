@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'OutsideSports - Alas Express Integration',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.1.0',
     'summary': 'Integración con Alas Express courier para despachos',
     'description': """
         Módulo de integración con la API de Alas Express (ALAS-Ce0).
         Permite crear órdenes de entrega, obtener etiquetas y hacer tracking
         directamente desde las órdenes de entrega de Odoo.
+
+        La API de Alas no cotiza tarifas: el precio de envío se configura
+        por región de Chile en el método de envío y se aplica en el checkout.
     """,
     'author': 'NLH Consultores SpA',
     'category': 'Inventory/Delivery',
@@ -14,6 +17,7 @@
         'stock',
         'delivery',
         'sale_stock',
+        'sales_team',
     ],
     'data': [
         'security/ir.model.access.csv',
