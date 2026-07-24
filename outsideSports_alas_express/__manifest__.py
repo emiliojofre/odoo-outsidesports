@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'OutsideSports - Alas Express Integration',
-    'version': '16.0.1.1.0',
+    'version': '16.0.1.1.1',
     'summary': 'Integración con Alas Express courier para despachos',
     'description': """
         Módulo de integración con la API de Alas Express (ALAS-Ce0).
