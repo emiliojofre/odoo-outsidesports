@@ -4,7 +4,12 @@ import werkzeug.exceptions
 from odoo import models
 from odoo.http import request
 
-B2B_WEBSITE_NAME = 'OUTSIDE SPORTS B2B'
+# El sitio que sirve realmente b2b.outsidesports.cl (confirmado en
+# producción: website id=2) se llama literalmente "Outside Sports", NO
+# "OUTSIDE SPORTS B2B" (ese otro registro, id=1, existe pero no tiene
+# dominio asignado). Decisión del cliente: dejarlo así, sin mover el
+# dominio - por eso el código reconoce este nombre en particular.
+B2B_WEBSITE_NAME = 'Outside Sports'
 
 # Rutas que SIEMPRE deben quedar accesibles sin sesion (para que el propio
 # login, el registro y los assets estaticos puedan cargar); cualquier otra

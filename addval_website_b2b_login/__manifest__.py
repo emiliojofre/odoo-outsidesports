@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Outside Sports B2B - Forzar Login',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.1.0',
     'author': 'NLH Consultores SpA',
     'license': 'OPL-1',
     'category': 'Website/Website',

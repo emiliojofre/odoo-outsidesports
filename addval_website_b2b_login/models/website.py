@@ -2,7 +2,7 @@
 from odoo import models
 from odoo.http import request
 
-B2B_WEBSITE_NAME = 'OUTSIDE SPORTS B2B'
+B2B_WEBSITE_NAME = 'Outside Sports'
 
 
 class Website(models.Model):
@@ -13,8 +13,9 @@ class Website(models.Model):
         Red de apoyo (además del bloqueo en ir_http): nunca crear ni
         recuperar un carrito para el usuario público en el sitio B2B,
         por si algún punto de entrada quedara sin cubrir. Scopeado
-        SOLO a "OUTSIDE SPORTS B2B" - en cualquier otro sitio (B2C)
-        se comporta exactamente igual que el Odoo original.
+        SOLO al sitio "Outside Sports" (el que sirve b2b.outsidesports.cl
+        en producción) - en cualquier otro sitio (B2C) se comporta
+        exactamente igual que el Odoo original.
         """
         self.ensure_one()
         if self.name == B2B_WEBSITE_NAME and self.env.user._is_public():
