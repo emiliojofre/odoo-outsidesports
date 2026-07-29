@@ -1,86 +1,113 @@
 /** @odoo-module **/
 
-document.addEventListener('DOMContentLoaded', function () {
+import { WebsiteSale } from 'website_sale.website_sale';
 
-    const STORAGE_KEY = 'outside_checkout_state';
-
-    // ── Restaurar valores tras error de validación ────────────────────────────
-    const saved = sessionStorage.getItem(STORAGE_KEY);
-    if (saved) {
-        try {
-            const data = JSON.parse(saved);
-
-            // Restaurar teléfono
-            const phoneDisplay = document.getElementById('phone_display');
-            const phoneHidden  = document.getElementById('phone_input');
-            if (phoneDisplay && data.phone) {
-                phoneDisplay.value = data.phone.replace('+56', '');
-                if (phoneHidden) phoneHidden.value = data.phone;
-            }
-
-            // Restaurar región y luego comuna
-            const stateSelect = document.getElementById('state_id');
-            if (stateSelect && data.state_id) {
-                stateSelect.value = data.state_id;
-                stateSelect.dispatchEvent(new Event('change', { bubbles: true }));
-
-                if (data.city_id) {
-                    const restoreCity = (attempts) => {
-                        const citySelect = document.getElementById('city_id_select');
-                        if (!citySelect) return;
-                        citySelect.value = data.city_id;
-                        if (citySelect.value === String(data.city_id)) {
-                            const cityInput = document.getElementById('city_input');
-                            if (cityInput) {
-                                const opt = citySelect.options[citySelect.selectedIndex];
-                                cityInput.value = opt ? opt.text : '';
-                            }
-                        } else if (attempts > 0) {
-                            setTimeout(() => restoreCity(attempts - 1), 300);
-                        }
-                    };
-                    setTimeout(() => restoreCity(10), 400);
-                }
-            }
-        } catch(e) {
-            sessionStorage.removeItem(STORAGE_KEY);
+// addval_website_address engancha '_onPhoneInput'/'_onSubmitAddressForm' a
+// CUALQUIER input[name="phone"] del sitio, exigiendo 11 digitos (+ opcional).
+// Nuestro campo de telefono en Chile B2C usa otro formato (9 digitos, con
+// "+56" agregado por el servidor) y ahora TAMBIEN se llama "phone" - por
+// eso hereda esa regla ajena sin querer.
+//
+// Ademas, '_changeState'/'_onChangeCountry' reconstruyen los <select> de
+// región y comuna vía AJAX BORRANDO las opciones y rearmandolas sin
+// preservar el valor elegido (queda seleccionada la primera opción por
+// defecto del navegador) - sea que esto ocurra al cargar la pagina o al
+// interactuar con el formulario.
+//
+// Todo esto se neutraliza/parcha SOLO en el sitio B2C (via window.CHILE_B2C,
+// mismo flag usado en el resto del modulo); en cualquier otro sitio se
+// sigue llamando a _super normalmente, sin ningun cambio de comportamiento.
+function _reaplicarSeleccion(selectEl, valorDeseado, attemptsLeft, alLograrlo) {
+    if (!selectEl || !valorDeseado) {
+        return;
+    }
+    const tieneOpcion = Array.prototype.some.call(
+        selectEl.options, function (o) { return o.value === valorDeseado; }
+    );
+    if (selectEl.value !== valorDeseado && tieneOpcion) {
+        selectEl.value = valorDeseado;
+        if (alLograrlo) {
+            alLograrlo();
         }
+        return;
     }
-
-    // ── Guardar estado antes del submit ───────────────────────────────────────
-    const form = document.querySelector('form.checkout_autoformat');
-    if (form) {
-        form.addEventListener('submit', function () {
-            const phoneDisplay = document.getElementById('phone_display');
-            const stateSelect  = document.getElementById('state_id');
-            const citySelect   = document.getElementById('city_id_select');
-            sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
-                phone:    phoneDisplay ? '+56' + phoneDisplay.value.trim().replace(/\D/g,'').slice(0,9) : '',
-                state_id: stateSelect  ? stateSelect.value  : '',
-                city_id:  citySelect   ? citySelect.value   : '',
-            }));
-        }, true);
+    if (selectEl.value !== valorDeseado && attemptsLeft > 0) {
+        setTimeout(function () {
+            _reaplicarSeleccion(selectEl, valorDeseado, attemptsLeft - 1, alLograrlo);
+        }, 200);
     }
+}
 
-    // ── Teléfono: display → hidden con +56 ───────────────────────────────────
+WebsiteSale.include({
+    _onPhoneInput: function (ev) {
+        if (window.CHILE_B2C) {
+            return;
+        }
+        return this._super.apply(this, arguments);
+    },
+    _onSubmitAddressForm: function (ev) {
+        if (window.CHILE_B2C) {
+            return;
+        }
+        return this._super.apply(this, arguments);
+    },
+    _changeState: function () {
+        if (!window.CHILE_B2C) {
+            return this._super.apply(this, arguments);
+        }
+        const citySelect = document.getElementById('city_id_select');
+        const comunaPrevia = citySelect ? citySelect.value : '';
+        const resultado = this._super.apply(this, arguments);
+        // _changeState no devuelve promesa propia, pero dispara un RPC
+        // async que reconstruye el <select> de comuna. Reintentamos
+        // reponer la comuna elegida despues de que ese RPC termine.
+        if (comunaPrevia) {
+            setTimeout(function () {
+                const sel = document.getElementById('city_id_select');
+                _reaplicarSeleccion(sel, comunaPrevia, 15, function () {
+                    const cityInput = document.getElementById('city_input');
+                    if (cityInput && sel) {
+                        const opt = sel.options[sel.selectedIndex];
+                        cityInput.value = opt ? opt.text : '';
+                    }
+                });
+            }, 250);
+        }
+        return resultado;
+    },
+    _onChangeCountry: function (ev) {
+        if (!window.CHILE_B2C) {
+            return this._super.apply(this, arguments);
+        }
+        const stateSelect = document.getElementById('state_id');
+        const regionPrevia = stateSelect ? stateSelect.value : '';
+        const resultado = this._super.apply(this, arguments);
+        if (regionPrevia) {
+            setTimeout(function () {
+                const sel = document.getElementById('state_id');
+                _reaplicarSeleccion(sel, regionPrevia, 15, function () {
+                    // Al reponer la region, dispara 'change' para que
+                    // _changeState (ya parchado arriba) reconstruya y
+                    // reponga tambien la comuna correspondiente.
+                    sel.dispatchEvent(new Event('change', { bubbles: true }));
+                });
+            }, 250);
+        }
+        return resultado;
+    },
+});
+
+function _iniciarChecklistChile() {
+
+    // ── Teléfono: solo filtrar a dígitos mientras se escribe (cosmético) ──────
+    // El input ya se llama "phone" y se envia directo; el servidor
+    // (_normalizar_telefono) agrega el "+56" - no hace falta ningun JS de
+    // sincronizacion con un campo oculto.
     const phoneDisplay = document.getElementById('phone_display');
-    const phoneHidden  = document.getElementById('phone_input');
-
-    if (phoneDisplay && phoneHidden) {
+    if (phoneDisplay) {
         phoneDisplay.addEventListener('input', function () {
             phoneDisplay.value = phoneDisplay.value.replace(/\D/g, '').slice(0, 9);
-            syncPhone();
         });
-        phoneDisplay.addEventListener('blur', syncPhone);
-
-        function syncPhone() {
-            const val = phoneDisplay.value.trim();
-            phoneHidden.value = val.length === 9 ? '+56' + val : val;
-        }
-
-        if (phoneHidden.value) {
-            phoneDisplay.value = phoneHidden.value.replace('+56', '');
-        }
     }
 
     // ── RUT: auto-guion y validación visual módulo 11 ─────────────────────────
@@ -142,4 +169,27 @@ document.addEventListener('DOMContentLoaded', function () {
             cityInput.value = opt ? opt.text : '';
         });
     }
-});
+
+    // ── Confirmación antes de eliminar una dirección de envío ─────────────────
+    document.querySelectorAll('.chile-js-delete-shipping').forEach(function (link) {
+        link.addEventListener('click', function (ev) {
+            ev.preventDefault();
+            ev.stopPropagation();
+            if (window.confirm('¿Seguro que quieres eliminar esta dirección de envío?')) {
+                const form = link.closest('form.chile-delete-shipping-form');
+                if (form) {
+                    form.submit();
+                }
+            }
+        });
+    });
+}
+
+// Si el script llega en el bundle "lazy" (despues de que
+// DOMContentLoaded ya disparo), el listener nunca correria. Mismo
+// patron defensivo que ya usa product_price_fix.js.
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', _iniciarChecklistChile);
+} else {
+    _iniciarChecklistChile();
+}

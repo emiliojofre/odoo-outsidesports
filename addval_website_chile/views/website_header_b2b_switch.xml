@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Botón "Ir al B2B" en la barra superior del sitio, solo en
+        OUTSIDE SPORTS B2C.
+
+        Se inserta via "portal.placeholder_user_sign_in" - el mismo
+        extension point OFICIAL que usa el propio Odoo (portal.user_sign_in,
+        view id=325 en produccion) para agregar el link "Identificarse"
+        ahi mismo. Es un placeholder vacio pensado exactamente para que
+        varios modulos agreguen contenido cooperativamente via
+        position="inside", sin competir por el mismo xpath ni depender
+        de la redaccion/traduccion exacta de "Identificarse" (que es un
+        texto traducido en tiempo de render, no un string fijo).
+    -->
+    <template id="chile_b2b_switch_button"
+              inherit_id="portal.placeholder_user_sign_in"
+              name="Chile B2C - Botón Ir al B2B">
+        <xpath expr="." position="inside">
+            <li class="nav-item ms-lg-2 d-flex align-items-center">
+                <a role="button" href="https://b2b.outsidesports.cl"
+                   class="btn btn-outline-primary btn-sm chile-b2b-switch-btn">
+                    Ir al B2B
+                </a>
+            </li>
+        </xpath>
+    </template>
+
+    <record id="chile_b2b_switch_button" model="ir.ui.view">
+        <field name="website_id" search="[('name','=','OUTSIDE SPORTS B2C')]" model="website"/>
+    </record>
+</odoo>

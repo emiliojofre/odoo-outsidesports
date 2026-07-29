@@ -60,3 +60,55 @@ class ProductTemplate(models.Model):
                 )
 
         return res
+
+    def _get_sales_prices(self, pricelist):
+        """
+        Precio mostrado en el LISTADO de categoria/catalogo (tarjetas de
+        producto). Usa una fuente de datos totalmente distinta a
+        _get_combination_info (que solo se usa en la ficha de producto):
+        confirmado leyendo el codigo fuente real instalado
+        (website_sale/models/product_template.py linea 172,
+        website_sale/views/templates.xml linea 191-199), no adivinado.
+
+        Igual que en _get_combination_info: solo se recalcula con IVA
+        incluido cuando el sitio activo es el B2C; cualquier otro sitio
+        (ej. B2B) sigue exactamente igual que el core de Odoo.
+        """
+        res = super()._get_sales_prices(pricelist)
+
+        website = self.env['website'].get_current_website()
+        if not website or website.name != B2C_WEBSITE_NAME:
+            return res
+
+        currency = website.currency_id or self.env.company.currency_id
+
+        for template in self:
+            vals = res.get(template.id)
+            if not vals:
+                continue
+            taxes = template.sudo().taxes_id.filtered(
+                lambda t: t.company_id == self.env.company
+            )
+            if not taxes:
+                continue
+            for key in ('price_reduce', 'base_price'):
+                amount = vals.get(key)
+                if not amount:
+                    continue
+                try:
+                    computed = taxes.compute_all(
+                        amount,
+                        currency=currency,
+                        quantity=1,
+                        product=template,
+                        partner=False,
+                    )
+                    vals[key] = computed['total_included']
+                except Exception:
+                    _logger.exception(
+                        "Chile B2C: no se pudo calcular el precio de listado "
+                        "con IVA incluido para %s, se deja el precio original.",
+                        template.display_name,
+                    )
+
+        return res
