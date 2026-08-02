@@ -94,14 +94,11 @@ class StockPicking(models.Model):
 
         carrier.alas_create_delivery_order(self)
         return {
-            'type': 'ir.actions.client',
-            'tag': 'display_notification',
-            'params': {
-                'title': _('Alas Express'),
-                'message': _('Orden creada correctamente. ID: %s') % self.alas_delivery_order_id,
-                'type': 'success',
-                'sticky': False,
-            },
+            'type': 'ir.actions.act_window',
+            'res_model': 'stock.picking',
+            'res_id': self.id,
+            'view_mode': 'form',
+            'target': 'main',
         }
 
     def action_alas_get_status(self):
@@ -111,16 +108,13 @@ class StockPicking(models.Model):
         if not carrier or carrier.delivery_type != 'alas_express':
             raise UserError(_('El método de envío no es Alas Express.'))
 
-        result = carrier.alas_get_status(self)
+        carrier.alas_get_status(self)
         return {
-            'type': 'ir.actions.client',
-            'tag': 'display_notification',
-            'params': {
-                'title': _('Estado Alas Express'),
-                'message': _('Estado actualizado: %s') % self.alas_status,
-                'type': 'info',
-                'sticky': False,
-            },
+            'type': 'ir.actions.act_window',
+            'res_model': 'stock.picking',
+            'res_id': self.id,
+            'view_mode': 'form',
+            'target': 'main',
         }
 
     def action_alas_get_label(self):
@@ -181,7 +175,7 @@ class StockPicking(models.Model):
         }
 
     def action_alas_open_label_attachment(self):
-        """Abre el adjunto de la etiqueta PDF del picking."""
+        """Abre el adjunto de la etiqueta PDF del picking, descargándolo si no existe."""
         self.ensure_one()
         attachment = self.env['ir.attachment'].search([
             ('res_model', '=', 'stock.picking'),
@@ -189,8 +183,17 @@ class StockPicking(models.Model):
             ('name', 'like', 'alas_label_'),
         ], order='create_date desc', limit=1)
 
+        # Si no existe adjunto, intentar descargarlo ahora
         if not attachment:
-            raise UserError(_('No hay etiqueta de Alas Express adjunta a este albarán.'))
+            self.carrier_id.alas_get_label(self)
+            attachment = self.env['ir.attachment'].search([
+                ('res_model', '=', 'stock.picking'),
+                ('res_id', '=', self.id),
+                ('name', 'like', 'alas_label_'),
+            ], order='create_date desc', limit=1)
+
+        if not attachment:
+            raise UserError(_('No se pudo obtener la etiqueta de Alas Express.'))
 
         return {
             'type': 'ir.actions.act_url',

@@ -81,6 +81,28 @@ class ProviderAlasExpress(models.Model):
         help='Tipo de línea de negocio para Alas Express.',
     )
 
+    # ── Tarifas por región (la API de Alas no entrega cotización) ────────────
+    alas_region_rate_ids = fields.One2many(
+        'alas.express.region.rate',
+        'carrier_id',
+        string='Tarifas por Región',
+        help='Precio de envío a cobrar según la región de destino del cliente. '
+             'La API de Alas Express no permite cotizar; estas tarifas se definen en Odoo.',
+    )
+    alas_default_price = fields.Float(
+        string='Precio por defecto',
+        default=0.0,
+        digits='Product Price',
+        help='Precio usado cuando el destinatario no tiene región o no hay '
+             'tarifa configurada para su región.',
+    )
+    alas_require_region_rate = fields.Boolean(
+        string='Exigir tarifa por región',
+        default=True,
+        help='Si está activo, el checkout falla cuando no hay tarifa para la '
+             'región de destino (en lugar de usar el precio por defecto).',
+    )
+
     # ── Helpers internos ────────────────────────────────────────────────────
 
     def _alas_get_headers(self):
@@ -129,10 +151,12 @@ class ProviderAlasExpress(models.Model):
         except ValueError:
             msg = resp.text
 
-        raise UserError(_(
-            'Error %s de Alas Express en %s:\n%s'
-        ) % (resp.status_code, endpoint, msg))
+        # Log del payload para debugging
+        _logger.error('Alas Express ERROR payload enviado: %s', json.dumps(payload, ensure_ascii=False) if payload else 'N/A')
 
+        raise UserError(_(
+            'Error %s de Alas Express en %s:\n%s\n\nPayload enviado:\n%s'
+        ) % (resp.status_code, endpoint, msg, json.dumps(payload, indent=2, ensure_ascii=False) if payload else 'N/A'))
     # ── Construcción del payload ─────────────────────────────────────────────
 
     def _alas_build_delivery_order_payload(self, picking):
@@ -195,6 +219,7 @@ class ProviderAlasExpress(models.Model):
             'lobType': self.alas_lob_type or 1,
             'bigTicket': self.alas_big_ticket,
             'addInsurance': self.alas_add_insurance,
+            'destinationReference': (partner.street2 or '')[:1000],
         }
 
         # Opcionales
@@ -211,20 +236,22 @@ class ProviderAlasExpress(models.Model):
 
     def _alas_get_package_codes(self, picking):
         """
-        Genera los códigos de paquetes para la orden.
-        Si el picking tiene paquetes de producto definidos, usa sus nombres.
-        Si no, genera un código por línea de movimiento: PICKING-LINE_INDEX.
+        Retorna los nombres de los paquetes asignados al picking.
+        Lanza error si no hay paquetes o si hay más de 3.
         """
-        if picking.package_ids:
-            return [pkg.name for pkg in picking.package_ids]
-
-        # Fallback: un paquete por unidad de demanda (máx. práctico)
-        codes = []
-        for idx, move in enumerate(picking.move_ids.filtered(lambda m: m.state not in ('cancel', 'draft')), start=1):
-            qty = int(move.product_uom_qty)
-            for i in range(max(qty, 1)):
-                codes.append(f'{picking.name}-{idx}-{i+1}')
-        return codes if codes else [picking.name]
+        if not picking.package_ids:
+            raise UserError(_(
+                'El albarán "%s" no tiene paquetes asignados.\n'
+                'Debe asignar los paquetes en la pestaña "Operaciones detalladas" '
+                'antes de enviar a Alas Express.'
+            ) % picking.name)
+        if len(picking.package_ids) > 3:
+            raise UserError(_(
+                'El albarán "%s" tiene %d paquetes asignados. '
+                'Alas Express acepta un máximo de 3 paquetes por orden.\n'
+                'Divida el envío en múltiples albaranes.'
+            ) % (picking.name, len(picking.package_ids)))
+        return [pkg.name for pkg in picking.package_ids]
 
     # ── Métodos públicos de la API ───────────────────────────────────────────
 
@@ -239,10 +266,12 @@ class ProviderAlasExpress(models.Model):
 
         result = self._alas_call('POST', '/delivery-orders', payload)
 
-        alas_id = result.get('deliveryOrderId', '')
-        labels_url = result.get('labelsUrl', '')
-        label_b64 = result.get('deliveryLabelsBase64', '')
-        package_codes = result.get('deliveryOrderPackageCodes', '')
+        _logger.info('Alas Express - Respuesta creación orden: %s', result)
+
+        alas_id = result.get('deliveryOrderId') or ''
+        labels_url = result.get('labelsUrl') or ''
+        label_b64 = result.get('deliveryLabelsBase64') or ''
+        package_codes = str(result.get('deliveryOrderPackageCodes') or '')
 
         picking.write({
             'alas_delivery_order_id': alas_id,
@@ -250,12 +279,40 @@ class ProviderAlasExpress(models.Model):
             'alas_package_codes': package_codes,
             'alas_status': 'Planificación',
         })
+        picking.env.cr.commit()
 
         # Guardar etiqueta si viene en la respuesta
         if label_b64:
             self._alas_save_label_attachment(picking, label_b64)
 
+        # Enviar correo de despacho al cliente
+        if picking.partner_id and picking.partner_id.email:
+            self._alas_send_dispatch_email(picking)
+
         return result
+
+    def _alas_send_dispatch_email(self, picking):
+        """Envía correo de notificación de despacho al cliente."""
+        partner = picking.partner_id
+        origin = picking.origin or picking.name
+        body = (
+            f'Estimado/a {partner.name},<br/><br/>'
+            f'Su orden <strong>{origin}</strong> ha sido despachada. '
+            f'Puede consultar su estado de entrega en el siguiente link con el número de tu orden:<br/><br/>'
+            f'<a href="https://www.alasxpress.com/">https://www.alasxpress.com/</a><br/><br/>'
+            f'Atentamente,<br/>'
+            f'<strong>Despacho Outside Sports</strong>'
+        )
+        mail_values = {
+            'subject': f'Tu pedido {origin} ha sido despachado - Outside Sports',
+            'body_html': body,
+            'email_to': partner.email,
+            'email_from': self.env.company.email or 'despacho@outsidesports.cl',
+            'auto_delete': True,
+        }
+        mail = self.env['mail.mail'].create(mail_values)
+        mail.send()
+        _logger.info('Alas Express: correo de despacho enviado a %s para picking %s', partner.email, picking.name)
 
     def alas_get_status(self, picking):
         """
@@ -270,8 +327,15 @@ class ProviderAlasExpress(models.Model):
         result = self._alas_call('GET', f'/delivery-orders/{picking.alas_delivery_order_id}')
 
         status = result.get('status', '')
-        description = result.get('description', '')
-        delivery_expected = result.get('deliveryExpected', '')
+        delivery_expected_raw = result.get('deliveryExpected', '')
+
+        # Convertir fecha ISO 8601 (2026-06-11T13:00:00) al formato Odoo (2026-06-11 13:00:00)
+        delivery_expected = False
+        if delivery_expected_raw:
+            try:
+                delivery_expected = delivery_expected_raw.replace('T', ' ')[:19]
+            except Exception:
+                delivery_expected = False
 
         picking.write({
             'alas_status': status,
@@ -364,13 +428,126 @@ class ProviderAlasExpress(models.Model):
         })
         _logger.info('Alas Express: etiqueta guardada como adjunto "%s" en picking %s.', filename, picking.name)
 
+    # ── Tarifas por región ───────────────────────────────────────────────────
+
+    def action_alas_load_chile_regions(self):
+        """
+        Carga todas las regiones de Chile en la tabla de tarifas del carrier,
+        sin sobrescribir precios ya configurados.
+        """
+        self.ensure_one()
+        chile = self.env.ref('base.cl', raise_if_not_found=False)
+        if not chile:
+            raise UserError(_('No se encontró el país Chile (base.cl) en el sistema.'))
+
+        states = self.env['res.country.state'].search([('country_id', '=', chile.id)], order='code, name')
+        if not states:
+            raise UserError(_('No hay regiones/estados cargados para Chile.'))
+
+        existing_state_ids = set(self.alas_region_rate_ids.mapped('state_id').ids)
+        to_create = []
+        for state in states:
+            if state.id in existing_state_ids:
+                continue
+            to_create.append({
+                'carrier_id': self.id,
+                'state_id': state.id,
+                'price': self.alas_default_price or 0.0,
+            })
+        if to_create:
+            self.env['alas.express.region.rate'].create(to_create)
+
+        if to_create:
+            message = _(
+                'Se agregaron %s regiones. Complete el precio de envío de cada una.'
+            ) % len(to_create)
+            notif_type = 'success'
+        else:
+            message = _('Todas las regiones de Chile ya estaban cargadas.')
+            notif_type = 'info'
+
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('Tarifas Alas Express'),
+                'message': message,
+                'type': notif_type,
+                'sticky': False,
+            },
+        }
+
+    def _alas_get_shipping_partner(self, order=None, partner=None):
+        """Obtiene el partner de destino para cotizar el envío."""
+        if partner:
+            return partner
+        if order:
+            return order.partner_shipping_id or order.partner_id
+        return self.env['res.partner']
+
+    def _alas_get_price_for_partner(self, partner):
+        """
+        Resuelve el precio de envío según la región del destinatario.
+
+        Retorna:
+            float: precio encontrado
+            False: no hay tarifa y se exige configuración por región
+        """
+        self.ensure_one()
+        state = partner.state_id if partner else False
+        if state:
+            rate = self.alas_region_rate_ids.filtered(lambda r: r.state_id == state)[:1]
+            if rate:
+                return rate.price
+
+        if self.alas_require_region_rate:
+            return False
+        return self.alas_default_price or 0.0
+
     # ── Métodos heredados delivery.carrier ───────────────────────────────────
 
     def alas_express_rate_shipment(self, order):
-        """Estimación de tarifa (no soportada por la API, retorna 0)."""
+        """
+        Cotiza el envío según la tarifa configurada por región en el método
+        de envío. La API de Alas Express no entrega precios de cotización.
+        """
+        self.ensure_one()
+        partner = self._alas_get_shipping_partner(order=order)
+        if not partner:
+            return {
+                'success': False,
+                'price': 0.0,
+                'error_message': _('No hay destinatario para cotizar el envío Alas Express.'),
+                'warning_message': False,
+            }
+
+        if not partner.state_id and self.alas_require_region_rate:
+            return {
+                'success': False,
+                'price': 0.0,
+                'error_message': _(
+                    'El destinatario "%s" no tiene región configurada. '
+                    'Indique la región para calcular el costo de envío Alas Express.'
+                ) % partner.display_name,
+                'warning_message': False,
+            }
+
+        price = self._alas_get_price_for_partner(partner)
+        if price is False:
+            region_name = partner.state_id.display_name if partner.state_id else _('sin región')
+            return {
+                'success': False,
+                'price': 0.0,
+                'error_message': _(
+                    'No hay tarifa Alas Express configurada para la región "%s". '
+                    'Configure el precio en el método de envío (pestaña Alas Express).'
+                ) % region_name,
+                'warning_message': False,
+            }
+
         return {
             'success': True,
-            'price': 0.0,
+            'price': float(price),
             'error_message': False,
             'warning_message': False,
         }
@@ -384,8 +561,12 @@ class ProviderAlasExpress(models.Model):
         for picking in pickings:
             try:
                 response = self.alas_create_delivery_order(picking)
+                partner = picking.partner_id
+                price = self._alas_get_price_for_partner(partner)
+                if price is False:
+                    price = self.alas_default_price or 0.0
                 result.append({
-                    'exact_price': 0.0,
+                    'exact_price': float(price or 0.0),
                     'tracking_number': response.get('deliveryOrderId', ''),
                 })
             except UserError as e:
