@@ -1,32 +1,28 @@
 # -*- coding: utf-8 -*-
+import logging
+
 import werkzeug.exceptions
 
 from odoo import models
 from odoo.http import request
 
-# El sitio que sirve realmente b2b.outsidesports.cl (confirmado en
-# producción: website id=2) se llama literalmente "Outside Sports", NO
-# "OUTSIDE SPORTS B2B" (ese otro registro, id=1, existe pero no tiene
-# dominio asignado). Decisión del cliente: dejarlo así, sin mover el
-# dominio - por eso el código reconoce este nombre en particular.
-B2B_WEBSITE_NAME = 'Outside Sports'
+_logger = logging.getLogger(__name__)
 
-# Rutas que SIEMPRE deben quedar accesibles sin sesion (para que el propio
-# login, el registro y los assets estaticos puedan cargar); cualquier otra
-# ruta del sitio B2B redirige a /web/login si el visitante es publico.
-_EXCLUDED_PREFIXES = (
+# Frontend paths that must remain reachable without an authenticated user.
+_B2B_LOGIN_WHITELIST_PREFIXES = (
     '/web/login',
     '/web/signup',
     '/web/reset_password',
-    '/web/session',
-    '/web/webclient',
-    '/web/assets',
-    '/web/static',
-    '/website/static',
+    '/web/session/logout',
+    '/web/session/authenticate',
+    '/web/assets/',
+    '/web/content/',
+    '/web/image/',
+    '/web/binary/',
+    '/web/static/',
+    '/web/webclient/',
     '/website/translations',
-    '/favicon.ico',
-    '/robots.txt',
-    '/sitemap.xml',
+    '/web/service-worker.js',
 )
 
 
@@ -34,31 +30,58 @@ class IrHttp(models.AbstractModel):
     _inherit = 'ir.http'
 
     @classmethod
+    def _addval_b2b_path_whitelisted(cls, path):
+        if not path:
+            return True
+        for prefix in _B2B_LOGIN_WHITELIST_PREFIXES:
+            if path == prefix.rstrip('/') or path.startswith(prefix):
+                return True
+        return False
+
+    @classmethod
     def _frontend_pre_dispatch(cls):
-        """
-        Se ejecuta en CADA request de frontend, ya con request.website
-        resuelto (a diferencia de _pre_dispatch, que corre mas temprano
-        y obliga a chequear manualmente si es frontend). Adaptado de un
-        modulo similar hecho para Disandina
-        (website_sale_force_login), agregando el scopeo por sitio (ahi
-        no existia, y sin el se bloquearia tambien el B2C) y ampliando
-        la proteccion a CUALQUIER pagina (no solo /shop*), ya que el
-        requerimiento aqui es que no se vea nada del sitio sin iniciar
-        sesion, incluida la portada.
+        """Force login on B2B websites; never crash on auth='none' (logout).
+
+        Production traceback (Outside B2B / Odoo.sh)::
+
+            File ".../addval_website_b2b_login/models/ir_http.py", line 55,
+                in _frontend_pre_dispatch
+            if not request.env.user._is_public():
+            ValueError: Expected singleton: res.users()
+
+        ``/web/session/logout`` uses ``auth='none'``, so after the session is
+        cleared ``request.env.user`` is an empty recordset. Calling
+        ``_is_public()`` then raises. We whitelist logout and guard the empty
+        user before any singleton check.
         """
         super()._frontend_pre_dispatch()
 
-        website = getattr(request, 'website', False)
-        if not website or website.name != B2B_WEBSITE_NAME:
-            return
-
-        if not request.env.user._is_public():
+        website = getattr(request, 'website', None)
+        if not website or not website.b2b_login_required:
             return
 
         path = request.httprequest.path or ''
-        if any(path.startswith(p) for p in _EXCLUDED_PREFIXES):
+        if cls._addval_b2b_path_whitelisted(path):
             return
 
+        user = request.env.user
+        # auth='none' (and similar) → empty recordset, not the public user
+        if not user:
+            return
+
+        if not user._is_public():
+            return
+
+        redirect_target = path
+        query = request.httprequest.query_string
+        if query:
+            redirect_target = '%s?%s' % (
+                path,
+                query.decode() if isinstance(query, bytes) else query,
+            )
         werkzeug.exceptions.abort(
-            request.redirect('/web/login?redirect=' + path, code=303)
+            request.redirect(
+                '/web/login?redirect=%s' % redirect_target,
+                code=303,
+            )
         )
