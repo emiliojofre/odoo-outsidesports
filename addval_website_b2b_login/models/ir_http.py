@@ -8,7 +8,6 @@ from odoo.http import request
 
 _logger = logging.getLogger(__name__)
 
-# Frontend paths that must remain reachable without an authenticated user.
 _B2B_LOGIN_WHITELIST_PREFIXES = (
     '/web/login',
     '/web/signup',
@@ -42,17 +41,10 @@ class IrHttp(models.AbstractModel):
     def _frontend_pre_dispatch(cls):
         """Force login on B2B websites; never crash on auth='none' (logout).
 
-        Production traceback (Outside B2B / Odoo.sh)::
+        Production crash was::
 
-            File ".../addval_website_b2b_login/models/ir_http.py", line 55,
-                in _frontend_pre_dispatch
             if not request.env.user._is_public():
             ValueError: Expected singleton: res.users()
-
-        ``/web/session/logout`` uses ``auth='none'``, so after the session is
-        cleared ``request.env.user`` is an empty recordset. Calling
-        ``_is_public()`` then raises. We whitelist logout and guard the empty
-        user before any singleton check.
         """
         super()._frontend_pre_dispatch()
 
@@ -65,7 +57,6 @@ class IrHttp(models.AbstractModel):
             return
 
         user = request.env.user
-        # auth='none' (and similar) → empty recordset, not the public user
         if not user:
             return
 

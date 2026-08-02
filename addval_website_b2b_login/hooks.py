@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
+from odoo import SUPERUSER_ID, api
 
 
-def post_init_hook(env):
-    """Enable B2B login on websites whose domain/name looks like a B2B site.
-
-    Preserves Outside production behavior (b2b.outsidesports.cl) when the
-    module is installed or replaced without manually re-checking the flag.
-    """
+def post_init_hook(cr, registry):
+    """Enable B2B login on websites whose domain/name contains 'b2b'."""
+    env = api.Environment(cr, SUPERUSER_ID, {})
     for website in env['website'].search([]):
         haystack = ' '.join(filter(None, [
             website.domain or '',
