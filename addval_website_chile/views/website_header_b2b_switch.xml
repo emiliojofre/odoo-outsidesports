@@ -1,24 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <!--
-        Botón "Ir al B2B" en la barra superior del sitio, solo en
-        OUTSIDE SPORTS B2C.
+        Buscador de productos en el encabezado del sitio B2C.
 
-        Se inserta via "portal.placeholder_user_sign_in" - el mismo
-        extension point OFICIAL que usa el propio Odoo (portal.user_sign_in,
-        view id=325 en produccion) para agregar el link "Identificarse"
-        ahi mismo. Es un placeholder vacio pensado exactamente para que
-        varios modulos agreguen contenido cooperativamente via
-        position="inside", sin competir por el mismo xpath ni depender
-        de la redaccion/traduccion exacta de "Identificarse" (que es un
-        texto traducido en tiempo de render, no un string fijo).
+        La plantilla "Header Default" de Odoo 16 no incluye un buscador.
+        website_sale solo agrega el carrito, por lo que el buscador se
+        incorpora explícitamente aquí usando la plantilla oficial
+        website_sale.search.
+
+        La vista queda asociada exclusivamente al sitio
+        "OUTSIDE SPORTS B2C", para no modificar el sitio B2B.
     -->
+    <template id="chile_b2c_header_product_search"
+              inherit_id="website.template_header_default"
+              name="Chile B2C - Buscador de productos en encabezado"
+              priority="30">
+
+        <!-- Buscador de escritorio: entre el logo y el menú. -->
+        <xpath expr="//div[@id='top_menu_collapse']" position="before">
+            <div class="chile-header-product-search d-none d-lg-flex align-items-center flex-grow-1 me-3">
+                <t t-call="website_sale.search">
+                    <t t-set="navClass" t-valuef="light"/>
+                    <t t-set="category" t-value="False"/>
+                    <t t-set="attrib_values" t-value="False"/>
+                    <t t-set="search" t-value="request.params.get('search', '')"/>
+                    <t t-set="_form_classes" t-valuef="w-100"/>
+                </t>
+            </div>
+        </xpath>
+
+        <!-- Buscador móvil: primera opción dentro del menú desplegable. -->
+        <xpath expr="//div[@id='top_menu_collapse']/t[@t-call='website.navbar_nav']" position="before">
+            <div class="chile-header-product-search-mobile d-lg-none px-2 pt-3 pb-2">
+                <t t-call="website_sale.search">
+                    <t t-set="navClass" t-valuef="light"/>
+                    <t t-set="category" t-value="False"/>
+                    <t t-set="attrib_values" t-value="False"/>
+                    <t t-set="search" t-value="request.params.get('search', '')"/>
+                    <t t-set="_form_classes" t-valuef="w-100"/>
+                </t>
+            </div>
+        </xpath>
+    </template>
+
+    <record id="chile_b2c_header_product_search" model="ir.ui.view">
+        <field name="website_id" search="[('name','=','OUTSIDE SPORTS B2C')]" model="website"/>
+    </record>
+
+    <!-- Botón "Ir al B2B", solo en OUTSIDE SPORTS B2C. -->
     <template id="chile_b2b_switch_button"
               inherit_id="portal.placeholder_user_sign_in"
               name="Chile B2C - Botón Ir al B2B">
         <xpath expr="." position="inside">
             <li class="nav-item ms-lg-2 d-flex align-items-center">
-                <a role="button" href="https://b2b.outsidesports.cl"
+                <a role="button"
+                   href="https://b2b.outsidesports.cl"
                    class="btn btn-outline-primary btn-sm chile-b2b-switch-btn">
                     Ir al B2B
                 </a>

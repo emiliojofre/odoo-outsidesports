@@ -1,0 +1,21 @@
+/* Buscador de productos del encabezado de OUTSIDE SPORTS B2C. */
+.chile-header-product-search {
+    min-width: 260px;
+    max-width: 520px;
+}
+
+.chile-header-product-search .o_wsale_products_searchbar_form,
+.chile-header-product-search-mobile .o_wsale_products_searchbar_form {
+    margin-bottom: 0;
+}
+
+.chile-header-product-search .o_searchbar_form .form-control,
+.chile-header-product-search-mobile .o_searchbar_form .form-control {
+    min-height: 38px;
+}
+
+@media (min-width: 992px) {
+    #top_menu_container > .chile-header-product-search {
+        margin-left: 0.5rem;
+    }
+}
