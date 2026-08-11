@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Compatibilidad con la versión anterior del módulo.
+
+        La vista heredada desde website.template_header_default podía quedar
+        fuera de la cadena activa cuando el encabezado tenía una copia COW
+        específica del sitio. Se conserva el mismo XML ID, pero se desactiva
+        para evitar duplicados y para que no dependa de la variante del header.
+    -->
+    <template id="chile_b2c_header_product_search"
+              inherit_id="website.template_header_default"
+              name="Chile B2C - Buscador anterior desactivado"
+              active="False"
+              priority="30">
+        <xpath expr="//div[@id='top_menu_collapse']" position="before">
+            <t/>
+        </xpath>
+    </template>
+
+    <record id="chile_b2c_header_product_search" model="ir.ui.view">
+        <field name="active" eval="False"/>
+        <field name="website_id" search="[('name','=','OUTSIDE SPORTS B2C')]" model="website"/>
+    </record>
+
+    <!--
+        Buscador y botón B2B.
+
+        Se insertan en portal.placeholder_user_sign_in porque este punto ya
+        está confirmado como activo en el encabezado real del B2C: es el mismo
+        lugar donde actualmente aparece el botón "Ir al B2B". Así no dependemos
+        de website.template_header_default ni de una variante/COW del header.
+    -->
+    <template id="chile_b2b_switch_button"
+              inherit_id="portal.placeholder_user_sign_in"
+              name="Chile B2C - Buscador e Ingresa al B2B"
+              priority="40">
+        <xpath expr="." position="inside">
+            <li class="nav-item chile-header-product-search-item d-flex align-items-center me-lg-2">
+                <form method="get"
+                      action="/shop"
+                      role="search"
+                      class="chile-header-product-search-form d-flex align-items-stretch">
+                    <input type="search"
+                           name="search"
+                           t-att-value="request.params.get('search', '')"
+                           class="form-control form-control-sm"
+                           placeholder="Buscar productos..."
+                           aria-label="Buscar productos"/>
+                    <button type="submit"
+                            class="btn btn-outline-secondary btn-sm"
+                            aria-label="Buscar">
+                        <i class="fa fa-search"/>
+                    </button>
+                </form>
+            </li>
+
+            <li class="nav-item ms-lg-1 d-flex align-items-center chile-b2b-switch-item">
+                <a role="button"
+                   href="https://b2b.outsidesports.cl"
+                   class="btn chile-b2b-switch-btn">
+                    <i class="fa fa-sign-in me-2" aria-hidden="true"/>
+                    Ingresa al B2B
+                </a>
+            </li>
+        </xpath>
+    </template>
+
+    <record id="chile_b2b_switch_button" model="ir.ui.view">
+        <field name="active" eval="True"/>
+        <field name="website_id" search="[('name','=','OUTSIDE SPORTS B2C')]" model="website"/>
+    </record>
+</odoo>

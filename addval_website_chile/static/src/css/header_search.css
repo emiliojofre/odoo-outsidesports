@@ -1,0 +1,84 @@
+/* Buscador del encabezado de OUTSIDE SPORTS B2C. */
+.chile-header-product-search-form {
+    width: 320px;
+    max-width: 32vw;
+}
+
+.chile-header-product-search-form .form-control {
+    min-width: 0;
+    height: 34px;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.chile-header-product-search-form .btn {
+    height: 34px;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+@media (max-width: 1199.98px) {
+    .chile-header-product-search-form {
+        width: 230px;
+        max-width: 26vw;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .chile-header-product-search-item {
+        width: 100%;
+        margin: 0.5rem 0;
+        padding: 0 0.75rem;
+    }
+
+    .chile-header-product-search-form {
+        width: 100%;
+        max-width: none;
+    }
+
+    .chile-b2b-switch-item {
+        padding: 0 0.75rem 0.5rem;
+    }
+}
+
+
+/* Botón destacado de acceso al sitio B2B. */
+.chile-b2b-switch-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 0.55rem 1.15rem;
+    border: 1px solid #1597a6;
+    border-radius: 0.55rem;
+    background: #1597a6;
+    color: #fff !important;
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1.1;
+    white-space: nowrap;
+    text-decoration: none !important;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.16);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.chile-b2b-switch-btn:hover,
+.chile-b2b-switch-btn:focus {
+    background: #117d89;
+    border-color: #117d89;
+    color: #fff !important;
+    transform: translateY(-1px);
+    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.22);
+}
+
+.chile-b2b-switch-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.16);
+}
+
+@media (max-width: 991.98px) {
+    .chile-b2b-switch-btn {
+        width: 100%;
+        min-height: 42px;
+    }
+}
