@@ -8,7 +8,7 @@ from odoo.addons.payment.models.payment_provider import ValidationError
 _logger = logging.getLogger(__name__)
 
 try:
-    from payflow.client import Client
+    from .lib.payflow.client import Client
 except Exception as e:
     _logger.warning("No se puede cargar Flow: %s" % str(e))
 
