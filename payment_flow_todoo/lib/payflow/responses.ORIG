@@ -15,7 +15,6 @@ medios_pago = {
     'Todos los medios': 9,
     'Mach': 15,
     "Transferencias bancarias via Khipu": 22,
-    "Transferencias bancarias vía Khipu": 22,  # FIX NLH: Flow manda esta variante CON tilde
     "Chek": 25,
     'Webpay 3C': 130,
     "Webpay 6C": 131,
@@ -112,18 +111,7 @@ class PaymentsResponse(BaseResponse):
         payment_data = data.get('paymentData', {})
         payment_method = None
         if payment_data and payment_data.get('media'):
-            # FIX NLH: antes esto era `medios_pago[payment_data['media']]` sin
-            # proteccion. Si Flow manda un medio de pago que no esta (o no
-            # calza exactamente, ej. por tildes) en el diccionario, esto
-            # explotaba con KeyError DENTRO del manejo del webhook/return de
-            # Flow -> Odoo respondia 500 y el pedido nunca quedaba marcado
-            # como pagado, aunque Flow ya hubiese aceptado el pago.
-            payment_method = medios_pago.get(payment_data['media'])
-            if payment_method is None:
-                _logger.warning(
-                    u"Flow devolvio un medio de pago no mapeado en medios_pago: %r",
-                    payment_data['media']
-                )
+            payment_method = medios_pago[payment_data['media']]
 
         conciliation_date = None
         if payment_data and payment_data.get('date'):
